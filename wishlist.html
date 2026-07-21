@@ -740,7 +740,7 @@
                 <button class="st-btn-clear" id="stClearWishlistBtn">
                     <i class="fas fa-trash-alt"></i> Clear All
                 </button>
-                <a href="products.html" class="st-btn-shop">
+                <a href="Search.html" class="st-btn-shop">
                     <i class="fas fa-store"></i> Browse Products
                 </a>
             </div>
@@ -868,7 +868,7 @@
                         <div class="st-empty-icon"><i class="fas fa-heart"></i></div>
                         <h2>Your wishlist is empty</h2>
                         <p>Save your favorite items and come back to them anytime.</p>
-                        <a href="products.html" class="st-btn-shop">
+                        <a href="Search.html" class="st-btn-shop">
                             <i class="fas fa-store"></i> Start Exploring
                         </a>
                     </div>
@@ -890,7 +890,7 @@
                             <div class="st-empty-icon"><i class="fas fa-heart"></i></div>
                             <h2>Your wishlist is empty</h2>
                             <p>Save your favorite items and come back to them anytime.</p>
-                            <a href="products.html" class="st-btn-shop">
+                            <a href="Search.html" class="st-btn-shop">
                                 <i class="fas fa-store"></i> Start Exploring
                             </a>
                         </div>
@@ -1085,15 +1085,20 @@
         // 8. SUPABASE SYNC FUNCTIONS
         // ============================================================
 
-        async function fetchWishlistFromDB(sessionId) {
+        async function fetchWishlistFromDB(identifier, hasCustomerId = false) {
             const client = getSupabaseClient();
             if (!client) return [];
+            const customerId = hasCustomerId ? identifier : null;
+            const sessionId = hasCustomerId ? null : identifier;
             
             try {
-                const { data, error } = await client
-                    .from('wishlist')
-                    .select('product_id')
-                    .eq('session_id', sessionId);
+                const query = client.from('wishlist').select('product_id');
+                if (customerId) {
+                    query.eq('customer_id', customerId);
+                } else {
+                    query.eq('session_id', sessionId);
+                }
+                const { data, error } = await query;
                 
                 if (error) throw error;
                 return (data || []).map(row => row.product_id);
@@ -1103,15 +1108,24 @@
             }
         }
 
-        async function saveWishlistToDB(sessionId, wishlist) {
+        async function saveWishlistToDB(identifier, wishlist, hasCustomerId = false) {
             const client = getSupabaseClient();
             if (!client) return;
+            const customerId = hasCustomerId ? identifier : null;
+            const sessionId = hasCustomerId ? null : identifier;
             
             try {
-                await client.from('wishlist').delete().eq('session_id', sessionId);
+                if (customerId) {
+                    await client.from('wishlist').delete().eq('customer_id', customerId);
+                } else {
+                    await client.from('wishlist').delete().eq('session_id', sessionId);
+                }
                 
                 if (wishlist.length > 0) {
-                    const rows = wishlist.map(pid => ({ session_id: sessionId, product_id: pid }));
+                    const rows = wishlist.map(pid => ({
+                        ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
+                        product_id: pid
+                    }));
                     const { error } = await client.from('wishlist').insert(rows);
                     if (error) console.error('❌ Error saving wishlist:', error.message);
                 }
@@ -1214,35 +1228,13 @@
         // 11. INJECT HEADER
         // ============================================================
 
-        function loadHeader() {
-            if (window.STHeader) {
-                console.log('✅ Header already loaded');
-                return;
-            }
-            
-            const script = document.createElement('script');
-            script.src = 'global-header.js';
-            script.onload = () => {
-                console.log('✅ Header script loaded');
-                setTimeout(() => {
-                    if (window.STHeader) {
-                        window.STHeader.AppState.wishlist = wishlistIds;
-                        window.STHeader.updateCounts();
-                    }
-                }, 500);
-            };
-            script.onerror = () => {
-                console.warn('⚠️ Header script not found, using fallback');
-            };
-            document.head.appendChild(script);
-        }
 
         // ============================================================
         // 12. INITIALIZATION
         // ============================================================
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadHeader();
+         
             loadWishlistData();
             
             document.getElementById('stClearWishlistBtn').addEventListener('click', clearWishlist);

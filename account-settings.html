@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account Settings · Sucess Technology</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+      <script src="global-header.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { 
+                        primary: '#6C3CE1', 
+                        primaryHover: '#5A2FC4',
+                        dark: '#0F172A',
+                        'dark-secondary': '#1E293B'
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ============================================
+           ACCOUNT SETTINGS STYLES
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #0F172A;
+            padding-top: 80px;
+            padding-bottom: 40px;
+        }
+
+        /* ----- Account Container ----- */
+        .st-account-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ----- Page Header ----- */
+        .st-account-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 0 20px;
+            border-bottom: 2px solid #E2E8F0;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .st-account-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .st-account-header h1 i {
+            color: #6C3CE1;
+        }
+
+        .st-account-header .st-account-status {
+            font-size: 14px;
+            font-weight: 500;
+            color: #94A3B8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .st-account-header .st-account-status .st-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10B981;
+            display: inline-block;
+        }
+
+        /* ----- Account Grid ----- */
+        .st-account-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 32px;
+        }
+
+        /* ----- Sidebar ----- */
+        .st-account-sidebar {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .st-account-sidebar .st-profile-card {
+            text-align: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #E2E8F0;
+            margin-bottom: 16px;
+        }
+
+        .st-account-sidebar .st-profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6C3CE1, #5A2FC4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 32px;
+            margin: 0 auto 12px;
+            box-shadow: 0 4px 16px rgba(108, 60, 225, 0.3);
+        }
+
+        .st-account-sidebar .st-profile-name {
+            font-weight: 700;
+            font-size: 18px;
+            color: #0F172A;
+        }
+
+        .st-account-sidebar .st-profile-email {
+            font-size: 13px;
+            color: #94A3B8;
+        }
+
+        .st-account-sidebar .st-sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .st-account-sidebar .st-sidebar-nav .st-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border: none;
+            background: none;
+            width: 100%;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            color: #475569;
+            text-align: left;
+            text-decoration: none;
+        }
+
+        .st-account-sidebar .st-sidebar-nav .st-nav-item:hover {
+            background: rgba(108, 60, 225, 0.08);
+            color: #6C3CE1;
+        }
+
+        .st-account-sidebar .st-sidebar-nav .st-nav-item.active {
+            background: rgba(108, 60, 225, 0.1);
+            color: #6C3CE1;
+        }
+
+        .st-account-sidebar .st-sidebar-nav .st-nav-item i {
+            width: 20px;
+            font-size: 16px;
+            opacity: 0.7;
+        }
+
+        .st-account-sidebar .st-sidebar-nav .st-nav-item.active i {
+            opacity: 1;
+        }
+
+        .st-account-sidebar .st-sidebar-nav .st-nav-item.danger {
+            color: #EF4444;
+        }
+
+        .st-account-sidebar .st-sidebar-nav .st-nav-item.danger:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        /* ----- Main Content ----- */
+        .st-account-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            min-height: 400px;
+        }
+
+        .st-account-content .st-section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .st-account-content .st-section-title i {
+            color: #6C3CE1;
+        }
+
+        /* ----- Profile Form ----- */
+        .st-form-group {
+            margin-bottom: 20px;
+        }
+
+        .st-form-group .st-form-label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            color: #1E293B;
+            margin-bottom: 4px;
+        }
+
+        .st-form-group .st-form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            outline: none;
+            font-family: inherit;
+            background: white;
+            color: #0F172A;
+        }
+
+        .st-form-group .st-form-input:focus {
+            border-color: #6C3CE1;
+            box-shadow: 0 0 0 4px rgba(108, 60, 225, 0.1);
+        }
+
+        .st-form-group .st-form-input:disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
+        }
+
+        .st-form-group .st-form-input.error {
+            border-color: #EF4444;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+        }
+
+        .st-form-group .st-form-error {
+            color: #EF4444;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .st-form-group .st-form-error.visible {
+            display: block;
+        }
+
+        .st-form-group .st-form-help {
+            color: #94A3B8;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .st-btn-primary {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #6C3CE1, #5A2FC4);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            box-shadow: 0 4px 12px rgba(108, 60, 225, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .st-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(108, 60, 225, 0.4);
+        }
+
+        .st-btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .st-btn-secondary {
+            padding: 12px 28px;
+            background: transparent;
+            color: #475569;
+            border: 2px solid #E2E8F0;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .st-btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #94A3B8;
+        }
+
+        .st-btn-danger {
+            padding: 12px 28px;
+            background: #EF4444;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .st-btn-danger:hover {
+            background: #DC2626;
+            transform: translateY(-2px);
+        }
+
+        .st-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* ----- Orders List ----- */
+        .st-order-card {
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .st-order-card:hover {
+            border-color: #6C3CE1;
+            background: #faf8ff;
+        }
+
+        .st-order-card .st-order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .st-order-card .st-order-id {
+            font-weight: 700;
+            font-size: 14px;
+            color: #0F172A;
+        }
+
+        .st-order-card .st-order-status {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            text-transform: capitalize;
+        }
+
+        .st-order-card .st-order-status.pending {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .st-order-card .st-order-status.processing {
+            background: #DBEAFE;
+            color: #2563EB;
+        }
+
+        .st-order-card .st-order-status.shipped {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .st-order-card .st-order-status.delivered {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .st-order-card .st-order-status.cancelled {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .st-order-card .st-order-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 14px;
+            color: #64748B;
+        }
+
+        .st-order-card .st-order-total {
+            font-weight: 700;
+            color: #0F172A;
+            font-size: 16px;
+        }
+
+        .st-order-card .st-order-items {
+            font-size: 13px;
+            color: #94A3B8;
+        }
+
+        .st-order-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94A3B8;
+        }
+
+        .st-order-empty .st-empty-icon {
+            font-size: 48px;
+            color: #E2E8F0;
+            margin-bottom: 12px;
+        }
+
+        /* ----- Notification ----- */
+        .st-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 30000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+            text-align: center;
+            animation: toastSlideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .st-toast.success {
+            background: #10B981;
+        }
+
+        .st-toast.error {
+            background: #EF4444;
+        }
+
+        .st-toast.info {
+            background: #3B82F6;
+        }
+
+        .st-toast.warning {
+            background: #F59E0B;
+        }
+
+        @keyframes toastSlideUp {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        /* ----- Modal ----- */
+        .st-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 20000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
+
+        .st-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .st-modal {
+            background: white;
+            border-radius: 16px;
+            max-width: 440px;
+            width: 100%;
+            padding: 32px;
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .st-modal-overlay.active .st-modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .st-modal .st-modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .st-modal .st-modal-text {
+            color: #64748B;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .st-modal .st-modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .st-modal .st-modal-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            border: none;
+            background: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #94A3B8;
+            transition: color 0.2s ease;
+        }
+
+        .st-modal .st-modal-close:hover {
+            color: #EF4444;
+        }
+
+        /* ----- Loading ----- */
+        .st-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .st-loading .st-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #E2E8F0;
+            border-top-color: #6C3CE1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ----- Responsive ----- */
+        @media (max-width: 1024px) {
+            .st-account-grid {
+                grid-template-columns: 240px 1fr;
+                gap: 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 68px;
+                padding-bottom: 80px;
+            }
+
+            .st-account-container {
+                padding: 0 16px;
+            }
+
+            .st-account-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .st-account-sidebar {
+                position: static;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                padding: 12px 16px;
+            }
+
+            .st-account-sidebar .st-profile-card {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                padding-bottom: 0;
+                border-bottom: none;
+                margin-bottom: 0;
+                flex: 1;
+                text-align: left;
+            }
+
+            .st-account-sidebar .st-profile-avatar {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+                margin: 0;
+            }
+
+            .st-account-sidebar .st-sidebar-nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 2px;
+                width: 100%;
+                padding-top: 12px;
+                border-top: 1px solid #E2E8F0;
+            }
+
+            .st-account-sidebar .st-sidebar-nav .st-nav-item {
+                padding: 8px 14px;
+                font-size: 13px;
+                width: auto;
+            }
+
+            .st-account-content {
+                padding: 20px;
+            }
+
+            .st-account-header h1 {
+                font-size: 22px;
+            }
+
+            .st-form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .st-order-card .st-order-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .st-account-content {
+                padding: 16px;
+            }
+
+            .st-account-header h1 {
+                font-size: 18px;
+            }
+
+            .st-btn-primary,
+            .st-btn-secondary,
+            .st-btn-danger {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         HEADER WILL BE INJECTED HERE
+         ============================================ -->
+
+    <!-- ============================================
+         ACCOUNT SETTINGS CONTENT
+         ============================================ -->
+    <main class="st-account-container" id="stAccountPage">
+        <!-- Page Header -->
+        <div class="st-account-header">
+            <h1><i class="fas fa-user-cog"></i> Account Settings</h1>
+            <div class="st-account-status">
+                <span class="st-status-dot"></span>
+                <span id="stAccountStatus">Signed in as Guest</span>
+            </div>
+        </div>
+
+        <!-- Account Grid -->
+        <div class="st-account-grid">
+            <!-- Sidebar -->
+            <aside class="st-account-sidebar" id="stAccountSidebar">
+                <div class="st-profile-card">
+                    <div class="st-profile-avatar" id="stSidebarAvatar">G</div>
+                    <div>
+                        <div class="st-profile-name" id="stSidebarName">Guest</div>
+                        <div class="st-profile-email" id="stSidebarEmail">Not logged in</div>
+                    </div>
+                </div>
+                <nav class="st-sidebar-nav">
+                    <button class="st-nav-item active" data-section="profile">
+                        <i class="fas fa-user"></i> Profile
+                    </button>
+                    <button class="st-nav-item" data-section="orders">
+                        <i class="fas fa-shopping-bag"></i> My Orders
+                    </button>
+                    <button class="st-nav-item" data-section="security">
+                        <i class="fas fa-shield-alt"></i> Security
+                    </button>
+                    <button class="st-nav-item" data-section="preferences">
+                        <i class="fas fa-sliders-h"></i> Preferences
+                    </button>
+                    <button class="st-nav-item danger" id="stSidebarLogout">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <div class="st-account-content" id="stAccountContent">
+                <!-- Profile Section -->
+                <div id="section-profile" class="st-section">
+                    <div class="st-section-title"><i class="fas fa-user"></i> Profile Information</div>
+                    
+                    <form id="stProfileForm" autocomplete="off">
+                        <div class="st-form-group">
+                            <label class="st-form-label">Full Name</label>
+                            <input type="text" class="st-form-input" id="stProfileName" 
+                                   placeholder="Your full name" required />
+                            <div class="st-form-error" id="stProfileNameError">Name is required</div>
+                        </div>
+
+                        <div class="st-form-group">
+                            <label class="st-form-label">Email Address</label>
+                            <input type="email" class="st-form-input" id="stProfileEmail" 
+                                   placeholder="you@example.com" disabled />
+                            <div class="st-form-help">Email cannot be changed</div>
+                        </div>
+
+                        <div class="st-form-row">
+                            <div class="st-form-group">
+                                <label class="st-form-label">Phone Number</label>
+                                <input type="tel" class="st-form-input" id="stProfilePhone" 
+                                       placeholder="+1 234 567 890" />
+                            </div>
+                            <div class="st-form-group">
+                                <label class="st-form-label">Address</label>
+                                <input type="text" class="st-form-input" id="stProfileAddress" 
+                                       placeholder="123 Main St, City" />
+                            </div>
+                        </div>
+
+                        <div class="st-form-group" style="margin-top:8px;">
+                            <label class="st-form-label">Bio</label>
+                            <textarea class="st-form-input" id="stProfileBio" 
+                                      rows="3" placeholder="Tell us a little about yourself..."></textarea>
+                        </div>
+
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
+                            <button type="submit" class="st-btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <button type="button" class="st-btn-secondary" id="stProfileReset">
+                                <i class="fas fa-undo"></i> Reset
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Orders Section -->
+                <div id="section-orders" class="st-section" style="display:none;">
+                    <div class="st-section-title"><i class="fas fa-shopping-bag"></i> My Orders</div>
+                    
+                    <div id="stOrdersList">
+                        <!-- Loading State -->
+                        <div class="st-loading" id="stOrdersLoading">
+                            <div class="st-spinner"></div>
+                            <span style="color:#94A3B8;">Loading your orders...</span>
+                        </div>
+                        <!-- Orders will be rendered here -->
+                        <div id="stOrdersContainer"></div>
+                    </div>
+                </div>
+
+                <!-- Security Section -->
+                <div id="section-security" class="st-section" style="display:none;">
+                    <div class="st-section-title"><i class="fas fa-shield-alt"></i> Security</div>
+
+                    <form id="stSecurityForm">
+                        <div class="st-form-group">
+                            <label class="st-form-label">Current Password</label>
+                            <input type="password" class="st-form-input" id="stCurrentPassword" 
+                                   placeholder="Enter current password" />
+                            <div class="st-form-error" id="stCurrentPasswordError">Current password is required</div>
+                        </div>
+
+                        <div class="st-form-group">
+                            <label class="st-form-label">New Password</label>
+                            <input type="password" class="st-form-input" id="stNewPassword" 
+                                   placeholder="Enter new password (min 6 characters)" />
+                            <div class="st-form-error" id="stNewPasswordError">Password must be at least 6 characters</div>
+                        </div>
+
+                        <div class="st-form-group">
+                            <label class="st-form-label">Confirm New Password</label>
+                            <input type="password" class="st-form-input" id="stConfirmPassword" 
+                                   placeholder="Confirm new password" />
+                            <div class="st-form-error" id="stConfirmPasswordError">Passwords do not match</div>
+                        </div>
+
+                        <button type="submit" class="st-btn-primary">
+                            <i class="fas fa-key"></i> Update Password
+                        </button>
+                    </form>
+
+                    <div style="margin-top:32px;padding-top:24px;border-top:2px solid #E2E8F0;">
+                        <h4 style="font-weight:700;color:#EF4444;margin-bottom:8px;">
+                            <i class="fas fa-exclamation-triangle"></i> Danger Zone
+                        </h4>
+                        <p style="font-size:14px;color:#64748B;margin-bottom:16px;">
+                            Permanently delete your account and all associated data.
+                        </p>
+                        <button class="st-btn-danger" id="stDeleteAccountBtn">
+                            <i class="fas fa-trash-alt"></i> Delete Account
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Preferences Section -->
+                <div id="section-preferences" class="st-section" style="display:none;">
+                    <div class="st-section-title"><i class="fas fa-sliders-h"></i> Preferences</div>
+
+                    <div style="margin-bottom:20px;">
+                        <h4 style="font-weight:600;font-size:15px;margin-bottom:12px;">Email Notifications</h4>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                                <input type="checkbox" id="stPrefOrderUpdates" checked />
+                                <span>Order updates and confirmations</span>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                                <input type="checkbox" id="stPrefPromotions" />
+                                <span>Promotional emails and offers</span>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                                <input type="checkbox" id="stPrefNewsletter" />
+                                <span>Newsletter and product updates</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:20px;">
+                        <h4 style="font-weight:600;font-size:15px;margin-bottom:12px;">Privacy</h4>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                                <input type="checkbox" id="stPrefProfileVisibility" checked />
+                                <span>Show profile information to other users</span>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                                <input type="checkbox" id="stPrefOrderHistory" checked />
+                                <span>Show order history</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="st-btn-primary" id="stSavePreferences">
+                        <i class="fas fa-save"></i> Save Preferences
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ============================================
+         DELETE ACCOUNT CONFIRMATION MODAL
+         ============================================ -->
+    <div class="st-modal-overlay" id="stDeleteModal">
+        <div class="st-modal">
+            <button class="st-modal-close" id="stDeleteModalClose">&times;</button>
+            <div style="text-align:center;margin-bottom:16px;">
+                <div style="font-size:48px;color:#EF4444;margin-bottom:8px;">⚠️</div>
+                <h3 class="st-modal-title">Delete Account</h3>
+                <p class="st-modal-text">
+                    Are you sure you want to delete your account? This action is <strong>permanent</strong> and cannot be undone. All your data, including orders and preferences, will be lost.
+                </p>
+            </div>
+            <div class="st-modal-actions">
+                <button class="st-btn-secondary" id="stDeleteCancel">Cancel</button>
+                <button class="st-btn-danger" id="stDeleteConfirm">
+                    <i class="fas fa-trash-alt"></i> Delete Account
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         SCRIPTS
+         ============================================ -->
+    <script>
+        // ============================================================
+        //  ACCOUNT SETTINGS - Standalone Page
+        // ============================================================
+
+        // --- State ---
+        let currentUser = null;
+        let isLoggedIn = false;
+        let orders = [];
+
+        // --- DOM Elements ---
+        const elements = {
+            sidebarAvatar: document.getElementById('stSidebarAvatar'),
+            sidebarName: document.getElementById('stSidebarName'),
+            sidebarEmail: document.getElementById('stSidebarEmail'),
+            accountStatus: document.getElementById('stAccountStatus'),
+            profileName: document.getElementById('stProfileName'),
+            profileEmail: document.getElementById('stProfileEmail'),
+            profilePhone: document.getElementById('stProfilePhone'),
+            profileAddress: document.getElementById('stProfileAddress'),
+            profileBio: document.getElementById('stProfileBio'),
+            profileForm: document.getElementById('stProfileForm'),
+            profileReset: document.getElementById('stProfileReset'),
+            profileNameError: document.getElementById('stProfileNameError'),
+            ordersList: document.getElementById('stOrdersList'),
+            ordersContainer: document.getElementById('stOrdersContainer'),
+            ordersLoading: document.getElementById('stOrdersLoading'),
+            securityForm: document.getElementById('stSecurityForm'),
+            currentPassword: document.getElementById('stCurrentPassword'),
+            newPassword: document.getElementById('stNewPassword'),
+            confirmPassword: document.getElementById('stConfirmPassword'),
+            currentPasswordError: document.getElementById('stCurrentPasswordError'),
+            newPasswordError: document.getElementById('stNewPasswordError'),
+            confirmPasswordError: document.getElementById('stConfirmPasswordError'),
+            deleteAccountBtn: document.getElementById('stDeleteAccountBtn'),
+            deleteModal: document.getElementById('stDeleteModal'),
+            deleteModalClose: document.getElementById('stDeleteModalClose'),
+            deleteCancel: document.getElementById('stDeleteCancel'),
+            deleteConfirm: document.getElementById('stDeleteConfirm'),
+            sidebarLogout: document.getElementById('stSidebarLogout'),
+            savePreferences: document.getElementById('stSavePreferences'),
+            prefOrderUpdates: document.getElementById('stPrefOrderUpdates'),
+            prefPromotions: document.getElementById('stPrefPromotions'),
+            prefNewsletter: document.getElementById('stPrefNewsletter'),
+            prefProfileVisibility: document.getElementById('stPrefProfileVisibility'),
+            prefOrderHistory: document.getElementById('stPrefOrderHistory')
+        };
+
+        // ============================================================
+        //  HELPERS
+        // ============================================================
+
+        function showToast(message, type = 'success') {
+            const existing = document.querySelector('.st-toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `st-toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(-20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function getCurrentUser() {
+            // Check if header is loaded
+            if (window.STHeader && window.STHeader.AppState) {
+                const user = window.STHeader.AppState.user;
+                const isLoggedIn = window.STHeader.AppState.isLoggedIn;
+                if (isLoggedIn && user) {
+                    return {
+                        id: user.id,
+                        name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+                        email: user.email,
+                        phone: user.user_metadata?.phone || '',
+                        address: user.user_metadata?.address || '',
+                        bio: user.user_metadata?.bio || ''
+                    };
+                }
+            }
+
+            // Fallback: check localStorage
+            try {
+                const stored = JSON.parse(localStorage.getItem('st_customer') || 'null');
+                if (stored) return stored;
+            } catch (e) {}
+
+            try {
+                const stored = JSON.parse(sessionStorage.getItem('st_customer') || 'null');
+                if (stored) return stored;
+            } catch (e) {}
+
+            return null;
+        }
+
+        function getSupabase() {
+            if (window.STHeader && window.STHeader.getSupabaseClient) {
+                return window.STHeader.getSupabaseClient();
+            }
+            return null;
+        }
+
+        // ============================================================
+        //  RENDER ORDERS
+        // ============================================================
+
+        function renderOrders(ordersData) {
+            const container = elements.ordersContainer;
+            const loading = elements.ordersLoading;
+
+            loading.style.display = 'none';
+
+            if (!ordersData || ordersData.length === 0) {
+                container.innerHTML = `
+                    <div class="st-order-empty">
+                        <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
+                        <p style="font-weight:600;color:#0F172A;">No orders yet</p>
+                        <p style="font-size:14px;">Start shopping to see your orders here.</p>
+                        <a href="Search.html" style="display:inline-block;margin-top:16px;padding:10px 24px;background:#6C3CE1;color:white;border-radius:10px;text-decoration:none;font-weight:600;">
+                            Browse Products
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = ordersData.map(order => {
+                const statusClass = order.status || 'pending';
+                const statusLabel = order.status || 'Pending';
+                const totalItems = order.items?.reduce((sum, item) => sum + (item.qty || 1), 0) || 0;
+                const itemNames = order.items?.map(item => item.name).join(', ') || 'No items';
+                const orderId = encodeURIComponent(order.id || '');
+
+                return `
+                    <div class="st-order-card" onclick="window.location.href='orders.html?order=${orderId}'" style="cursor:pointer;">
+                        <div class="st-order-header">
+                            <span class="st-order-id">Order #${order.id || 'N/A'}</span>
+                            <span class="st-order-status ${statusClass}">${statusLabel}</span>
+                        </div>
+                        <div class="st-order-details">
+                            <div>
+                                <div class="st-order-items">${totalItems} item${totalItems > 1 ? 's' : ''}: ${itemNames}</div>
+                                <div style="font-size:12px;color:#94A3B8;margin-top:2px;">
+                                    ${order.date ? new Date(order.date).toLocaleDateString() : 'N/A'}
+                                </div>
+                            </div>
+                            <div class="st-order-total">FCFA ${(order.total || 0).toFixed(2)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================================
+        //  LOAD ORDERS
+        // ============================================================
+
+        async function loadOrders() {
+            const container = elements.ordersContainer;
+            const loading = elements.ordersLoading;
+
+            container.innerHTML = '';
+            loading.style.display = 'flex';
+
+            try {
+                const user = getCurrentUser();
+                if (!user || !user.id) {
+                    loading.style.display = 'none';
+                    container.innerHTML = `
+                        <div class="st-order-empty">
+                            <div class="st-empty-icon"><i class="fas fa-lock"></i></div>
+                            <p style="font-weight:600;color:#0F172A;">Please Login</p>
+                            <p style="font-size:14px;">Login to view your orders.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Try to get orders from Supabase
+                const client = getSupabase();
+                if (client) {
+                    const { data, error } = await client
+                        .from('orders')
+                        .select('*')
+                        .eq('customer_id', user.id)
+                        .order('created_at', { ascending: false });
+
+                    if (!error && data) {
+                        orders = data;
+                        renderOrders(orders);
+                        return;
+                    }
+                }
+
+                // Fallback: check localStorage
+                const localOrders = JSON.parse(localStorage.getItem('shop_orders_v1') || '[]');
+                const userOrders = localOrders.filter(o => o.customer_id === user.id || o.email === user.email);
+                orders = userOrders;
+                renderOrders(orders);
+
+            } catch (err) {
+                console.error('❌ Error loading orders:', err);
+                loading.style.display = 'none';
+                container.innerHTML = `
+                    <div class="st-order-empty">
+                        <div class="st-empty-icon"><i class="fas fa-exclamation-circle"></i></div>
+                        <p style="font-weight:600;color:#0F172A;">Failed to load orders</p>
+                        <p style="font-size:14px;">Please try again later.</p>
+                        <button onclick="loadOrders()" style="margin-top:16px;padding:10px 24px;background:#6C3CE1;color:white;border:none;border-radius:10px;cursor:pointer;font-weight:600;">
+                            <i class="fas fa-sync"></i> Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================================
+        //  UPDATE PROFILE UI
+        // ============================================================
+
+        function updateProfileUI() {
+            const user = getCurrentUser();
+
+            if (user) {
+                currentUser = user;
+                isLoggedIn = true;
+
+                // Sidebar
+                const initial = (user.name || 'User').charAt(0).toUpperCase();
+                elements.sidebarAvatar.textContent = initial;
+                elements.sidebarName.textContent = user.name || 'User';
+                elements.sidebarEmail.textContent = user.email || 'No email';
+                elements.accountStatus.textContent = `Signed in as ${user.name || 'User'}`;
+
+                // Profile form
+                elements.profileName.value = user.name || '';
+                elements.profileEmail.value = user.email || '';
+                elements.profilePhone.value = user.phone || '';
+                elements.profileAddress.value = user.address || '';
+                elements.profileBio.value = user.bio || '';
+            } else {
+                isLoggedIn = false;
+                currentUser = null;
+
+                elements.sidebarAvatar.textContent = 'G';
+                elements.sidebarName.textContent = 'Guest';
+                elements.sidebarEmail.textContent = 'Not logged in';
+                elements.accountStatus.textContent = 'Signed in as Guest';
+
+                elements.profileName.value = '';
+                elements.profileEmail.value = '';
+                elements.profilePhone.value = '';
+                elements.profileAddress.value = '';
+                elements.profileBio.value = '';
+            }
+
+            // Show/hide sections based on login
+            const sections = ['profile', 'orders', 'security', 'preferences'];
+            sections.forEach(section => {
+                const el = document.getElementById(`section-${section}`);
+                if (el) {
+                    if (isLoggedIn) {
+                        el.style.display = section === 'profile' ? 'block' : 'none';
+                    } else {
+                        el.style.display = 'none';
+                    }
+                }
+            });
+
+            // Show profile by default if logged in
+            if (isLoggedIn) {
+                showSection('profile');
+            }
+        }
+
+        // ============================================================
+        //  SHOW SECTION
+        // ============================================================
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.st-section').forEach(el => {
+                el.style.display = 'none';
+            });
+
+            // Show selected section
+            const section = document.getElementById(`section-${sectionName}`);
+            if (section) {
+                section.style.display = 'block';
+            }
+
+            // Update nav items
+            document.querySelectorAll('.st-sidebar-nav .st-nav-item').forEach(el => {
+                el.classList.remove('active');
+                if (el.dataset.section === sectionName) {
+                    el.classList.add('active');
+                }
+            });
+
+            // Load orders if orders section
+            if (sectionName === 'orders' && isLoggedIn) {
+                loadOrders();
+            }
+        }
+
+        // ============================================================
+        //  SAVE PROFILE
+        // ============================================================
+
+        async function saveProfile(e) {
+            e.preventDefault();
+
+            const name = elements.profileName.value.trim();
+            if (!name) {
+                elements.profileName.classList.add('error');
+                elements.profileNameError.classList.add('visible');
+                return;
+            }
+
+            elements.profileName.classList.remove('error');
+            elements.profileNameError.classList.remove('visible');
+
+            const phone = elements.profilePhone.value.trim();
+            const address = elements.profileAddress.value.trim();
+            const bio = elements.profileBio.value.trim();
+
+            try {
+                // Update in header state
+                if (window.STHeader && window.STHeader.AppState) {
+                    const user = window.STHeader.AppState.user;
+                    if (user) {
+                        if (!user.user_metadata) user.user_metadata = {};
+                        user.user_metadata.full_name = name;
+                        user.user_metadata.phone = phone;
+                        user.user_metadata.address = address;
+                        user.user_metadata.bio = bio;
+                    }
+                }
+
+                // Update in localStorage
+                const stored = getCurrentUser();
+                if (stored) {
+                    stored.name = name;
+                    stored.phone = phone;
+                    stored.address = address;
+                    stored.bio = bio;
+                    localStorage.setItem('st_customer', JSON.stringify(stored));
+                    sessionStorage.setItem('st_customer', JSON.stringify(stored));
+                }
+
+                // Update Supabase if available
+                const client = getSupabase();
+                if (client && currentUser?.id) {
+                    await client
+                        .from('customer_accounts')
+                        .update({
+                            name: name,
+                            phone: phone,
+                            address: address
+                        })
+                        .eq('id', currentUser.id);
+                }
+
+                // Update UI
+                updateProfileUI();
+                showToast('✅ Profile updated successfully!');
+
+            } catch (err) {
+                console.error('❌ Error saving profile:', err);
+                showToast('❌ Failed to update profile', 'error');
+            }
+        }
+
+        // ============================================================
+        //  UPDATE PASSWORD
+        // ============================================================
+
+        async function updatePassword(e) {
+            e.preventDefault();
+
+            const currentPw = elements.currentPassword.value;
+            const newPw = elements.newPassword.value;
+            const confirmPw = elements.confirmPassword.value;
+
+            let isValid = true;
+
+            if (!currentPw || currentPw.length < 6) {
+                elements.currentPassword.classList.add('error');
+                elements.currentPasswordError.classList.add('visible');
+                isValid = false;
+            } else {
+                elements.currentPassword.classList.remove('error');
+                elements.currentPasswordError.classList.remove('visible');
+            }
+
+            if (!newPw || newPw.length < 6) {
+                elements.newPassword.classList.add('error');
+                elements.newPasswordError.classList.add('visible');
+                isValid = false;
+            } else {
+                elements.newPassword.classList.remove('error');
+                elements.newPasswordError.classList.remove('visible');
+            }
+
+            if (newPw !== confirmPw) {
+                elements.confirmPassword.classList.add('error');
+                elements.confirmPasswordError.classList.add('visible');
+                isValid = false;
+            } else {
+                elements.confirmPassword.classList.remove('error');
+                elements.confirmPasswordError.classList.remove('visible');
+            }
+
+            if (!isValid) return;
+
+            try {
+                const client = getSupabase();
+                if (client && currentUser?.email) {
+                    // Update password via Supabase
+                    const { error } = await client.auth.updateUser({
+                        password: newPw
+                    });
+
+                    if (error) throw error;
+                }
+
+                showToast('✅ Password updated successfully!');
+                elements.securityForm.reset();
+
+            } catch (err) {
+                console.error('❌ Error updating password:', err);
+                showToast('❌ Failed to update password: ' + err.message, 'error');
+            }
+        }
+
+        // ============================================================
+        //  DELETE ACCOUNT
+        // ============================================================
+
+        async function deleteAccount() {
+            try {
+                const client = getSupabase();
+                if (client && currentUser?.id) {
+                    // Delete user data from customer_accounts
+                    await client
+                        .from('customer_accounts')
+                        .delete()
+                        .eq('id', currentUser.id);
+
+                    // Sign out
+                    await client.auth.signOut();
+                }
+
+                // Clear local data
+                localStorage.removeItem('st_customer');
+                sessionStorage.removeItem('st_customer');
+                localStorage.removeItem('st_cart');
+                localStorage.removeItem('st_wishlist');
+
+                // Reset state
+                currentUser = null;
+                isLoggedIn = false;
+
+                // Update UI
+                updateProfileUI();
+                closeDeleteModal();
+
+                showToast('🗑️ Account deleted successfully');
+
+                // Redirect after delay
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+
+            } catch (err) {
+                console.error('❌ Error deleting account:', err);
+                showToast('❌ Failed to delete account: ' + err.message, 'error');
+            }
+        }
+
+        // ============================================================
+        //  DELETE MODAL
+        // ============================================================
+
+        function openDeleteModal() {
+            elements.deleteModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal() {
+            elements.deleteModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // ============================================================
+        //  SAVE PREFERENCES
+        // ============================================================
+
+        function savePreferences() {
+            const prefs = {
+                orderUpdates: elements.prefOrderUpdates.checked,
+                promotions: elements.prefPromotions.checked,
+                newsletter: elements.prefNewsletter.checked,
+                profileVisibility: elements.prefProfileVisibility.checked,
+                orderHistory: elements.prefOrderHistory.checked
+            };
+
+            localStorage.setItem('st_preferences', JSON.stringify(prefs));
+            showToast('✅ Preferences saved!');
+        }
+
+        function loadPreferences() {
+            try {
+                const prefs = JSON.parse(localStorage.getItem('st_preferences') || '{}');
+                elements.prefOrderUpdates.checked = prefs.orderUpdates !== undefined ? prefs.orderUpdates : true;
+                elements.prefPromotions.checked = prefs.promotions || false;
+                elements.prefNewsletter.checked = prefs.newsletter || false;
+                elements.prefProfileVisibility.checked = prefs.profileVisibility !== undefined ? prefs.profileVisibility : true;
+                elements.prefOrderHistory.checked = prefs.orderHistory !== undefined ? prefs.orderHistory : true;
+            } catch (e) {}
+        }
+
+        // ============================================================
+        //  LOGOUT
+        // ============================================================
+
+        async function handleLogout() {
+            try {
+                const client = getSupabase();
+                if (client) {
+                    await client.auth.signOut();
+                }
+
+                localStorage.removeItem('st_customer');
+                sessionStorage.removeItem('st_customer');
+                localStorage.removeItem('st_cart');
+                localStorage.removeItem('st_wishlist');
+
+                currentUser = null;
+                isLoggedIn = false;
+                updateProfileUI();
+
+                showToast('👋 Logged out successfully');
+
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+
+            } catch (err) {
+                console.error('❌ Logout error:', err);
+                showToast('❌ Logout failed', 'error');
+            }
+        }
+
+        // ============================================================
+        //  INITIALIZE
+        // ============================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load preferences
+            loadPreferences();
+
+            // Update UI with user data
+            updateProfileUI();
+
+            // Wait for header to load
+            setTimeout(() => {
+                updateProfileUI();
+            }, 500);
+
+            // ---- Event Listeners ----
+
+            // Sidebar navigation
+            document.querySelectorAll('.st-sidebar-nav .st-nav-item').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const section = this.dataset.section;
+                    if (section === 'profile' || section === 'orders' || 
+                        section === 'security' || section === 'preferences') {
+                        showSection(section);
+                    }
+                });
+            });
+
+            // Profile form
+            elements.profileForm.addEventListener('submit', saveProfile);
+
+            // Reset profile
+            elements.profileReset.addEventListener('click', function() {
+                updateProfileUI();
+                showToast('🔄 Profile reset');
+            });
+
+            // Profile name validation
+            elements.profileName.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.classList.remove('error');
+                    elements.profileNameError.classList.remove('visible');
+                }
+            });
+
+            // Security form
+            elements.securityForm.addEventListener('submit', updatePassword);
+
+            // Password validation
+            elements.currentPassword.addEventListener('input', function() {
+                if (this.value.length >= 6) {
+                    this.classList.remove('error');
+                    elements.currentPasswordError.classList.remove('visible');
+                }
+            });
+
+            elements.newPassword.addEventListener('input', function() {
+                if (this.value.length >= 6) {
+                    this.classList.remove('error');
+                    elements.newPasswordError.classList.remove('visible');
+                }
+                validateConfirmPassword();
+            });
+
+            elements.confirmPassword.addEventListener('input', validateConfirmPassword);
+
+            function validateConfirmPassword() {
+                const newPw = elements.newPassword.value;
+                const confirmPw = elements.confirmPassword.value;
+                if (confirmPw && newPw === confirmPw) {
+                    elements.confirmPassword.classList.remove('error');
+                    elements.confirmPasswordError.classList.remove('visible');
+                } else if (confirmPw) {
+                    elements.confirmPassword.classList.add('error');
+                    elements.confirmPasswordError.classList.add('visible');
+                }
+            }
+
+            // Delete account
+            elements.deleteAccountBtn.addEventListener('click', openDeleteModal);
+            elements.deleteModalClose.addEventListener('click', closeDeleteModal);
+            elements.deleteCancel.addEventListener('click', closeDeleteModal);
+            elements.deleteModal.addEventListener('click', function(e) {
+                if (e.target === this) closeDeleteModal();
+            });
+            elements.deleteConfirm.addEventListener('click', deleteAccount);
+
+            // Logout
+            elements.sidebarLogout.addEventListener('click', handleLogout);
+
+            // Save preferences
+            elements.savePreferences.addEventListener('click', savePreferences);
+        });
+
+        // ============================================================
+        //  EXPOSE GLOBALLY
+        // ============================================================
+
+        window.accountSettings = {
+            updateProfileUI,
+            showSection,
+            loadOrders,
+            renderOrders,
+            handleLogout,
+            getCurrentUser
+        };
+
+        console.log('📄 Account Settings page loaded');
+    </script>
+</body>
+</html>

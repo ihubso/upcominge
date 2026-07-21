@@ -1,5 +1,5 @@
 
-const CONFIG = {
+const ratletCONFIG = {
     batchSize: 8,
     maxProducts: 1000
 };
@@ -49,7 +49,7 @@ function getRandomProducts(allProducts) {
     }
 
     // Return random selection up to maxProducts
-    return shuffled.slice(0, CONFIG.maxProducts);
+    return shuffled.slice(0, ratletCONFIG.maxProducts);
 }
 
 // ============================================================
@@ -187,10 +187,11 @@ async function toggleRandomWishlist(productId) {
         localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
 
         // Save to Supabase
+        const customerId = window.getCurrentCustomerId?.();
         const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
         const client = getSupabaseClient();
         if (client) {
-            await saveRandomWishlistToDB(sessionId, wishlist);
+            await saveRandomWishlistToDB(customerId || sessionId, wishlist, !!customerId);
         }
 
         // Update header
@@ -212,14 +213,24 @@ async function toggleRandomWishlist(productId) {
     }
 }
 
-async function saveRandomWishlistToDB(sessionId, wishlist) {
+async function saveRandomWishlistToDB(identifier, wishlist, hasCustomerId = false) {
     const client = getSupabaseClient();
     if (!client) return;
 
+    const customerId = hasCustomerId ? identifier : null;
+    const sessionId = hasCustomerId ? null : identifier;
+
     try {
-        await client.from('wishlist').delete().eq('session_id', sessionId);
+        if (customerId) {
+            await client.from('wishlist').delete().eq('customer_id', customerId);
+        } else {
+            await client.from('wishlist').delete().eq('session_id', sessionId);
+        }
         if (wishlist.length > 0) {
-            const rows = wishlist.map(pid => ({ session_id: sessionId, product_id: pid }));
+            const rows = wishlist.map(pid => ({
+                ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
+                product_id: pid
+            }));
             const { error } = await client.from('wishlist').insert(rows);
             if (error) console.error('❌ Error saving wishlist:', error.message);
         }
@@ -267,10 +278,11 @@ async function addRandomToCart(productId) {
         localStorage.setItem('st_cart', JSON.stringify(cart));
 
         // Save to Supabase
+        const customerId = window.getCurrentCustomerId?.();
         const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
         const client = getSupabaseClient();
         if (client) {
-            await saveRandomCartToDB(sessionId, cart);
+            await saveRandomCartToDB(customerId || sessionId, cart, !!customerId);
         }
 
         // Update header
@@ -289,15 +301,22 @@ async function addRandomToCart(productId) {
     }
 }
 
-async function saveRandomCartToDB(sessionId, cart) {
+async function saveRandomCartToDB(identifier, cart, hasCustomerId = false) {
     const client = getSupabaseClient();
     if (!client) return;
 
+    const customerId = hasCustomerId ? identifier : null;
+    const sessionId = hasCustomerId ? null : identifier;
+
     try {
-        await client.from('cart').delete().eq('session_id', sessionId);
+        if (customerId) {
+            await client.from('cart').delete().eq('customer_id', customerId);
+        } else {
+            await client.from('cart').delete().eq('session_id', sessionId);
+        }
         if (cart.length > 0) {
             const rows = cart.map(item => ({
-                session_id: sessionId,
+                ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
                 product_id: item.product_id || item.id || '',
                 name: item.name || 'Unknown Product',
                 price: item.price || 0,
@@ -448,7 +467,7 @@ function loadMoreProducts() {
     }
 
     setTimeout(() => {
-        const batch = randomProductsPool.splice(0, CONFIG.batchSize);
+        const batch = randomProductsPool.splice(0, ratletCONFIG.batchSize);
         loadedCount += batch.length;
 
         if (currentContainer) {
@@ -510,8 +529,8 @@ async function initRandomProducts(containerId = 'randomProducts') {
 
         const random = getRandomProducts(allProducts);
         
-        const initialBatch = random.slice(0, CONFIG.batchSize);
-        randomProductsPool = random.slice(CONFIG.batchSize);
+        const initialBatch = random.slice(0, ratletCONFIG.batchSize);
+        randomProductsPool = random.slice(ratletCONFIG.batchSize);
         loadedCount = initialBatch.length;
 
         container.innerHTML = '';

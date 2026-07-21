@@ -1,16 +1,3 @@
-/**
- * ============================================================
- * SUCCESS TECHNOLOGY - GLOBAL HEADER SYSTEM
- * Custom Authentication with customer_accounts table
- * Complete header with login/register modals, cart, wishlist
- * SECURE: bcrypt password hashing (server-side via Edge Function)
- * ============================================================
- */
-
-// ============================================================
-// 1. SUPABASE CONFIGURATION
-// ============================================================
-
 const SUPABASE_CONFIG = {
     url: 'https://bulprhgwuwatzobiojwz.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHByaGd3dXdhdHpvYmlvand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDczNDksImV4cCI6MjA5MjA4MzM0OX0.2fcHrGX7iXw5G9nGRNkBy70W1Ex_om1C0v3qbryPmvw'
@@ -36,8 +23,45 @@ function getSupabaseClient() {
     return null;
 }
 
+function getCurrentCustomerId() {
+    // First check if user is logged in via STHeader AppState
+    if (window.STHeader?.AppState?.isLoggedIn && window.STHeader?.AppState?.user?.id) {
+        return window.STHeader.AppState.user.id;
+    }
+    
+    // Check localStorage for customer data
+    try {
+        const stored = localStorage.getItem('st_customer');
+        if (stored) {
+            const customer = JSON.parse(stored);
+            if (customer?.id) {
+                return customer.id;
+            }
+        }
+    } catch (err) {
+        // ignore
+    }
+    
+    // Check sessionStorage as fallback
+    try {
+        const stored = sessionStorage.getItem('st_customer');
+        if (stored) {
+            const customer = JSON.parse(stored);
+            if (customer?.id) {
+                return customer.id;
+            }
+        }
+    } catch (err) {
+        // ignore
+    }
+    
+    return null;
+}
+
+window.getCurrentCustomerId = getCurrentCustomerId;
+
 function loadSupabaseSDK() {
-    if (document.querySelector('script[src*="supabase-js"]')) return;
+    if (document.querySelector('script[src*=\"supabase-js\"]')) return;
     
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
@@ -135,12 +159,17 @@ async function loginCustomer(email, password) {
 }
 
 // ============================================================
-// 3. DATABASE OPERATIONS (Cart & Wishlist)
+// 3. DATABASE OPERATIONS (Cart & Wishlist) - NOW REQUIRES customer_id
 // ============================================================
 
 async function fetchCartFromDB(customerId) {
+    if (!customerId) {
+        console.warn('⚠️ fetchCartFromDB: No customer_id provided');
+        return [];
+    }
+    
     const client = getSupabaseClient();
-    if (!client || !customerId) return [];
+    if (!client) return [];
     
     try {
         const { data, error } = await client
@@ -169,8 +198,13 @@ async function fetchCartFromDB(customerId) {
 }
 
 async function saveCartToDB(customerId, cart) {
+    if (!customerId) {
+        console.warn('⚠️ saveCartToDB: No customer_id provided - skipping DB sync');
+        return;
+    }
+    
     const client = getSupabaseClient();
-    if (!client || !customerId) return;
+    if (!client) return;
     
     try {
         await client.from('cart').delete().eq('customer_id', customerId);
@@ -196,13 +230,18 @@ async function saveCartToDB(customerId, cart) {
             }
         }
     } catch (err) {
-        console.error('❌ Error:', err.message);
+        console.error('❌ Error saving cart:', err.message);
     }
 }
 
 async function fetchWishlistFromDB(customerId) {
+    if (!customerId) {
+        console.warn('⚠️ fetchWishlistFromDB: No customer_id provided');
+        return [];
+    }
+    
     const client = getSupabaseClient();
-    if (!client || !customerId) return [];
+    if (!client) return [];
     
     try {
         const { data, error } = await client
@@ -219,8 +258,13 @@ async function fetchWishlistFromDB(customerId) {
 }
 
 async function saveWishlistToDB(customerId, wishlist) {
+    if (!customerId) {
+        console.warn('⚠️ saveWishlistToDB: No customer_id provided - skipping DB sync');
+        return;
+    }
+    
     const client = getSupabaseClient();
-    if (!client || !customerId) return;
+    if (!client) return;
     
     try {
         await client.from('wishlist').delete().eq('customer_id', customerId);
@@ -231,7 +275,71 @@ async function saveWishlistToDB(customerId, wishlist) {
             if (error) console.error('❌ Error saving wishlist:', error.message);
         }
     } catch (err) {
-        console.error('❌ Error:', err.message);
+        console.error('❌ Error saving wishlist:', err.message);
+    }
+}
+async function fetchCategoriesAndBrands() {
+    const client = getSupabaseClient();
+    if (!client) {
+        console.warn('⚠️ Supabase not available for categories/brands');
+        return { categories: [], brands: [] };
+    }
+
+    try {
+        const { data, error } = await client
+            .from('products')
+            .select('category, brand, image, id, name')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Extract unique categories with a sample product image
+        const categoryMap = new Map();
+        const brandMap = new Map();
+        
+        data.forEach(product => {
+            // Categories
+            if (product.category && !categoryMap.has(product.category)) {
+                categoryMap.set(product.category, {
+                    name: product.category,
+                    image: product.image || 'https://placehold.co/100x100/6C3CE1/FFFFFF?text=Category',
+                    productId: product.id,
+                    count: 1
+                });
+            } else if (product.category) {
+                const existing = categoryMap.get(product.category);
+                if (existing) existing.count++;
+            }
+            
+            // Brands
+            if (product.brand && !brandMap.has(product.brand)) {
+                brandMap.set(product.brand, {
+                    name: product.brand,
+                    image: product.image || 'https://placehold.co/100x100/6C3CE1/FFFFFF?text=Brand',
+                    productId: product.id,
+                    count: 1
+                });
+            } else if (product.brand) {
+                const existing = brandMap.get(product.brand);
+                if (existing) existing.count++;
+            }
+        });
+
+        // Convert to arrays and sort by count (most popular first)
+        const categories = Array.from(categoryMap.values())
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 12); // Limit to 12 categories
+
+        const brands = Array.from(brandMap.values())
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 12); // Limit to 12 brands
+
+        console.log(`✅ Loaded ${categories.length} categories and ${brands.length} brands`);
+        return { categories, brands };
+
+    } catch (err) {
+        console.error('❌ Error fetching categories/brands:', err.message);
+        return { categories: [], brands: [] };
     }
 }
 
@@ -243,12 +351,22 @@ const HEADER_CONFIG = {
     shopName: 'shop<span class="st-brand-highlight">Boss</span>',
     logoText: 'SB',
     navLinks: [
-        { label: 'Products', icon: 'fa-box', href: 'products.html', dropdown: true },
-        { label: 'Categories', icon: 'fa-th-large', href: '#', dropdown: true },
-        { label: 'Brands', icon: 'fa-tag', href: '#', dropdown: true },
+        { label: 'Products', icon: 'fa-box', href: 'Search.html', dropdown: true, dropdownType: 'products' },
+        { label: 'Categories', icon: 'fa-th-large', href: 'category.html', dropdown: true, dropdownType: 'categories' },
+        { label: 'Brands', icon: 'fa-tag', href: 'brand.html', dropdown: true, dropdownType: 'brands' },
         { label: 'Contact', icon: 'fa-envelope', href: 'contact.html' }
-    ]
+    ],
+    pages: {
+        cart: 'cart.html',
+        wishlist: 'wishlist.html',
+        orders: 'orders.html',
+        settings: 'account-settings.html',
+        products: 'Search.html',
+        category: 'category.html',
+        brand: 'brand.html'
+    }
 };
+;
 
 // ============================================================
 // 5. STATE MANAGEMENT
@@ -397,6 +515,210 @@ function getHeaderHTML() {
             
             .st-nav-item {
                 position: relative;
+            }
+             .st-dropdown {
+                position: absolute;
+                top: calc(100% + 8px);
+                left: 50%;
+                transform: translateX(-50%) translateY(10px);
+                background: var(--st-white);
+                border-radius: var(--st-radius-lg);
+                box-shadow: var(--st-shadow-xl);
+                padding: 20px 24px;
+                min-width: 480px;
+                max-width: 600px;
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                transition: var(--st-transition);
+                border: 1px solid rgba(226, 232, 240, 0.5);
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+            
+            .st-nav-item:hover .st-dropdown {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: all;
+                transform: translateX(-50%) translateY(0);
+            }
+            
+            .st-dropdown::before {
+                content: '';
+                position: absolute;
+                top: -6px;
+                left: 50%;
+                transform: translateX(-50%) rotate(45deg);
+                width: 12px;
+                height: 12px;
+                background: var(--st-white);
+                border-top: 1px solid rgba(226, 232, 240, 0.5);
+                border-left: 1px solid rgba(226, 232, 240, 0.5);
+            }
+            
+            .st-dropdown-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 12px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid var(--st-gray-light);
+            }
+            
+            .st-dropdown-header h3 {
+                font-size: 16px;
+                font-weight: 700;
+                color: var(--st-dark);
+            }
+            
+            .st-dropdown-header .st-view-all {
+                font-size: 13px;
+                color: var(--st-primary);
+                text-decoration: none;
+                font-weight: 600;
+            }
+            
+            .st-dropdown-header .st-view-all:hover {
+                text-decoration: underline;
+            }
+            
+            .st-dropdown-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 10px;
+            }
+            
+            .st-dropdown-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 12px;
+                border-radius: var(--st-radius-sm);
+                color: var(--st-dark-secondary);
+                text-decoration: none;
+                font-size: 13px;
+                font-weight: 500;
+                transition: var(--st-transition);
+                cursor: pointer;
+                border: 1px solid transparent;
+            }
+            
+            .st-dropdown-item:hover {
+                background: rgba(108, 60, 225, 0.08);
+                color: var(--st-primary);
+                border-color: var(--st-gray-light);
+            }
+            
+            .st-dropdown-item .st-item-icon {
+                width: 36px;
+                height: 36px;
+                border-radius: var(--st-radius-sm);
+                overflow: hidden;
+                flex-shrink: 0;
+                background: #f1f5f9;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .st-dropdown-item .st-item-icon img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            .st-dropdown-item .st-item-icon .st-icon-fallback {
+                font-size: 16px;
+                color: var(--st-gray);
+            }
+            
+            .st-dropdown-item .st-item-info {
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            
+            .st-dropdown-item .st-item-name {
+                font-weight: 600;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .st-dropdown-item .st-item-count {
+                font-size: 11px;
+                color: var(--st-gray);
+                font-weight: 400;
+            }
+            
+            .st-dropdown-divider {
+                height: 1px;
+                background: var(--st-gray-light);
+                margin: 6px 0;
+            }
+            
+            .st-dropdown-empty {
+                padding: 20px;
+                text-align: center;
+                color: var(--st-gray);
+                font-size: 14px;
+            }
+            .st-dropdown {
+            width: 650px;
+            max-width: 90vw;
+            }
+
+            .st-dropdown-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            width: 100%;
+            }
+            /* 1. Fix the dropdown containers: width and hover 'bridge' gap */
+#stDropdown_categories, 
+#stDropdown_brands, 
+#stDropdown_products {
+    width: 650px !important;
+    max-width: 95vw !important;
+    
+    /* Move closer and bridge the gap to prevent closing on hover */
+    top: 100% !important;
+    padding-top: 25px !important;
+    margin-top: -10px !important;
+    
+    /* Ensure mouse interaction is allowed */
+    pointer-events: auto !important;
+}
+
+/* 2. Force the grids inside to display in 3 columns */
+#stDropdownGrid_categories,
+#stDropdownGrid_brands,
+#stDropdownGrid_products {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 15px !important;
+    width: 100% !important;
+}
+
+/* 3. Ensure the dropdowns stay visible when hovering over the parent menu item */
+.st-nav-item:hover #stDropdown_categories,
+.st-nav-item:hover #stDropdown_brands,
+.st-nav-item:hover #stDropdown_products {
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+                        
+            /* Scrollbar styling */
+            .st-dropdown::-webkit-scrollbar {
+                width: 4px;
+            }
+            .st-dropdown::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .st-dropdown::-webkit-scrollbar-thumb {
+                background: var(--st-gray-light);
+                border-radius: 4px;
             }
             
             .st-nav-link {
@@ -844,7 +1166,19 @@ function getHeaderHTML() {
                 background: rgba(108, 60, 225, 0.08);
                 color: var(--st-primary);
             }
-            
+            /* Hide on desktop (screens wider than 1024px) */
+@media (min-width: 1025px) {
+  button#stMobileToggle {
+    display: none !important;
+  }
+}
+
+/* Ensure it is visible on mobile/tablet (screens 1024px and below) */
+@media (max-width: 1024px) {
+  button#stMobileToggle {
+    display: inline-block !important;
+  }
+}
             /* ============================================
                MOBILE DRAWER
                ============================================ */
@@ -1283,12 +1617,15 @@ function getHeaderHTML() {
                                     <i class="fas ${link.icon}"></i> ${link.label}
                                 </a>
                                 ${link.dropdown ? `
-                                    <div class="st-dropdown">
-                                        <a href="#" class="st-dropdown-item">All ${link.label}</a>
-                                        <div class="st-dropdown-divider"></div>
-                                        <a href="#" class="st-dropdown-item">Category 1</a>
-                                        <a href="#" class="st-dropdown-item">Category 2</a>
-                                        <a href="#" class="st-dropdown-item">Category 3</a>
+                                    <div class="st-dropdown" id="stDropdown_${link.dropdownType || 'products'}">
+                                        <div class="st-dropdown-header">
+                                            <h3>${link.label}</h3>
+                                            <a href="${link.href}" class="st-view-all">View All →</a>
+                                        </div>
+                                        <div class="st-dropdown-grid" id="stDropdownGrid_${link.dropdownType || 'products'}">
+                                            <!-- Will be populated dynamically -->
+                                            <div class="st-dropdown-empty">Loading...</div>
+                                        </div>
                                     </div>
                                 ` : ''}
                             </li>
@@ -1299,11 +1636,14 @@ function getHeaderHTML() {
                 <!-- Desktop Right Section -->
                 <div class="st-header-right">
                     <!-- Search -->
+                       <form action="/search" method="GET" role="search">
                     <div class="st-search-wrapper">
+
                         <i class="fas fa-search st-search-icon"></i>
-                        <input type="search" class="st-search-input" id="stSearchInput" 
+                        <input name="query" type="search" class="st-search-input" id="stSearchInput" 
                                placeholder="Search..." autocomplete="off">
                     </div>
+                     </div>
                     
                     <!-- Wishlist -->
                     <button class="st-action-btn" id="stWishlistBtn">
@@ -1364,12 +1704,13 @@ function getHeaderHTML() {
                     <div class="st-brand-icon">${HEADER_CONFIG.logoText}</div>
                     <div class="st-brand-text">${HEADER_CONFIG.shopName}</div>
                 </a>
-                
-                <div class="st-search-wrapper">
-                    <i class="fas fa-search st-search-icon"></i>
-                    <input type="search" class="st-search-input" id="stMobileSearchInput" 
-                           placeholder="Search..." autocomplete="off">
-                </div>
+                <form action="/search" method="GET" role="search">
+                    <div class="st-search-wrapper">
+                        <i class="fas fa-search st-search-icon"></i>
+                        <input name="query" type="search" class="st-search-input" id="stMobileSearchInput" 
+                            placeholder="Search..." autocomplete="off">
+                        </div>
+                 </div>
                 
                 <button class="st-mobile-toggle-bar" id="stMobileToggle">
                     <i class="fas fa-bars"></i>
@@ -1433,7 +1774,7 @@ function getHeaderHTML() {
                     </li>
                 `).join('')}
             </ul>
-            <div style="padding-top:16px;border-top:1px solid var(--st-gray-light);">
+            <div id="stLogoutactt" style="padding-top:16px;border-top:1px solid var(--st-gray-light);">
                 <button class="st-mobile-nav-link" id="stMobileLoginBtn">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </button>
@@ -1441,6 +1782,15 @@ function getHeaderHTML() {
                     <i class="fas fa-user-plus"></i> Register
                 </button>
             </div>
+             <div style="padding-top:16px;border-top:1px solid var(--st-gray-light);">
+                <button class="st-account-dropdown-item danger" id="stAndroidLogout" style="display:none;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+               </div>
+            <button class="st-account-dropdown-item" id="andstSettingsBtn">
+            <i class="fas fa-cog"></i> Settings
+            </button>
+
         </div>
         
         <!-- ============================================
@@ -1470,6 +1820,13 @@ function getHeaderHTML() {
                         <div class="st-form-error" id="stLoginPasswordError">Password is required</div>
                     </div>
                     
+                    <div class="st-form-group" style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" id="stLoginRemember" style="width:16px;height:16px;margin:0;"> 
+                            <span style="font-size:14px;color:var(--st-gray);">Remember me</span>
+                        </label>
+                    </div>
+
                     <button class="st-btn-primary" id="stLoginSubmit">Login</button>
                     
                     <div class="st-modal-footer">
@@ -1514,12 +1871,97 @@ function getHeaderHTML() {
         </div>
     `;
 }
+// ============================================================
+// 6. POPULATE DROPDOWNS
+// ============================================================
 
+async function populateDropdowns() {
+    const { categories, brands } = await fetchCategoriesAndBrands();
+    AppState.categories = categories;
+    AppState.brands = brands;
+
+    // Populate Categories dropdown
+    const categoriesGrid = document.getElementById('stDropdownGrid_categories');
+    if (categoriesGrid) {
+        if (categories.length === 0) {
+            categoriesGrid.innerHTML = '<div class="st-dropdown-empty">No categories available</div>';
+        } else {
+            categoriesGrid.innerHTML = categories.map(cat => `
+                <a href="category.html?category=${encodeURIComponent(cat.name)}" class="st-dropdown-item">
+                    <div class="st-item-icon">
+                        <img src="${cat.image}" alt="${cat.name}" onerror="this.parentElement.innerHTML='<span class=\\'st-icon-fallback\\'><i class=\\'fas fa-folder\\'></i></span>'">
+                    </div>
+                    <div class="st-item-info">
+                        <span class="st-item-name">${cat.name}</span>
+                        <span class="st-item-count">${cat.count} products</span>
+                    </div>
+                </a>
+            `).join('');
+        }
+    }
+
+    // Populate Brands dropdown
+    const brandsGrid = document.getElementById('stDropdownGrid_brands');
+    if (brandsGrid) {
+        if (brands.length === 0) {
+            brandsGrid.innerHTML = '<div class="st-dropdown-empty">No brands available</div>';
+        } else {
+            brandsGrid.innerHTML = brands.map(brand => `
+                <a href="brand.html?brand=${encodeURIComponent(brand.name)}" class="st-dropdown-item">
+                    <div class="st-item-icon">
+                        <img src="${brand.image}" alt="${brand.name}" onerror="this.parentElement.innerHTML='<span class=\\'st-icon-fallback\\'><i class=\\'fas fa-tag\\'></i></span>'">
+                    </div>
+                    <div class="st-item-info">
+                        <span class="st-item-name">${brand.name}</span>
+                        <span class="st-item-count">${brand.count} products</span>
+                    </div>
+                </a>
+            `).join('');
+        }
+    }
+
+    // Products dropdown (show some featured/recent products)
+    const productsGrid = document.getElementById('stDropdownGrid_products');
+    if (productsGrid) {
+        const client = getSupabaseClient();
+        if (client) {
+            try {
+                const { data, error } = await client
+                    .from('products')
+                    .select('id, name, image, price')
+                    .order('created_at', { ascending: false })
+                    .limit(8);
+
+                if (!error && data && data.length > 0) {
+                    productsGrid.innerHTML = data.map(product => `
+                        <a href="item.html?product=${product.id}" class="st-dropdown-item">
+                            <div class="st-item-icon">
+                                <img src="${product.image || 'https://placehold.co/100x100/6C3CE1/FFFFFF?text=Product'}" 
+                                     alt="${product.name}" 
+                                     onerror="this.parentElement.innerHTML='<span class=\\'st-icon-fallback\\'><i class=\\'fas fa-box\\'></i></span>'">
+                            </div>
+                            <div class="st-item-info">
+                                <span class="st-item-name">${product.name}</span>
+                                <span class="st-item-count">$${(product.price || 0).toFixed(2)}</span>
+                            </div>
+                        </a>
+                    `).join('');
+                } else {
+                    productsGrid.innerHTML = '<div class="st-dropdown-empty">No products available</div>';
+                }
+            } catch (err) {
+                productsGrid.innerHTML = '<div class="st-dropdown-empty">Failed to load products</div>';
+            }
+        }
+    }
+
+    console.log('✅ Dropdowns populated with categories and brands');
+}
 // ============================================================
 // 7. HEADER LOGIC
 // ============================================================
 
-function initHeader() {
+async function initHeader() {
     // DOM Elements
     const elements = {
         topbar: document.getElementById('stTopbar'),
@@ -1548,6 +1990,7 @@ function initHeader() {
         dropdownName: document.getElementById('stDropdownName'),
         dropdownEmail: document.getElementById('stDropdownEmail'),
         logoutBtn: document.getElementById('stLogoutBtn'),
+        androidLogout: document.getElementById('stAndroidLogout'),
         authButtons: document.getElementById('stAuthButtons'),
         loginBtn: document.getElementById('stLoginBtn'),
         registerBtn: document.getElementById('stRegisterBtn'),
@@ -1560,6 +2003,7 @@ function initHeader() {
         loginEmail: document.getElementById('stLoginEmail'),
         loginPassword: document.getElementById('stLoginPassword'),
         loginSubmit: document.getElementById('stLoginSubmit'),
+        loginRemember: document.getElementById('stLoginRemember'),
         registerName: document.getElementById('stRegisterName'),
         registerEmail: document.getElementById('stRegisterEmail'),
         registerPassword: document.getElementById('stRegisterPassword'),
@@ -1568,6 +2012,7 @@ function initHeader() {
         switchToLogin: document.getElementById('stSwitchToLogin'),
         myOrdersBtn: document.getElementById('stMyOrdersBtn'),
         settingsBtn: document.getElementById('stSettingsBtn'),
+        andsettingsBtn: document.getElementById('andstSettingsBtn'),
         loginEmailError: document.getElementById('stLoginEmailError'),
         loginPasswordError: document.getElementById('stLoginPasswordError'),
         registerNameError: document.getElementById('stRegisterNameError'),
@@ -1625,7 +2070,7 @@ function initHeader() {
     // ----- Search -----
     function handleSearch(e) {
         if (e.key === 'Enter' && e.target.value.trim() !== '') {
-            window.location.href = `products.html?search=${encodeURIComponent(e.target.value.trim())}`;
+            window.location.href = `Search.html?search=${encodeURIComponent(e.target.value.trim())}`;
         }
     }
     
@@ -1672,11 +2117,13 @@ function initHeader() {
     function openLoginModal() {
         showLoginForm();
         openAuthModal();
+        setTimeout(() => elements.loginEmail.focus(), 300);
     }
     
     function openRegisterModal() {
         showRegisterForm();
         openAuthModal();
+        setTimeout(() => elements.registerName.focus(), 300);
     }
     
     elements.loginBtn.addEventListener('click', openLoginModal);
@@ -1689,7 +2136,849 @@ function initHeader() {
         closeMobileDrawer();
         openRegisterModal();
     });
+    // ============================================================
+//  SEARCH WITH REAL-TIME RESULTS
+// ============================================================
+
+// --- Search State ---
+let searchTimeout = null;
+let searchResults = [];
+let selectedSearchIndex = -1;
+let isSearchOpen = false;
+
+// --- Create Search Results Container ---
+function createSearchResultsContainer() {
+    // Check if already exists
+    if (document.getElementById('stSearchResults')) return;
+
+    const container = document.createElement('div');
+    container.id = 'stSearchResults';
+    container.className = 'st-search-results';
+    container.style.cssText = `
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+        border: 1px solid #E2E8F0;
+        max-height: 400px;
+        overflow-y: auto;
+        display: none;
+        z-index: 10001;
+        padding: 8px 0;
+    `;
     
+    // Add scrollbar styling
+    const style = document.createElement('style');
+    style.textContent = `
+        .st-search-results::-webkit-scrollbar {
+            width: 4px;
+        }
+        .st-search-results::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .st-search-results::-webkit-scrollbar-thumb {
+            background: #E2E8F0;
+            border-radius: 4px;
+        }
+        .st-search-results .st-search-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            text-decoration: none;
+            color: #0F172A;
+        }
+        .st-search-results .st-search-item:hover {
+            background: #f8fafc;
+        }
+        .st-search-results .st-search-item.active {
+            background: rgba(108, 60, 225, 0.08);
+        }
+        .st-search-results .st-search-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #f1f5f9;
+        }
+        .st-search-results .st-search-item .st-search-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .st-search-results .st-search-item .st-search-name {
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .st-search-results .st-search-item .st-search-meta {
+            font-size: 12px;
+            color: #94A3B8;
+        }
+        .st-search-results .st-search-item .st-search-price {
+            font-weight: 700;
+            font-size: 14px;
+            color: #6C3CE1;
+            flex-shrink: 0;
+        }
+        .st-search-results .st-search-empty {
+            padding: 20px;
+            text-align: center;
+            color: #94A3B8;
+            font-size: 14px;
+        }
+        .st-search-results .st-search-loading {
+            padding: 20px;
+            text-align: center;
+            color: #94A3B8;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .st-search-results .st-search-loading .st-spinner-small {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #E2E8F0;
+            border-top-color: #6C3CE1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .st-search-results .st-search-view-all {
+            padding: 10px 16px;
+            text-align: center;
+            border-top: 1px solid #E2E8F0;
+            color: #6C3CE1;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            text-decoration: none;
+            display: block;
+        }
+        .st-search-results .st-search-view-all:hover {
+            background: #f8fafc;
+        }
+
+        /* Mobile full-screen search overlay */
+        .st-search-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: none;
+            backdrop-filter: blur(4px);
+        }
+        .st-search-overlay.active {
+            display: block;
+        }
+        .st-search-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            padding: 16px;
+        }
+        .st-search-modal.active {
+            display: flex;
+        }
+        .st-search-modal .st-search-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        .st-search-modal .st-search-header input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            font-family: inherit;
+        }
+        .st-search-modal .st-search-header input:focus {
+            border-color: #6C3CE1;
+        }
+        .st-search-modal .st-search-header .st-search-close {
+            padding: 8px 12px;
+            border: none;
+            background: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #475569;
+        }
+        .st-search-modal .st-search-results-mobile {
+            flex: 1;
+            overflow-y: auto;
+            padding-top: 12px;
+        }
+        .st-search-modal .st-search-results-mobile .st-search-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            text-decoration: none;
+            color: #0F172A;
+        }
+        .st-search-modal .st-search-results-mobile .st-search-item img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #f1f5f9;
+        }
+        .st-search-modal .st-search-results-mobile .st-search-item .st-search-info {
+            flex: 1;
+        }
+        .st-search-modal .st-search-results-mobile .st-search-item .st-search-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .st-search-modal .st-search-results-mobile .st-search-item .st-search-meta {
+            font-size: 13px;
+            color: #94A3B8;
+        }
+        .st-search-modal .st-search-results-mobile .st-search-item .st-search-price {
+            font-weight: 700;
+            font-size: 15px;
+            color: #6C3CE1;
+        }
+        .st-search-modal .st-search-results-mobile .st-search-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: #94A3B8;
+        }
+        .st-search-modal .st-search-results-mobile .st-search-view-all {
+            padding: 16px;
+            text-align: center;
+            color: #6C3CE1;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            border-top: 1px solid #E2E8F0;
+            margin-top: 8px;
+        }
+
+        /* Desktop results positioning */
+        .st-search-wrapper {
+            position: relative;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .st-search-results {
+                display: none !important;
+            }
+        }
+        @media (min-width: 769px) {
+            .st-search-overlay,
+            .st-search-modal {
+                display: none !important;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Append to search wrapper
+    const wrapper = document.querySelector('.st-search-wrapper');
+    if (wrapper) {
+        wrapper.appendChild(container);
+    }
+
+    // Create mobile overlay and modal
+    const overlay = document.createElement('div');
+    overlay.id = 'stSearchOverlay';
+    overlay.className = 'st-search-overlay';
+    document.body.appendChild(overlay);
+
+    const modal = document.createElement('div');
+    modal.id = 'stSearchModal';
+    modal.className = 'st-search-modal';
+    modal.innerHTML = `
+        <div class="st-search-header">
+            <input type="search" id="stMobileSearchModalInput" placeholder="Search products..." autocomplete="off" />
+            <button class="st-search-close" id="stSearchModalClose">&times;</button>
+        </div>
+        <div class="st-search-results-mobile" id="stSearchResultsMobile"></div>
+    `;
+    document.body.appendChild(modal);
+
+    return container;
+}
+
+// --- Perform Search ---
+async function performSearch(query) {
+    if (!query || query.trim().length < 1) {
+        hideSearchResults();
+        return;
+    }
+
+    const trimmedQuery = query.trim().toLowerCase();
+    
+    // Show loading state
+    const container = document.getElementById('stSearchResults');
+    if (container) {
+        container.innerHTML = `
+            <div class="st-search-loading">
+                <div class="st-spinner-small"></div>
+                Searching...
+            </div>
+        `;
+        container.style.display = 'block';
+    }
+
+    // Update mobile results
+    const mobileContainer = document.getElementById('stSearchResultsMobile');
+    if (mobileContainer) {
+        mobileContainer.innerHTML = `
+            <div style="padding:20px;text-align:center;color:#94A3B8;display:flex;align-items:center;justify-content:center;gap:12px;">
+                <div style="width:20px;height:20px;border:3px solid #E2E8F0;border-top-color:#6C3CE1;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+                Searching...
+            </div>
+        `;
+    }
+
+    try {
+        const client = getSupabaseClient();
+        if (!client) {
+            showSearchError();
+            return;
+        }
+
+        // Search in products
+        const { data, error } = await client
+            .from('products')
+            .select('id, name, price, image, brand, category')
+            .or(`name.ilike.%${trimmedQuery}%,brand.ilike.%${trimmedQuery}%,category.ilike.%${trimmedQuery}%,description.ilike.%${trimmedQuery}%`)
+            .order('created_at', { ascending: false })
+            .limit(8);
+
+        if (error) throw error;
+
+        searchResults = data || [];
+        selectedSearchIndex = -1;
+        renderSearchResults(searchResults, trimmedQuery);
+
+    } catch (err) {
+        console.error('❌ Search error:', err);
+        showSearchError();
+    }
+}
+
+// --- Render Search Results ---
+function renderSearchResults(results, query) {
+    // Desktop results
+    const container = document.getElementById('stSearchResults');
+    if (!container) return;
+
+    if (results.length === 0) {
+        container.innerHTML = `
+            <div class="st-search-empty">
+                <i class="fas fa-search" style="font-size:24px;display:block;margin-bottom:8px;color:#E2E8F0;"></i>
+                No products found for "<strong>${query}</strong>"
+            </div>
+            <a href="Search.html?search=${encodeURIComponent(query)}" class="st-search-view-all">
+                View all results for "${query}" →
+            </a>
+        `;
+        container.style.display = 'block';
+    } else {
+        container.innerHTML = results.map((item, index) => `
+            <a href="item.html?product=${item.id}" class="st-search-item" data-index="${index}">
+                <img src="${item.image || 'https://placehold.co/40x40/6C3CE1/FFFFFF?text=Product'}" 
+                     alt="${item.name}" 
+                     onerror="this.src='https://placehold.co/40x40/6C3CE1/FFFFFF?text=Product'">
+                <div class="st-search-info">
+                    <div class="st-search-name">${highlightMatch(item.name || 'Unknown', query)}</div>
+                    <div class="st-search-meta">${item.brand || item.category || ''}</div>
+                </div>
+                <div class="st-search-price">FCFA ${(item.price || 0).toFixed(2)}</div>
+            </a>
+        `).join('') + `
+            <a href="Search.html?search=${encodeURIComponent(query)}" class="st-search-view-all">
+                View all ${results.length} results for "${query}" →
+            </a>
+        `;
+        container.style.display = 'block';
+    }
+
+    // Mobile results
+    const mobileContainer = document.getElementById('stSearchResultsMobile');
+    if (mobileContainer) {
+        if (results.length === 0) {
+            mobileContainer.innerHTML = `
+                <div class="st-search-empty">
+                    <i class="fas fa-search" style="font-size:32px;display:block;margin-bottom:12px;color:#E2E8F0;"></i>
+                    No products found for "<strong>${query}</strong>"
+                </div>
+                <a href="Search.html?search=${encodeURIComponent(query)}" class="st-search-view-all">
+                    View all results for "${query}" →
+                </a>
+            `;
+        } else {
+            mobileContainer.innerHTML = results.map(item => `
+                <a href="item.html?product=${item.id}" class="st-search-item">
+                    <img src="${item.image || 'https://placehold.co/50x50/6C3CE1/FFFFFF?text=Product'}" 
+                         alt="${item.name}" 
+                         onerror="this.src='https://placehold.co/50x50/6C3CE1/FFFFFF?text=Product'">
+                    <div class="st-search-info">
+                        <div class="st-search-name">${highlightMatch(item.name || 'Unknown', query)}</div>
+                        <div class="st-search-meta">${item.brand || item.category || ''}</div>
+                    </div>
+                    <div class="st-search-price">FCFA ${(item.price || 0).toFixed(2)}</div>
+                </a>
+            `).join('') + `
+                <a href="Search.html?search=${encodeURIComponent(query)}" class="st-search-view-all">
+                    View all ${results.length} results for "${query}" →
+                </a>
+            `;
+        }
+    }
+}
+
+// --- Highlight Match ---
+function highlightMatch(text, query) {
+    if (!text || !query) return text;
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return text.replace(regex, '<strong style="color:#6C3CE1;">$1</strong>');
+}
+
+// --- Show Search Error ---
+function showSearchError() {
+    const container = document.getElementById('stSearchResults');
+    if (container) {
+        container.innerHTML = `
+            <div class="st-search-empty">
+                <i class="fas fa-exclamation-circle" style="font-size:24px;display:block;margin-bottom:8px;color:#EF4444;"></i>
+                Search unavailable. Please try again.
+            </div>
+        `;
+        container.style.display = 'block';
+    }
+    const mobileContainer = document.getElementById('stSearchResultsMobile');
+    if (mobileContainer) {
+        mobileContainer.innerHTML = `
+            <div class="st-search-empty">
+                <i class="fas fa-exclamation-circle" style="font-size:32px;display:block;margin-bottom:12px;color:#EF4444;"></i>
+                Search unavailable. Please try again.
+            </div>
+        `;
+    }
+}
+
+// --- Hide Search Results ---
+function hideSearchResults() {
+    const container = document.getElementById('stSearchResults');
+    if (container) {
+        container.style.display = 'none';
+    }
+    // Don't hide mobile modal on blur - it's controlled separately
+}
+
+// --- Open Mobile Search ---
+function openMobileSearch() {
+    const overlay = document.getElementById('stSearchOverlay');
+    const modal = document.getElementById('stSearchModal');
+    const input = document.getElementById('stMobileSearchModalInput');
+    if (overlay) overlay.classList.add('active');
+    if (modal) modal.classList.add('active');
+    if (input) {
+        // Copy value from mobile search input
+        const mobileInput = document.getElementById('stMobileSearchInput');
+        if (mobileInput) input.value = mobileInput.value;
+        setTimeout(() => input.focus(), 100);
+    }
+    document.body.style.overflow = 'hidden';
+}
+
+// --- Close Mobile Search ---
+function closeMobileSearch() {
+    const overlay = document.getElementById('stSearchOverlay');
+    const modal = document.getElementById('stSearchModal');
+    if (overlay) overlay.classList.remove('active');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// --- Navigate Search Results (Keyboard) ---
+function navigateSearchResults(direction) {
+    const items = document.querySelectorAll('.st-search-item');
+    if (items.length === 0) return;
+
+    // Remove previous active
+    items.forEach(el => el.classList.remove('active'));
+
+    selectedSearchIndex = Math.max(0, Math.min(items.length - 1, selectedSearchIndex + direction));
+    
+    const activeItem = items[selectedSearchIndex];
+    if (activeItem) {
+        activeItem.classList.add('active');
+        activeItem.scrollIntoView({ block: 'nearest' });
+    }
+}
+
+// --- Select Current Search Result ---
+function selectCurrentSearchResult() {
+    const items = document.querySelectorAll('.st-search-item');
+    if (items.length === 0) return;
+    
+    const index = selectedSearchIndex >= 0 ? selectedSearchIndex : 0;
+    const item = items[index];
+    if (item) {
+        window.location.href = item.href;
+    }
+}
+
+// ============================================================
+//  PATCH: Update Search Event Listeners
+// ============================================================
+
+// Replace the existing search event listeners with these
+
+// --- Desktop Search ---
+const desktopSearch = document.getElementById('stSearchInput');
+if (desktopSearch) {
+    // Create results container
+    createSearchResultsContainer();
+
+    // Input event for real-time search
+    desktopSearch.addEventListener('input', function(e) {
+        const query = this.value;
+        
+        // Clear previous timeout
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+        
+        // Debounce search
+        searchTimeout = setTimeout(() => {
+            if (query.trim().length >= 1) {
+                performSearch(query);
+            } else {
+                hideSearchResults();
+            }
+        }, 300);
+    });
+
+    // Focus event - show results if there's a query
+    desktopSearch.addEventListener('focus', function() {
+        const query = this.value;
+        if (query.trim().length >= 1) {
+            performSearch(query);
+        }
+    });
+
+    // Blur event - hide results with delay
+    desktopSearch.addEventListener('blur', function() {
+        setTimeout(() => {
+            // Don't hide if clicking on results
+            const active = document.activeElement;
+            if (active && active.closest('.st-search-results')) {
+                return;
+            }
+            hideSearchResults();
+        }, 200);
+    });
+
+    // Keyboard navigation
+    desktopSearch.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            navigateSearchResults(1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            navigateSearchResults(-1);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            const query = this.value.trim();
+            if (selectedSearchIndex >= 0) {
+                selectCurrentSearchResult();
+            } else if (query) {
+                window.location.href = `Search.html?search=${encodeURIComponent(query)}`;
+            }
+        } else if (e.key === 'Escape') {
+            hideSearchResults();
+            this.blur();
+        }
+    });
+}
+
+// --- Mobile Search ---
+const mobileSearch = document.getElementById('stMobileSearchInput');
+if (mobileSearch) {
+    // Open mobile search on focus (mobile only)
+    mobileSearch.addEventListener('focus', function() {
+        if (window.innerWidth <= 768) {
+            openMobileSearch();
+            // Keep the mobile input in sync
+            const modalInput = document.getElementById('stMobileSearchModalInput');
+            if (modalInput) {
+                modalInput.value = this.value;
+                if (this.value.trim().length >= 1) {
+                    performSearch(this.value);
+                }
+            }
+        }
+    });
+
+    // Also trigger on click for mobile
+    mobileSearch.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+            openMobileSearch();
+        }
+    });
+}
+
+// --- Mobile Modal Search ---
+const modalSearchInput = document.getElementById('stMobileSearchModalInput');
+if (modalSearchInput) {
+    // Real-time search in modal
+    modalSearchInput.addEventListener('input', function() {
+        const query = this.value;
+        
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+        
+        searchTimeout = setTimeout(() => {
+            if (query.trim().length >= 1) {
+                performSearch(query);
+            } else {
+                // Clear mobile results
+                const mobileContainer = document.getElementById('stSearchResultsMobile');
+                if (mobileContainer) {
+                    mobileContainer.innerHTML = `
+                        <div class="st-search-empty">
+                            <i class="fas fa-search" style="font-size:32px;display:block;margin-bottom:12px;color:#E2E8F0;"></i>
+                            Type to search products...
+                        </div>
+                    `;
+                }
+            }
+        }, 300);
+    });
+
+    // Keyboard navigation in modal
+    modalSearchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const query = this.value.trim();
+            if (query) {
+                closeMobileSearch();
+                window.location.href = `Search.html?search=${encodeURIComponent(query)}`;
+            }
+        } else if (e.key === 'Escape') {
+            closeMobileSearch();
+        }
+    });
+
+    // Focus on modal open
+    modalSearchInput.addEventListener('focus', function() {
+        // If there's a value, trigger search
+        if (this.value.trim().length >= 1) {
+            performSearch(this.value);
+        }
+    });
+}
+
+// --- Mobile Search Close ---
+const modalClose = document.getElementById('stSearchModalClose');
+if (modalClose) {
+    modalClose.addEventListener('click', closeMobileSearch);
+}
+
+// Close on overlay click
+const overlay = document.getElementById('stSearchOverlay');
+if (overlay) {
+    overlay.addEventListener('click', closeMobileSearch);
+}
+
+// Close on escape key (global)
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        if (document.getElementById('stSearchModal')?.classList.contains('active')) {
+            closeMobileSearch();
+        }
+        hideSearchResults();
+    }
+});
+
+// Handle window resize - close mobile search on desktop
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 768) {
+        closeMobileSearch();
+    }
+});
+
+// Handle Android back button for mobile search
+document.addEventListener('backbutton', function(e) {
+    if (document.getElementById('stSearchModal')?.classList.contains('active')) {
+        e.preventDefault();
+        closeMobileSearch();
+    }
+});
+
+// ----- Update the existing handleSearch function to also work with search results -----
+// Replace the existing handleSearch function with this enhanced version
+function handleSearch(e) {
+    const input = e.target;
+    const query = input.value.trim();
+    
+    if (e.key === 'Enter' && query) {
+        // Check if there are search results and a result is selected
+        if (selectedSearchIndex >= 0) {
+            selectCurrentSearchResult();
+        } else {
+            window.location.href = `Search.html?search=${encodeURIComponent(query)}`;
+        }
+    }
+}
+
+// Update the search input event listeners
+const allSearchInputs = [desktopSearch, mobileSearch, modalSearchInput];
+allSearchInputs.forEach(input => {
+    if (input) {
+        // Remove old listeners by replacing with new ones
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+        
+        // Re-add event listeners
+        if (newInput.id === 'stSearchInput') {
+            // Desktop search
+            newInput.addEventListener('input', function(e) {
+                const query = this.value;
+                if (searchTimeout) clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    if (query.trim().length >= 1) {
+                        performSearch(query);
+                    } else {
+                        hideSearchResults();
+                    }
+                }, 300);
+            });
+            newInput.addEventListener('focus', function() {
+                const query = this.value;
+                if (query.trim().length >= 1) {
+                    performSearch(query);
+                }
+            });
+            newInput.addEventListener('blur', function() {
+                setTimeout(() => {
+                    const active = document.activeElement;
+                    if (active && active.closest('.st-search-results')) {
+                        return;
+                    }
+                    hideSearchResults();
+                }, 200);
+            });
+            newInput.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    navigateSearchResults(1);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    navigateSearchResults(-1);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const query = this.value.trim();
+                    if (selectedSearchIndex >= 0) {
+                        selectCurrentSearchResult();
+                    } else if (query) {
+                        window.location.href = `Search.html?search=${encodeURIComponent(query)}`;
+                    }
+                } else if (e.key === 'Escape') {
+                    hideSearchResults();
+                    this.blur();
+                }
+            });
+        } else if (newInput.id === 'stMobileSearchInput') {
+            // Mobile search
+            newInput.addEventListener('focus', function() {
+                if (window.innerWidth <= 768) {
+                    openMobileSearch();
+                    const modalInput = document.getElementById('stMobileSearchModalInput');
+                    if (modalInput) {
+                        modalInput.value = this.value;
+                        if (this.value.trim().length >= 1) {
+                            performSearch(this.value);
+                        }
+                    }
+                }
+            });
+            newInput.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    openMobileSearch();
+                }
+            });
+        } else if (newInput.id === 'stMobileSearchModalInput') {
+            // Modal search
+            newInput.addEventListener('input', function() {
+                const query = this.value;
+                if (searchTimeout) clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    if (query.trim().length >= 1) {
+                        performSearch(query);
+                    } else {
+                        const mobileContainer = document.getElementById('stSearchResultsMobile');
+                        if (mobileContainer) {
+                            mobileContainer.innerHTML = `
+                                <div class="st-search-empty">
+                                    <i class="fas fa-search" style="font-size:32px;display:block;margin-bottom:12px;color:#E2E8F0;"></i>
+                                    Type to search products...
+                                </div>
+                            `;
+                        }
+                    }
+                }, 300);
+            });
+            newInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const query = this.value.trim();
+                    if (query) {
+                        closeMobileSearch();
+                        window.location.href = `Search.html?search=${encodeURIComponent(query)}`;
+                    }
+                } else if (e.key === 'Escape') {
+                    closeMobileSearch();
+                }
+            });
+            newInput.addEventListener('focus', function() {
+                if (this.value.trim().length >= 1) {
+                    performSearch(this.value);
+                }
+            });
+        }
+    }
+});
+
+console.log('✅ Search with real-time results initialized');
     // ============================================================
     // LOGIN HANDLER (Custom customer_accounts)
     // ============================================================
@@ -1749,10 +3038,22 @@ function initHeader() {
             // Save user session
             AppState.user = user;
             AppState.isLoggedIn = true;
-            localStorage.setItem('st_customer', JSON.stringify(user));
             
-            // Load cart and wishlist
-            await loadUserData();
+            // Check if "Remember Me" is checked
+            const remember = elements.loginRemember && elements.loginRemember.checked;
+            
+            if (remember) {
+                localStorage.setItem('st_customer', JSON.stringify(user));
+                sessionStorage.removeItem('st_customer');
+                console.log('🔑 Remember me: saved to localStorage');
+            } else {
+                sessionStorage.setItem('st_customer', JSON.stringify(user));
+                localStorage.removeItem('st_customer');
+                console.log('🔑 Session only: saved to sessionStorage');
+            }
+            
+            // Load cart and wishlist from DB using customer_id
+            await loadUserData(user.id);
             updateAuthUI();
             closeAuthModal();
             
@@ -1835,13 +3136,14 @@ function initHeader() {
             console.log('✅ Signup successful for:', user.email);
             AppState.authAttempts = 0;
             
-            // Save user session
+            // Save user session - register always uses localStorage (persistent)
             AppState.user = user;
             AppState.isLoggedIn = true;
             localStorage.setItem('st_customer', JSON.stringify(user));
+            sessionStorage.removeItem('st_customer');
             
-            // Load cart and wishlist
-            await loadUserData();
+            // Load cart and wishlist from DB using customer_id
+            await loadUserData(user.id);
             updateAuthUI();
             closeAuthModal();
             
@@ -1857,24 +3159,52 @@ function initHeader() {
         }
     });
     
-    // ----- Logout Handler -----
+    // ============================================================
+    // LOGOUT HANDLER
+    // ============================================================
     async function handleLogout() {
+        const customerId = AppState.user?.id;
+        
+        // Save cart and wishlist to DB before logout
+        if (customerId) {
+            try {
+                await saveCartToDB(customerId, AppState.cart);
+                await saveWishlistToDB(customerId, AppState.wishlist);
+                console.log('💾 Data saved to DB before logout');
+            } catch (err) {
+                console.warn('⚠️ Failed to save data before logout:', err.message);
+            }
+        }
+        
         AppState.user = null;
         AppState.isLoggedIn = false;
         AppState.cart = [];
         AppState.wishlist = [];
         AppState.authAttempts = 0;
         
+        // Clear all storage
         localStorage.removeItem('st_customer');
         localStorage.removeItem('st_cart');
         localStorage.removeItem('st_wishlist');
+        sessionStorage.removeItem('st_customer');
+        sessionStorage.removeItem('st_cart');
+        sessionStorage.removeItem('st_wishlist');
         
         updateAuthUI();
         elements.accountDropdown.classList.remove('open');
         showNotification('👋 Logged out successfully');
     }
     
-    elements.logoutBtn.addEventListener('click', handleLogout);
+// Add logout button event listener elements
+elements.logoutBtn.addEventListener('click', handleLogout); 
+
+elements.androidLogout.addEventListener('click', () => { 
+    handleLogout(); 
+    closeMobileDrawer(); 
+});
+
+    // Expose for inline onclick handlers in pages
+    window.handleLogout = handleLogout;
     
     // ----- My Orders / Settings -----
     elements.myOrdersBtn.addEventListener('click', () => {
@@ -1894,25 +3224,57 @@ function initHeader() {
             openLoginModal();
         }
     });
+        elements.andsettingsBtn.addEventListener('click', () => {
+        elements.accountDropdown.classList.remove('open');
+        if (AppState.isLoggedIn) {
+            window.location.href = 'account-settings.html';
+        } else {
+            openLoginModal();
+        }
+    });
     
-    // ----- Load User Data -----
-    async function loadUserData() {
+    // ============================================================
+    // LOAD USER DATA FROM DB (using customer_id)
+    // ============================================================
+    async function loadUserData(customerId) {
+        if (!customerId) {
+            console.warn('⚠️ loadUserData: No customer_id provided');
+            return;
+        }
+        
         try {
-            const customerId = AppState.user?.id;
-            if (!customerId) return;
-            
-            // Load cart from Supabase
+            // Load cart from Supabase using customer_id
             const dbCart = await fetchCartFromDB(customerId);
             if (dbCart && dbCart.length > 0) {
                 AppState.cart = dbCart;
                 localStorage.setItem('st_cart', JSON.stringify(dbCart));
+            } else {
+                // If no DB cart, try to migrate local cart to DB
+                const localCart = JSON.parse(localStorage.getItem('st_cart') || '[]');
+                if (localCart.length > 0) {
+                    AppState.cart = localCart;
+                    await saveCartToDB(customerId, localCart);
+                    console.log('🔄 Migrated local cart to DB');
+                } else {
+                    AppState.cart = [];
+                }
             }
             
-            // Load wishlist from Supabase
+            // Load wishlist from Supabase using customer_id
             const dbWishlist = await fetchWishlistFromDB(customerId);
             if (dbWishlist && dbWishlist.length > 0) {
                 AppState.wishlist = dbWishlist;
                 localStorage.setItem('st_wishlist', JSON.stringify(dbWishlist));
+            } else {
+                // If no DB wishlist, try to migrate local wishlist to DB
+                const localWishlist = JSON.parse(localStorage.getItem('st_wishlist') || '[]');
+                if (localWishlist.length > 0) {
+                    AppState.wishlist = localWishlist;
+                    await saveWishlistToDB(customerId, localWishlist);
+                    console.log('🔄 Migrated local wishlist to DB');
+                } else {
+                    AppState.wishlist = [];
+                }
             }
             
             updateCounts();
@@ -1941,8 +3303,12 @@ function initHeader() {
             elements.mobileAvatar.textContent = initial;
             elements.mobileAccountLabel.textContent = name;
             
+            // Show logout button, hide auth buttons
             elements.logoutBtn.style.display = 'flex';
+            elements.androidLogout.style.display = 'flex';
             elements.authButtons.style.display = 'none';
+            elements.mobileLoginBtn.style.display = 'none';
+            elements.mobileRegisterBtn.style.display = 'none';
         } else {
             // Desktop
             elements.accountAvatar.textContent = 'G';
@@ -1955,7 +3321,9 @@ function initHeader() {
             elements.mobileAvatar.textContent = 'G';
             elements.mobileAccountLabel.textContent = 'Account';
             
+            // Hide logout button, show auth buttons
             elements.logoutBtn.style.display = 'none';
+             elements.androidLogout.style.display = 'none';
             elements.authButtons.style.display = 'block';
         }
         
@@ -1970,6 +3338,55 @@ function initHeader() {
         elements.wishlistCount.textContent = AppState.wishlist.length;
         elements.mobileCartCount.textContent = totalItems;
         elements.mobileWishlistCount.textContent = AppState.wishlist.length;
+    }
+    
+    // ============================================================
+    // AUTO-LOGIN from stored session
+    // ============================================================
+    async function checkAutoLogin() {
+        // Check localStorage first (persistent "Remember Me")
+        let storedData = localStorage.getItem('st_customer');
+        let source = 'localStorage';
+        
+        // If not in localStorage, check sessionStorage
+        if (!storedData) {
+            storedData = sessionStorage.getItem('st_customer');
+            source = 'sessionStorage';
+        }
+        
+        if (!storedData) {
+            console.log('🔑 No stored session found');
+            updateAuthUI();
+            return;
+        }
+        
+        try {
+            const user = JSON.parse(storedData);
+            if (!user?.id || !user?.email) {
+                console.warn('⚠️ Invalid stored session data');
+                localStorage.removeItem('st_customer');
+                sessionStorage.removeItem('st_customer');
+                updateAuthUI();
+                return;
+            }
+            
+            console.log(`🔑 Auto-login from ${source} for:`, user.email);
+            
+            // Set user state
+            AppState.user = user;
+            AppState.isLoggedIn = true;
+            
+            // Load cart and wishlist from DB
+            await loadUserData(user.id);
+            updateAuthUI();
+            
+            console.log('✅ Auto-login successful');
+        } catch (err) {
+            console.warn('⚠️ Auto-login failed:', err.message);
+            localStorage.removeItem('st_customer');
+            sessionStorage.removeItem('st_customer');
+            updateAuthUI();
+        }
     }
     
     // ----- Notification System -----
@@ -2116,27 +3533,21 @@ function initHeader() {
         return { allowed: true };
     }
     
-    // ----- Restore Session -----
-    function restoreSession() {
-        const savedUser = localStorage.getItem('st_customer');
-        if (savedUser) {
-            try {
-                const user = JSON.parse(savedUser);
-                AppState.user = user;
-                AppState.isLoggedIn = true;
-                loadUserData();
-                updateAuthUI();
-                console.log('🔄 Session restored for:', user.email);
-            } catch (e) {
-                console.warn('⚠️ Failed to restore session');
-            }
-        } else {
-            updateAuthUI();
-        }
-    }
+    // ============================================================
+    // FIX: Properly expose save functions without circular reference
+    // ============================================================
     
+    // Make sure these are the actual functions, not wrappers that call themselves
+    window.saveCartToDB = saveCartToDB;
+    window.saveWishlistToDB = saveWishlistToDB;
+    window.fetchCartFromDB = fetchCartFromDB;
+    window.fetchWishlistFromDB = fetchWishlistFromDB;
+    window.getCurrentCustomerId = getCurrentCustomerId;
+    window.getSupabaseClient = getSupabaseClient;
+     await populateDropdowns();
     // ----- Initialize -----
-    restoreSession();
+    await checkAutoLogin();
+    updateAuthUI();
     
     // ----- Expose to window -----
     window.STHeader = {
@@ -2157,13 +3568,14 @@ function initHeader() {
         fetchWishlistFromDB,
         saveWishlistToDB,
         validateEmail,
-        checkRateLimit
+        checkRateLimit,
+        checkAutoLogin
     };
     
-    console.log('✅ Success Technology Header initialized (Custom Auth)');
+    console.log('✅ Success Technology Header Initialized (Customer-based Auth)');
+    console.log('👤 User:', AppState.isLoggedIn ? AppState.user?.email : 'Guest');
     console.log('📦 Cart:', AppState.cart.length, 'items');
     console.log('❤️ Wishlist:', AppState.wishlist.length, 'items');
-    console.log('👤 User:', AppState.isLoggedIn ? AppState.user?.email : 'Guest');
 }
 
 // ============================================================
@@ -2179,4 +3591,13 @@ document.addEventListener('DOMContentLoaded', () => {
     initHeader();
 });
 
-console.log('✅ Global Header System Loaded (Custom Auth with customer_accounts)');
+// Expose critical functions globally for other scripts
+window.getSupabaseClient = getSupabaseClient;
+window.getCurrentCustomerId = getCurrentCustomerId;
+window.saveCartToDB = saveCartToDB;
+window.saveWishlistToDB = saveWishlistToDB;
+window.fetchCartFromDB = fetchCartFromDB;
+window.fetchWishlistFromDB = fetchWishlistFromDB;
+window.fetchCategoriesAndBrands = fetchCategoriesAndBrands;
+
+console.log('✅ Global Header System Loaded (Customer-based Auth)');

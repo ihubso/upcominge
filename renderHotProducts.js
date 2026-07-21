@@ -126,7 +126,7 @@ function renderHotSkeletonLoader(containerId = 'hotProducts') {
     container.innerHTML = `
         <div class="hot-products-header">
             <h2><i class="fas fa-fire"></i> Hot Products</h2>
-            <a href="products.html?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
+            <a href="Search.html?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
         </div>
         <div class="hot-products-grid skeleton-grid">
             ${skeletonCards}
@@ -181,7 +181,7 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
         container.innerHTML = `
             <div class="hot-products-header">
                 <h2><i class="fas fa-fire"></i> Hot Products</h2>
-                <a href="products.html?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
+                <a href="Search.html?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
             </div>
             <div style="text-align:center;padding:40px 20px;background:#f8fafc;border-radius:16px;">
                 <p style="color:#94A3B8;font-size:16px;">No hot products available</p>
@@ -198,7 +198,7 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
     let html = `
         <div class="hot-products-header">
             <h2><i class="fas fa-fire"></i> Hot Products</h2>
-            <a href="products.html?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
+            <a href="Search.html?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
         </div>
         <div class="hot-products-grid">
     `;
@@ -292,10 +292,11 @@ async function toggleWishlist(productId) {
         localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
 
         // Save to Supabase
+        const customerId = window.getCurrentCustomerId?.();
         const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
         const client = getHotSupabaseClient();
         if (client) {
-            await saveWishlistToDB(sessionId, wishlist);
+            await saveWishlistToDB(customerId || sessionId, wishlist, !!customerId);
         }
 
         // Update header
@@ -383,10 +384,11 @@ async function addToCart(productId) {
         localStorage.setItem('st_cart', JSON.stringify(cart));
 
         // Save to Supabase
+        const customerId = window.getCurrentCustomerId?.();
         const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
         const client2 = getHotSupabaseClient();
         if (client2) {
-            await saveCartToDB(sessionId, cart);
+            await saveCartToDB(customerId || sessionId, cart, !!customerId);
         }
 
         // Update header
@@ -407,15 +409,25 @@ async function addToCart(productId) {
 // 8. SUPABASE SYNC FUNCTIONS
 // ============================================================
 
-async function saveWishlistToDB(sessionId, wishlist) {
+async function saveWishlistToDB(identifier, wishlist, hasCustomerId = false) {
     const client = getHotSupabaseClient();
     if (!client) return;
 
+    const customerId = hasCustomerId ? identifier : null;
+    const sessionId = hasCustomerId ? null : identifier;
+
     try {
-        await client.from('wishlist').delete().eq('session_id', sessionId);
+        if (customerId) {
+            await client.from('wishlist').delete().eq('customer_id', customerId);
+        } else {
+            await client.from('wishlist').delete().eq('session_id', sessionId);
+        }
 
         if (wishlist.length > 0) {
-            const rows = wishlist.map(pid => ({ session_id: sessionId, product_id: pid }));
+            const rows = wishlist.map(pid => ({
+                ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
+                product_id: pid
+            }));
             const { error } = await client.from('wishlist').insert(rows);
             if (error) console.error('❌ Error saving wishlist:', error.message);
         }
@@ -424,16 +436,23 @@ async function saveWishlistToDB(sessionId, wishlist) {
     }
 }
 
-async function saveCartToDB(sessionId, cart) {
+async function saveCartToDB(identifier, cart, hasCustomerId = false) {
     const client = getHotSupabaseClient();
     if (!client) return;
 
+    const customerId = hasCustomerId ? identifier : null;
+    const sessionId = hasCustomerId ? null : identifier;
+
     try {
-        await client.from('cart').delete().eq('session_id', sessionId);
+        if (customerId) {
+            await client.from('cart').delete().eq('customer_id', customerId);
+        } else {
+            await client.from('cart').delete().eq('session_id', sessionId);
+        }
 
         if (cart.length > 0) {
             const rows = cart.map(item => ({
-                session_id: sessionId,
+                ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
                 product_id: item.product_id || item.id || '',
                 name: item.name || 'Unknown Product',
                 price: item.price || 0,

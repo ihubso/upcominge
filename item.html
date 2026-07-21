@@ -1078,14 +1078,19 @@
             localStorage.setItem('st_cart', JSON.stringify(cart));
 
             // Sync with Supabase
+            const customerId = window.getCurrentCustomerId?.();
             const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
             const client = getSupabaseClient();
             if (client) {
                 try {
-                    await client.from('cart').delete().eq('session_id', sessionId);
+                    if (customerId) {
+                        await client.from('cart').delete().eq('customer_id', customerId);
+                    } else {
+                        await client.from('cart').delete().eq('session_id', sessionId);
+                    }
                     if (cart.length > 0) {
                         const rows = cart.map(item => ({
-                            session_id: sessionId,
+                            ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
                             product_id: item.product_id || item.id || '',
                             name: item.name || 'Unknown Product',
                             price: item.price || 0,
@@ -1126,13 +1131,21 @@
             localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
 
             // Sync with Supabase
+            const customerId = window.getCurrentCustomerId?.();
             const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
             const client = getSupabaseClient();
             if (client) {
                 try {
-                    await client.from('wishlist').delete().eq('session_id', sessionId);
+                    if (customerId) {
+                        await client.from('wishlist').delete().eq('customer_id', customerId);
+                    } else {
+                        await client.from('wishlist').delete().eq('session_id', sessionId);
+                    }
                     if (wishlist.length > 0) {
-                        const rows = wishlist.map(pid => ({ session_id: sessionId, product_id: pid }));
+                        const rows = wishlist.map(pid => ({
+                            ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
+                            product_id: pid
+                        }));
                         await client.from('wishlist').insert(rows);
                     }
                 } catch (err) {

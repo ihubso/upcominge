@@ -13,7 +13,7 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-      <script src="global-header.js"></script>
+    <script src="global-header.js"></script>
 
     <style>
         /* ============================================
@@ -24,7 +24,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 30px; margin-top: 40px; }
+        footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 30px; margin-top: 40px; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #f8fafc;
@@ -534,7 +534,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                 Your Cart
                 <span class="st-cart-count" id="stCartPageCount">0 items</span>
             </h1>
-            <a href="products.html" class="st-btn-continue" style="display:inline-block;padding:8px 20px;border:2px solid #E2E8F0;border-radius:10px;text-decoration:none;color:#0F172A;font-weight:600;font-size:14px;transition:all 0.2s ease;">
+            <a href="Search.html" class="st-btn-continue" style="display:inline-block;padding:8px 20px;border:2px solid #E2E8F0;border-radius:10px;text-decoration:none;color:#0F172A;font-weight:600;font-size:14px;transition:all 0.2s ease;">
                 <i class="fas fa-arrow-left"></i> Continue Shopping
             </a>
         </div>
@@ -584,7 +584,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                         Proceed to Checkout
                     </button>
 
-                    <a href="products.html" class="st-btn-continue">
+                    <a href="Search.html" class="st-btn-continue">
                         <i class="fas fa-arrow-left"></i> Continue Shopping
                     </a>
                 </div>
@@ -592,46 +592,47 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
         </div>
     </main>
 
-     <div class="related-section">
-            <h2><i class="fas fa-boxes"></i> You May Also Like to add these to your bag too</h2>
-            <div id="randomProducts"></div>
-        </div>
+    <div class="related-section">
+        <h2><i class="fas fa-boxes"></i> You May Also Like to add these to your bag too</h2>
+        <div id="randomProducts"></div>
+    </div>
+    
     <footer id="support">
-  <div>
-    <h4>Products</h4>
-    <p>Phone</p>
-    <p>Tablet</p>
-    <p>Audio</p>
-  </div>
-<div>
-  <h4>📱 Follow Us</h4>
-  <div class="flex gap-4 mt-2">
-    <a id="facebookLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
-      <i class="fab fa-facebook"></i>
-    </a>
-    <a id="instagramLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
-      <i class="fab fa-instagram"></i>
-    </a>
-    <a id="tiktokLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
-      <i class="fab fa-tiktok"></i>
-    </a>
-  </div>
-</div>
-  <div>
-    <h4>About</h4>
-      <li class="mobile-nav-item"><a href="contact.html">📍 Locate Us</a></li>
-  </div>
-  <div>
-    <h4>📞 Contact</h4>
-    <p id="footerEmail"></p>
-    <p id="footerPhone"></p>
-    <p id="footerAddress"></p>
-  </div>
-</footer>
+        <div>
+            <h4>Products</h4>
+            <p>Phone</p>
+            <p>Tablet</p>
+            <p>Audio</p>
+        </div>
+        <div>
+            <h4>📱 Follow Us</h4>
+            <div class="flex gap-4 mt-2">
+                <a id="facebookLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
+                    <i class="fab fa-facebook"></i>
+                </a>
+                <a id="instagramLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a id="tiktokLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
+                    <i class="fab fa-tiktok"></i>
+                </a>
+            </div>
+        </div>
+        <div>
+            <h4>About</h4>
+            <li class="mobile-nav-item"><a href="contact.html">📍 Locate Us</a></li>
+        </div>
+        <div>
+            <h4>📞 Contact</h4>
+            <p id="footerEmail"></p>
+            <p id="footerPhone"></p>
+            <p id="footerAddress"></p>
+        </div>
+    </footer>
+    
     <script>
-
         // ============================================================
-        // 2. CART STATE
+        // 1. CART STATE
         // ============================================================
 
         let cartItems = [];
@@ -639,7 +640,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
         let discountCode = '';
 
         // ============================================================
-        // 3. RENDER CART
+        // 2. RENDER CART
         // ============================================================
 
         function renderCart() {
@@ -656,7 +657,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                         <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
                         <h2>Your cart is empty</h2>
                         <p>Looks like you haven't added any items to your cart yet.</p>
-                        <a href="products.html" class="st-btn-shop">
+                        <a href="Search.html" class="st-btn-shop">
                             <i class="fas fa-store"></i> Start Shopping
                         </a>
                     </div>
@@ -676,7 +677,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                              onerror="this.src='https://placehold.co/600x400'">
                     </div>
                     <div class="st-cart-item-details">
-                        <a href="item.html?id=${item.product_id || item.id}" class="st-item-name">
+                        <a href="item.html?product=${item.product_id || item.id}" class="st-item-name">
                             ${item.name || 'Unknown Product'}
                         </a>
                         ${item.brand ? `<span class="st-item-brand">${item.brand}</span>` : ''}
@@ -714,7 +715,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
         }
 
         // ============================================================
-        // 4. CART OPERATIONS
+        // 3. CART OPERATIONS
         // ============================================================
 
         function updateQuantity(index, change) {
@@ -738,11 +739,20 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
             // Save to localStorage
             localStorage.setItem('st_cart', JSON.stringify(cartItems));
             
-            // Save to Supabase
+            // Get customer_id or session_id
+            const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
             const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+            
+            // Save to Supabase - use customer_id if available, otherwise session_id
             const client = getSupabaseClient();
             if (client) {
-                saveCartToDB(sessionId, cartItems);
+                if (customerId) {
+                    // Use customer_id (logged in user)
+                    saveCartToDB(customerId, cartItems, true);
+                } else {
+                    // Use session_id (guest user)
+                    saveCartToDB(sessionId, cartItems, false);
+                }
             }
             
             // Update header badge counts
@@ -753,7 +763,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
         }
 
         // ============================================================
-        // 5. SUMMARY
+        // 4. SUMMARY
         // ============================================================
 
         function updateSummary() {
@@ -779,61 +789,67 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
         }
 
         // ============================================================
-        // 6. DISCOUNT CODE
+        // 5. DISCOUNT CODE
         // ============================================================
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('stApplyDiscount').addEventListener('click', () => {
-                const code = document.getElementById('stDiscountCode').value.trim().toUpperCase();
-                if (code === 'SAVE10') {
-                    discountApplied = 10;
-                    discountCode = code;
-                    showNotification('✅ 10% discount applied!');
-                } else if (code === 'SAVE20') {
-                    discountApplied = 20;
-                    discountCode = code;
-                    showNotification('✅ 20% discount applied!');
-                } else if (code === '') {
-                    discountApplied = 0;
-                    discountCode = '';
-                    showNotification('ℹ️ Discount removed');
-                } else {
-                    showNotification('❌ Invalid discount code', 'error');
-                    return;
-                }
-                updateSummary();
-            });
-        });
-
-        // ============================================================
-        // 7. CHECKOUT
-        // ============================================================
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('stCheckoutBtn').addEventListener('click', () => {
-                if (cartItems.length === 0) return;
-                
-                // Save cart before checkout
-                saveCart();
-                
-                // Check if user is logged in
-                const isLoggedIn = window.STHeader?.AppState?.isLoggedIn || false;
-                
-                if (!isLoggedIn) {
-                    showNotification('⚠️ Please login to checkout', 'error');
-                    if (window.STHeader?.openLoginModal) {
-                        window.STHeader.openLoginModal();
+            const applyBtn = document.getElementById('stApplyDiscount');
+            if (applyBtn) {
+                applyBtn.addEventListener('click', () => {
+                    const code = document.getElementById('stDiscountCode').value.trim().toUpperCase();
+                    if (code === 'SAVE10') {
+                        discountApplied = 10;
+                        discountCode = code;
+                        showNotification('✅ 10% discount applied!');
+                    } else if (code === 'SAVE20') {
+                        discountApplied = 20;
+                        discountCode = code;
+                        showNotification('✅ 20% discount applied!');
+                    } else if (code === '') {
+                        discountApplied = 0;
+                        discountCode = '';
+                        showNotification('ℹ️ Discount removed');
+                    } else {
+                        showNotification('❌ Invalid discount code', 'error');
+                        return;
                     }
-                    return;
-                }
-                
-                // Redirect to checkout page
-                window.location.href = 'checkout.html';
-            });
+                    updateSummary();
+                });
+            }
         });
 
         // ============================================================
-        // 8. NOTIFICATION
+        // 6. CHECKOUT
+        // ============================================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkoutBtn = document.getElementById('stCheckoutBtn');
+            if (checkoutBtn) {
+                checkoutBtn.addEventListener('click', () => {
+                    if (cartItems.length === 0) return;
+                    
+                    // Save cart before checkout
+                    saveCart();
+                    
+                    // Check if user is logged in
+                    const isLoggedIn = window.STHeader?.AppState?.isLoggedIn || false;
+                    
+                    if (!isLoggedIn) {
+                        showNotification('⚠️ Please login to checkout', 'error');
+                        if (window.STHeader?.openLoginModal) {
+                            window.STHeader.openLoginModal();
+                        }
+                        return;
+                    }
+                    
+                    // Redirect to checkout page
+                    window.location.href = 'checkout.html';
+                });
+            }
+        });
+
+        // ============================================================
+        // 7. NOTIFICATION
         // ============================================================
 
         function showNotification(message, type = 'success') {
@@ -872,18 +888,23 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
         }
 
         // ============================================================
-        // 9. SUPABASE CART SYNC
+        // 8. SUPABASE CART SYNC (UPDATED to use customer_id)
         // ============================================================
 
-        async function fetchCartFromDB(sessionId) {
+        async function fetchCartFromDB(identifier, hasCustomerId = false) {
             const client = getSupabaseClient();
             if (!client) return [];
             
             try {
-                const { data, error } = await client
-                    .from('cart')
-                    .select('*')
-                    .eq('session_id', sessionId);
+                let query = client.from('cart').select('*');
+                
+                if (hasCustomerId) {
+                    query = query.eq('customer_id', identifier);
+                } else {
+                    query = query.eq('session_id', identifier);
+                }
+                
+                const { data, error } = await query;
                 
                 if (error) throw error;
                 
@@ -897,7 +918,8 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                     variants: item.variants || {},
                     isDeal: item.is_deal || false,
                     originalPrice: item.original_price || null,
-                    discount: item.discount || null
+                    discount: item.discount || null,
+                    brand: item.brand || ''
                 }));
             } catch (err) {
                 console.error('❌ Error fetching cart:', err.message);
@@ -905,26 +927,40 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
             }
         }
 
-        async function saveCartToDB(sessionId, cart) {
+        async function saveCartToDB(identifier, cart, hasCustomerId = false) {
             const client = getSupabaseClient();
             if (!client) return;
             
             try {
-                await client.from('cart').delete().eq('session_id', sessionId);
+                if (hasCustomerId) {
+                    await client.from('cart').delete().eq('customer_id', identifier);
+                } else {
+                    await client.from('cart').delete().eq('session_id', identifier);
+                }
                 
                 if (cart.length > 0) {
-                    const rows = cart.map(item => ({
-                        session_id: sessionId,
-                        product_id: item.product_id || item.id || '',
-                        name: item.name || 'Unknown Product',
-                        price: item.price || 0,
-                        qty: item.qty || 1,
-                        image: item.image || 'https://placehold.co/600x400',
-                        variants: item.variants || {},
-                        is_deal: item.isDeal || false,
-                        original_price: item.originalPrice || null,
-                        discount: item.discount || null
-                    }));
+                    const rows = cart.map(item => {
+                        const row = {
+                            product_id: item.product_id || item.id || '',
+                            name: item.name || 'Unknown Product',
+                            price: item.price || 0,
+                            qty: item.qty || 1,
+                            image: item.image || 'https://placehold.co/600x400',
+                            variants: item.variants || {},
+                            is_deal: item.isDeal || false,
+                            original_price: item.originalPrice || null,
+                            discount: item.discount || null,
+                            brand: item.brand || ''
+                        };
+                        
+                        if (hasCustomerId) {
+                            row.customer_id = identifier;
+                        } else {
+                            row.session_id = identifier;
+                        }
+                        
+                        return row;
+                    });
                     
                     const validRows = rows.filter(row => row.product_id);
                     if (validRows.length > 0) {
@@ -933,20 +969,46 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                     }
                 }
             } catch (err) {
-                console.error('❌ Error:', err.message);
+                console.error('❌ Error saving cart:', err.message);
             }
         }
 
         // ============================================================
-        // 10. LOAD CART DATA
+        // 9. LOAD CART DATA (UPDATED)
         // ============================================================
 
         async function loadCartData() {
             try {
+                // Get customer_id if logged in
+                const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
                 const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
                 
-                // Try loading from Supabase first
-                const dbCart = await fetchCartFromDB(sessionId);
+                let dbCart = [];
+                
+                // Try loading from Supabase with customer_id first
+                if (customerId) {
+                    dbCart = await fetchCartFromDB(customerId, true);
+                    if (dbCart && dbCart.length > 0) {
+                        console.log('📦 Cart loaded from DB using customer_id');
+                    }
+                }
+                
+                // If no cart found with customer_id, try session_id (guest cart)
+                if (!dbCart || dbCart.length === 0) {
+                    dbCart = await fetchCartFromDB(sessionId, false);
+                    if (dbCart && dbCart.length > 0) {
+                        console.log('📦 Cart loaded from DB using session_id');
+                        
+                        // If user is logged in and has a guest cart, migrate it to customer_id
+                        if (customerId && dbCart.length > 0) {
+                            console.log('🔄 Migrating guest cart to customer_id');
+                            await saveCartToDB(customerId, dbCart, true);
+                            // Clear guest cart from DB
+                            await saveCartToDB(sessionId, [], false);
+                        }
+                    }
+                }
+                
                 if (dbCart && dbCart.length > 0) {
                     cartItems = dbCart;
                     localStorage.setItem('st_cart', JSON.stringify(dbCart));
@@ -954,6 +1016,12 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                     // Fallback to localStorage
                     const localCart = JSON.parse(localStorage.getItem('st_cart') || '[]');
                     cartItems = localCart;
+                    
+                    // If user is logged in and has local cart, migrate to DB
+                    if (customerId && cartItems.length > 0) {
+                        console.log('🔄 Migrating local cart to DB with customer_id');
+                        await saveCartToDB(customerId, cartItems, true);
+                    }
                 }
                 
                 // Update AppState if available
@@ -979,55 +1047,12 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
         }
 
         // ============================================================
-        // 11. INJECT HEADER
-        // ============================================================
-
-        function loadHeader() {
-            // Check if header script is loaded
-            if (window.STHeader) {
-                console.log('✅ Header already loaded');
-                return;
-            }
-            
-            // Load the header script
-            const script = document.createElement('script');
-            script.src = 'global-header.js';
-            script.onload = () => {
-                console.log('✅ Header script loaded');
-                // Wait for header to initialize
-                setTimeout(() => {
-                    if (window.STHeader) {
-                        // Update header with cart data
-                        window.STHeader.AppState.cart = cartItems;
-                        window.STHeader.updateCounts();
-                    }
-                }, 500);
-            };
-            script.onerror = () => {
-                console.warn('⚠️ Header script not found, using fallback');
-            };
-            document.head.appendChild(script);
-        }
-
-        // ============================================================
-        // 12. INITIALIZATION
+        // 10. INITIALIZATION
         // ============================================================
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Load header
-            loadHeader();
-            
             // Load cart data
             loadCartData();
-            
-            // Set up cart item observers
-            const observer = new MutationObserver(() => {
-                // Update header counts when cart changes
-                if (window.STHeader) {
-                    window.STHeader.AppState.cart = cartItems;
-                    window.STHeader.updateCounts();
-                }
-            });
             
             // Expose cart operations globally
             window.cartOperations = {
@@ -1041,7 +1066,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
         });
 
         // ============================================================
-        // 13. EXPOSE FUNCTIONS GLOBALLY
+        // 11. EXPOSE FUNCTIONS GLOBALLY
         // ============================================================
 
         window.updateQuantity = updateQuantity;
@@ -1052,7 +1077,8 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
         window.getSupabaseClient = getSupabaseClient;
         window.fetchCartFromDB = fetchCartFromDB;
         window.saveCartToDB = saveCartToDB;
+        window.loadCartData = loadCartData;
     </script>
-     <script src="related-products.js"></script>
+    <script src="related-products.js"></script>
 </body>
 </html>
