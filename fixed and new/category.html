@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <title>Category · Sucess Technology</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: { primary: '#e60012', primaryHover: '#cc0010', dark: '#0f172a' },
+                }
+            }
+        }
+    </script>
+    <script src="global-header.js"></script>
+    <style>
+        /* ============================================
+           CATEGORY PAGE STYLES
+           ============================================ */
+        .category-hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            padding: 4rem 0;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            min-height: 320px;
+        }
+
+        .category-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        .category-hero .hero-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 0;
+            transition: opacity 1s ease;
+            opacity: 0;
+        }
+
+        .category-hero .hero-background.active {
+            opacity: 1;
+        }
+
+        .category-hero .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .category-hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .category-hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+
+        .category-hero .category-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            padding: 1rem 2rem;
+            border-radius: 9999px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* ============================================
+           HERO SKELETON LOADER
+           ============================================ */
+        .hero-skeleton {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .hero-skeleton .skeleton-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-skeleton .skeleton-icon .shimmer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.08) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            animation: heroShimmer 2s ease-in-out infinite;
+        }
+
+        .hero-skeleton .skeleton-title {
+            width: 280px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin: 0 auto 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-skeleton .skeleton-title .shimmer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.08) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            animation: heroShimmer 2s ease-in-out infinite;
+        }
+
+        .hero-skeleton .skeleton-subtitle {
+            width: 200px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 4px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-skeleton .skeleton-subtitle .shimmer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.08) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            animation: heroShimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes heroShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* ============================================
+           PRODUCT CARDS
+           ============================================ */
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #f0f0f0;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        }
+
+        .product-card img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            background: #f8fafc;
+        }
+
+        .product-card .product-info {
+            padding: 12px 14px;
+        }
+
+        .product-card .product-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #0F172A;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-card .product-category {
+            font-size: 12px;
+            color: #94A3B8;
+        }
+
+        .product-card .product-price {
+            font-weight: 700;
+            font-size: 16px;
+            color: #e60012;
+        }
+
+        .product-card .product-rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: #F59E0B;
+        }
+
+        .product-card .product-rating span {
+            color: #94A3B8;
+        }
+
+        .product-card .product-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+
+        .product-card .btn-cart {
+            background: #0F172A;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .product-card .btn-cart:hover {
+            background: #e60012;
+            transform: scale(1.05);
+        }
+
+        /* Related Products */
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+            padding: 16px 0px;
+        }
+
+        .related-card {
+            background: white;
+            border: 1px solid rgb(240, 240, 240);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .related-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+
+        .related-card img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-bottom: 1px solid rgb(249, 249, 249);
+        }
+
+        .related-card h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 12px 12px 4px;
+            color: rgb(26, 26, 26);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .related-card .text-gray-400 {
+            font-size: 12px;
+            color: rgb(113, 113, 113);
+            margin: 0px 12px 8px;
+        }
+
+        .related-card .price {
+            font-size: 16px;
+            font-weight: 700;
+            color: #e60012;
+            margin: auto 12px 12px;
+        }
+
+        .related-loadmore {
+            color: #475569;
+            font-size: 0.95rem;
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .related-loadmore.loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .related-loadmore .loader-small {
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 3px solid rgba(236, 72, 153, 0.15);
+            border-top-color: #e60012;
+            border-radius: 9999px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast */
+        .toast-msg {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-size: 0.9rem;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .toast-msg.show {
+            opacity: 1;
+        }
+
+        /* Loading skeleton for products */
+        .skeleton-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #f0f0f0;
+        }
+
+        .skeleton-card .skeleton-image {
+            width: 100%;
+            aspect-ratio: 1/1;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        .skeleton-card .skeleton-text {
+            height: 14px;
+            margin: 8px 12px 4px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        .skeleton-card .skeleton-text.short {
+            width: 60%;
+        }
+
+        .skeleton-card .skeleton-text.price {
+            width: 40%;
+            height: 18px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .category-hero h1 {
+                font-size: 2.5rem;
+            }
+            .category-hero {
+                padding: 2.5rem 0;
+                min-height: 240px;
+            }
+            .related-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            .product-card .product-name {
+                font-size: 13px;
+            }
+            .hero-skeleton .skeleton-title {
+                width: 200px;
+                height: 36px;
+            }
+            .hero-skeleton .skeleton-subtitle {
+                width: 150px;
+                height: 20px;
+            }
+            .hero-skeleton .skeleton-icon {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .category-hero h1 {
+                font-size: 2rem;
+            }
+            .category-hero .category-icon {
+                font-size: 2.5rem;
+                padding: 0.75rem 1.5rem;
+            }
+            .category-hero {
+                min-height: 200px;
+                padding: 2rem 0;
+            }
+            .related-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .related-card h4 {
+                font-size: 12px;
+            }
+            .related-card .price {
+                font-size: 14px;
+            }
+            .hero-skeleton .skeleton-title {
+                width: 160px;
+                height: 30px;
+            }
+            .hero-skeleton .skeleton-subtitle {
+                width: 120px;
+                height: 16px;
+            }
+            .hero-skeleton .skeleton-icon {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toast Message -->
+    <div id="toastMsg" class="toast-msg"></div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main>
+        <!-- Category Hero with Skeleton -->
+        <section class="category-hero" id="categoryHero">
+            <!-- Hero Skeleton -->
+            <div class="hero-skeleton" id="heroSkeleton">
+                <div class="skeleton-icon">
+                    <div class="shimmer"></div>
+                </div>
+                <div class="skeleton-title">
+                    <div class="shimmer"></div>
+                </div>
+                <div class="skeleton-subtitle">
+                    <div class="shimmer"></div>
+                </div>
+            </div>
+            
+            <!-- Hero Background (hidden initially) -->
+            <div class="hero-background" id="heroBackground"></div>
+            
+            <!-- Hero Content -->
+            <div class="hero-content max-w-7xl mx-auto px-4" id="heroContent" style="display:none;">
+                <div class="category-icon" id="categoryIcon">🏷️</div>
+                <h1 id="categoryTitle">All Categories</h1>
+                <p id="categorySubtitle">Explore our collection</p>
+            </div>
+        </section>
+
+        <!-- Products Grid -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            <div id="loadMoreContainer" class="text-center mt-8">
+                <button id="loadMoreBtn" class="bg-primary text-white px-8 py-3 rounded-full font-medium hover:bg-primaryHover transition-colors hidden">
+                    Load More
+                </button>
+            </div>
+            <div id="noProducts" class="hidden text-center py-12 text-gray-500">
+                <span class="text-4xl block mb-4">😕</span>
+                <p>No products found for this category.</p>
+            </div>
+        </section>
+
+        <!-- Related Products Section -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-gray-200">
+            <h3 class="text-2xl font-bold mb-6">🔄 You May Also Like</h3>
+            <div id="relatedGrid" class="related-grid"></div>
+            <div id="relatedLoadMore" class="related-loadmore hidden">
+                <div class="loader-small"></div>
+                <span>Loading more products...</span>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="bg-dark text-white py-12 mt-12">
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div>
+                <h4 class="font-bold mb-4">Products</h4>
+                <p class="text-slate-400 text-sm">Phone</p>
+                <p class="text-slate-400 text-sm">Tablet</p>
+                <p class="text-slate-400 text-sm">Audio</p>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4">📱 Follow Us</h4>
+                <div class="flex gap-4 mt-2">
+                    <a id="facebookLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-facebook"></i></a>
+                    <a id="instagramLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-instagram"></i></a>
+                    <a id="tiktokLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4">About</h4>
+                <p class="text-slate-400 text-sm">About Us</p>
+                <p class="text-slate-400 text-sm">Press</p>
+                <a href="contact.html" class="text-slate-400 text-sm block hover:text-primary transition-colors">📍 Locate Us</a>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4">📞 Contact</h4>
+                <p id="footerEmail" class="text-slate-400 text-sm"></p>
+                <p id="footerPhone" class="text-slate-400 text-sm"></p>
+                <p id="footerAddress" class="text-slate-400 text-sm"></p>
+            </div>
+        </div>
+        <div class="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400 text-sm">
+            <p>&copy; 2024 Sucess Technology. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ============================================================
+         SCRIPTS
+         ============================================================ -->
+    <script>
+
+        // ============================================================
+        //  STATE
+        // ============================================================
+        let currentCategory = '';
+        let allProducts = [];
+        let page = 1;
+        const perPage = 12;
+        let isLoading = false;
+        let relatedProductsPool = [];
+        let relatedLoadedCount = 0;
+        let relatedObserver = null;
+        const RELATED_BATCH_SIZE = 4;
+        let heroImages = [];
+        let heroImageIndex = 0;
+        let heroInterval = null;
+        let isHeroReady = false;
+
+        // ============================================================
+        //  HELPERS
+        // ============================================================
+        function getCategoryFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('category') || 'all';
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toastMsg');
+            if (!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(t._timeout);
+            t._timeout = setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function renderStars(rating) {
+            const full = Math.floor(rating);
+            let html = '';
+            for (let i = 0; i < full; i++) html += '★';
+            for (let i = full; i < 5; i++) html += '☆';
+            return html;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function getAverageRating(productId) {
+            const reviews = window._cachedReviews || {};
+            const revs = reviews[productId] || [];
+            if (!revs.length) return 0;
+            const sum = revs.reduce((s, r) => s + r.rating, 0);
+            return sum / revs.length;
+        }
+
+        function getReviewCount(productId) {
+            const reviews = window._cachedReviews || {};
+            const revs = reviews[productId] || [];
+            return revs.length;
+        }
+
+        // ============================================================
+        //  HERO BACKGROUND ROTATOR
+        // ============================================================
+        function showHeroContent() {
+            const skeleton = document.getElementById('heroSkeleton');
+            const content = document.getElementById('heroContent');
+            const background = document.getElementById('heroBackground');
+            
+            skeleton.style.display = 'none';
+            content.style.display = 'block';
+            background.classList.add('active');
+            isHeroReady = true;
+        }
+
+        function startHeroRotation(images) {
+            if (!images || images.length === 0) {
+                // If no images, still show content
+                showHeroContent();
+                return;
+            }
+            
+            heroImages = images;
+            heroImageIndex = 0;
+            
+            const heroBg = document.getElementById('heroBackground');
+            
+            // Set first image
+            heroBg.style.backgroundImage = `url(${heroImages[0]})`;
+            
+            // Show hero content
+            showHeroContent();
+            
+            // Start rotation if more than 1 image
+            if (heroImages.length > 1) {
+                if (heroInterval) clearInterval(heroInterval);
+                heroInterval = setInterval(() => {
+                    heroImageIndex = (heroImageIndex + 1) % heroImages.length;
+                    heroBg.style.opacity = '0';
+                    setTimeout(() => {
+                        heroBg.style.backgroundImage = `url(${heroImages[heroImageIndex]})`;
+                        heroBg.style.opacity = '1';
+                    }, 300);
+                }, 4000);
+            }
+        }
+
+        function stopHeroRotation() {
+            if (heroInterval) {
+                clearInterval(heroInterval);
+                heroInterval = null;
+            }
+        }
+
+        // ============================================================
+        //  FETCH PRODUCTS FROM SUPABASE
+        // ============================================================
+        async function fetchAllProducts() {
+            if (allProducts.length > 0) return allProducts;
+
+            const client = getSupabaseClient();
+            if (!client) return [];
+
+            try {
+                const { data, error } = await client
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                allProducts = data || [];
+                return allProducts;
+            } catch (err) {
+                console.error('❌ Error fetching products:', err.message);
+                return [];
+            }
+        }
+
+        // ============================================================
+        //  CART FUNCTIONS
+        // ============================================================
+        async function getCart() {
+            try {
+                return JSON.parse(localStorage.getItem('st_cart') || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        async function saveCart(cart) {
+            localStorage.setItem('st_cart', JSON.stringify(cart));
+
+            const customerId = window.getCurrentCustomerId?.();
+            const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+            const client = getSupabaseClient();
+            if (client) {
+                try {
+                    if (customerId) {
+                        await client.from('cart').delete().eq('customer_id', customerId);
+                    } else {
+                        await client.from('cart').delete().eq('session_id', sessionId);
+                    }
+                    if (cart.length > 0) {
+                        const rows = cart.map(item => ({
+                            ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
+                            product_id: item.product_id || item.id || '',
+                            name: item.name || 'Unknown Product',
+                            price: item.price || 0,
+                            qty: item.qty || 1,
+                            image: item.image || 'https://placehold.co/400x400'
+                        }));
+                        const validRows = rows.filter(row => row.product_id);
+                        if (validRows.length > 0) {
+                            await client.from('cart').insert(validRows);
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Cart sync error:', err.message);
+                }
+            }
+
+            if (window.STHeader) {
+                window.STHeader.AppState.cart = cart;
+                if (window.STHeader.updateCounts) {
+                    window.STHeader.updateCounts();
+                }
+            }
+            renderCart();
+        }
+
+        async function addToCart(productId, qty = 1) {
+            const products = await fetchAllProducts();
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                showToast('❌ Product not found');
+                return;
+            }
+
+            const cart = await getCart();
+            const existing = cart.find(item => item.product_id === productId || item.id === productId);
+
+            if (existing) {
+                existing.qty = (existing.qty || 0) + qty;
+            } else {
+                cart.push({
+                    product_id: productId,
+                    id: productId,
+                    name: product.name,
+                    price: product.price || 0,
+                    qty: qty,
+                    image: product.image || 'https://placehold.co/400x400',
+                    variants: {},
+                    category: product.category || ''
+                });
+            }
+
+            await saveCart(cart);
+            showToast(`✅ ${product.name} added to cart!`);
+        }
+
+        // ============================================================
+        //  RENDER CART (for modal)
+        // ============================================================
+        async function renderCart() {
+            const cart = await getCart();
+            const container = document.getElementById('cartItems');
+            if (!container) return;
+
+            if (!cart.length) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-500">Cart empty</div>';
+                document.getElementById('cartTotal').innerText = '0.00';
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = cart.map((item, index) => {
+                const price = item.price || 0;
+                const qty = item.qty || 0;
+                total += price * qty;
+                return `
+                    <div class="cart-item flex justify-between items-center mb-4 border-b pb-2">
+                        <div>
+                            <strong>${item.name}</strong><br>
+                            <small>FCFA ${price.toFixed(2)}</small>
+                        </div>
+                        <div>
+                            <button class="cart-qty-dec px-2 bg-gray-200 rounded" data-index="${index}">-</button>
+                            <span class="mx-2">${qty}</span>
+                            <button class="cart-qty-inc px-2 bg-gray-200 rounded" data-index="${index}">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('cartTotal').innerText = total.toFixed(2);
+
+            container.querySelectorAll('.cart-qty-dec').forEach(btn => {
+                btn.addEventListener('click', () => updateQtyByIndex(parseInt(btn.dataset.index), -1));
+            });
+            container.querySelectorAll('.cart-qty-inc').forEach(btn => {
+                btn.addEventListener('click', () => updateQtyByIndex(parseInt(btn.dataset.index), 1));
+            });
+        }
+
+        async function updateQtyByIndex(index, delta) {
+            const cart = await getCart();
+            if (index < 0 || index >= cart.length) return;
+            const item = cart[index];
+            const newQ = (item.qty || 0) + delta;
+            if (newQ <= 0) {
+                cart.splice(index, 1);
+            } else {
+                item.qty = newQ;
+            }
+            await saveCart(cart);
+        }
+
+        window.clearCart = async function() {
+            await saveCart([]);
+            showToast('Cart cleared');
+            await renderCart();
+        };
+
+        window.openModal = (id) => document.getElementById(id)?.classList.remove('hidden');
+        window.closeModal = (id) => document.getElementById(id)?.classList.add('hidden');
+
+        // ============================================================
+        //  RENDER PRODUCT CARDS
+        // ============================================================
+        function renderProductCard(p) {
+            const avgRating = getAverageRating(p.id);
+            const reviewCount = getReviewCount(p.id);
+
+            let badge = '';
+            if (p.isHot) badge = '<span class="absolute top-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">HOT</span>';
+            else if (p.isNew) badge = '<span class="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">NEW</span>';
+            else if (p.isDeal) badge = '<span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">DEAL</span>';
+
+            return `
+                <div class="product-card" onclick="window.location.href='item.html?product=${p.id}'">
+                    <div class="relative">
+                        <img src="${p.image || 'https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'}" 
+                             alt="${p.name}" 
+                             loading="lazy"
+                             onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'">
+                        ${badge}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">${p.name || 'Unknown Product'}</div>
+                        <div class="product-category">${p.category || ''}</div>
+                        <div class="product-rating">
+                            ${renderStars(avgRating)}
+                            <span>(${reviewCount})</span>
+                        </div>
+                        <div class="product-actions">
+                            <span class="product-price">FCFA ${(p.price || 0).toFixed(2)}</span>
+                            <button class="btn-cart" onclick="event.stopPropagation(); addToCart('${p.id}')">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================================
+        //  LOAD CATEGORY PRODUCTS
+        // ============================================================
+        async function loadCategoryProducts(reset = true) {
+            if (isLoading) return;
+            isLoading = true;
+
+            if (reset) {
+                page = 1;
+                document.getElementById('productsGrid').innerHTML = '';
+                document.getElementById('loadMoreBtn').classList.add('hidden');
+                document.getElementById('noProducts').classList.add('hidden');
+                showLoadingSkeletons();
+            }
+
+            try {
+                const all = await fetchAllProducts();
+                const category = getCategoryFromUrl();
+                currentCategory = category;
+
+                // Update hero
+                const categoryTitle = document.getElementById('categoryTitle');
+                const categorySubtitle = document.getElementById('categorySubtitle');
+                const categoryIcon = document.getElementById('categoryIcon');
+                if (category === 'all') {
+                    categoryTitle.textContent = 'All Categories';
+                    categorySubtitle.textContent = 'Explore our complete collection';
+                    categoryIcon.textContent = '🏷️';
+                } else {
+                    categoryTitle.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                    categorySubtitle.textContent = `Discover our ${category} products`;
+                    categoryIcon.textContent = '⭐';
+                }
+                document.title = `${category === 'all' ? 'All Categories' : category} · Sucess Technology`;
+
+                // Filter
+                let filtered = category === 'all'
+                    ? all
+                    : all.filter(p => p.category && p.category.toLowerCase() === category.toLowerCase());
+
+                // Extract hero images from filtered products
+                const heroImageUrls = filtered
+                    .filter(p => p.image)
+                    .slice(0, 10)
+                    .map(p => p.image);
+                
+                // Start hero rotation with images
+                startHeroRotation(heroImageUrls);
+
+                if (filtered.length === 0) {
+                    document.getElementById('noProducts').classList.remove('hidden');
+                    document.getElementById('loadMoreBtn').classList.add('hidden');
+                    isLoading = false;
+                    return;
+                }
+
+                // Paginate
+                const start = (page - 1) * perPage;
+                const end = start + perPage;
+                const paginated = filtered.slice(start, end);
+
+                if (paginated.length === 0) {
+                    document.getElementById('loadMoreBtn').classList.add('hidden');
+                    isLoading = false;
+                    return;
+                }
+
+                // Render cards
+                const grid = document.getElementById('productsGrid');
+                grid.innerHTML = '';
+                const cards = paginated.map(p => renderProductCard(p)).join('');
+                if (reset) {
+                    grid.innerHTML = cards;
+                } else {
+                    grid.insertAdjacentHTML('beforeend', cards);
+                }
+
+                // Update load more button
+                if (end < filtered.length) {
+                    document.getElementById('loadMoreBtn').classList.remove('hidden');
+                    document.getElementById('loadMoreBtn').onclick = () => loadCategoryProducts(false);
+                } else {
+                    document.getElementById('loadMoreBtn').classList.add('hidden');
+                }
+
+                page++;
+
+                // Load related products
+                await renderRelatedProducts(category, all);
+
+            } catch (e) {
+                console.error('Error loading category products:', e);
+                showToast('Error loading products');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // ============================================================
+        //  LOADING SKELETONS
+        // ============================================================
+        function showLoadingSkeletons() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = Array(8).fill(0).map(() => `
+                <div class="skeleton-card">
+                    <div class="skeleton-image"></div>
+                    <div class="skeleton-text"></div>
+                    <div class="skeleton-text short"></div>
+                    <div class="skeleton-text price"></div>
+                </div>
+            `).join('');
+        }
+
+        // ============================================================
+        //  RELATED PRODUCTS
+        // ============================================================
+        function appendRelatedProducts(items) {
+            const grid = document.getElementById('relatedGrid');
+            if (!grid) return;
+            grid.insertAdjacentHTML('beforeend', items.map(p => `
+                <div class="related-card" onclick="window.location.href='item.html?product=${p.id}'">
+                    <img src="${p.image || 'https://placehold.co/200x200'}" 
+                         alt="${p.name}" 
+                         loading="lazy" 
+                         onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+                    <h4>${p.name || 'Unknown Product'}</h4>
+                    <p class="text-gray-400">${p.category || ''}</p>
+                    <div class="price">FCFA ${(p.price || 0).toFixed(2)}</div>
+                </div>
+            `).join(''));
+        }
+
+        function updateRelatedLoadMore(visible) {
+            const loadMore = document.getElementById('relatedLoadMore');
+            if (!loadMore) return;
+            loadMore.classList.toggle('hidden', !visible);
+        }
+
+        function loadMoreRelatedProducts() {
+            if (!relatedProductsPool.length) {
+                updateRelatedLoadMore(false);
+                if (relatedObserver) relatedObserver.disconnect();
+                return;
+            }
+            const nextBatch = relatedProductsPool.splice(0, RELATED_BATCH_SIZE);
+            appendRelatedProducts(nextBatch);
+            relatedLoadedCount += nextBatch.length;
+            updateRelatedLoadMore(Boolean(relatedProductsPool.length));
+        }
+
+        function setupRelatedObserver() {
+            const sentinel = document.getElementById('relatedLoadMore');
+            if (!sentinel || !window.IntersectionObserver) return;
+            if (relatedObserver) relatedObserver.disconnect();
+            relatedObserver = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        loadMoreRelatedProducts();
+                    }
+                });
+            }, {
+                rootMargin: '0px 0px 200px 0px',
+                threshold: 0.1
+            });
+            relatedObserver.observe(sentinel);
+        }
+
+        async function renderRelatedProducts(category, allProducts) {
+            const grid = document.getElementById('relatedGrid');
+            if (!grid) return;
+
+            let sameCategory = [];
+            let otherCategories = [];
+
+            if (category === 'all') {
+                sameCategory = [...allProducts];
+                otherCategories = [];
+            } else {
+                const lowerCategory = category.toLowerCase();
+                sameCategory = allProducts.filter(p => p.category && p.category.toLowerCase() === lowerCategory);
+                otherCategories = allProducts.filter(p => p.category && p.category.toLowerCase() !== lowerCategory);
+            }
+
+            shuffleArray(sameCategory);
+            shuffleArray(otherCategories);
+
+            const initialRelated = [];
+            initialRelated.push(...sameCategory.slice(0, RELATED_BATCH_SIZE));
+            if (initialRelated.length < RELATED_BATCH_SIZE) {
+                const needed = RELATED_BATCH_SIZE - initialRelated.length;
+                initialRelated.push(...otherCategories.slice(0, needed));
+            }
+
+            const remainingSame = sameCategory.slice(RELATED_BATCH_SIZE);
+            const remainingOther = otherCategories.slice(initialRelated.length - (sameCategory.slice(0, RELATED_BATCH_SIZE).length > 0 ? RELATED_BATCH_SIZE : RELATED_BATCH_SIZE - sameCategory.slice(0, RELATED_BATCH_SIZE).length));
+            relatedProductsPool = [...remainingSame, ...remainingOther];
+            shuffleArray(relatedProductsPool);
+
+            relatedLoadedCount = initialRelated.length;
+
+            grid.innerHTML = '';
+            appendRelatedProducts(initialRelated);
+            updateRelatedLoadMore(Boolean(relatedProductsPool.length));
+            setupRelatedObserver();
+        }
+
+        // ============================================================
+        //  REVIEWS (load from localStorage)
+        // ============================================================
+        function loadReviews() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('st_reviews') || '{}');
+                window._cachedReviews = saved;
+            } catch (e) {
+                window._cachedReviews = {};
+            }
+        }
+
+        // ============================================================
+        //  INITIALIZE
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadReviews();
+            loadCategoryProducts(true);
+            renderCart();
+
+            setTimeout(async () => {
+                if (window.STHeader) {
+                    const cart = await getCart();
+                    window.STHeader.AppState.cart = cart;
+                    if (window.STHeader.updateCounts) {
+                        window.STHeader.updateCounts();
+                    }
+                }
+            }, 500);
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            stopHeroRotation();
+        });
+
+        // ============================================================
+        //  EXPOSE GLOBALLY
+        // ============================================================
+        window.addToCart = addToCart;
+        window.renderCart = renderCart;
+        window.showToast = showToast;
+        window.fetchAllProducts = fetchAllProducts;
+
+        console.log('📄 Category page loaded successfully');
+    </script>
+</body>
+</html>
