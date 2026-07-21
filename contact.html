@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Contact & Locate Us · Sucess Technology</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Poppins', 'sans-serif'] },
+          colors: { primary: '#e60012', primaryHover: '#cc0010', dark: '#0f172a' },
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Custom Animations */
+    @keyframes fadeInUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @keyframes shimmer {
+      0%, 100% { opacity: 0.3; transform: translateX(-100%); }
+      50% { opacity: 0.8; transform: translateX(100%); }
+    }
+    
+    @keyframes waterFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    @keyframes ripple {
+      0% { width: 8px; opacity: 0.5; transform: scaleX(1); }
+      100% { width: 80px; opacity: 0; transform: scaleX(3); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 5px rgba(230, 0, 18, 0.2); }
+      50% { box-shadow: 0 0 20px rgba(230, 0, 18, 0.4); }
+    }
+    
+    .animate-fade-in-up {
+      animation: fadeInUp 0.8s ease forwards;
+    }
+    
+    .animate-shimmer {
+      animation: shimmer 3s ease-in-out infinite;
+    }
+    
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .animate-ripple {
+      animation: ripple 2s ease-out infinite;
+    }
+    
+    .animate-pulse-glow {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+    
+    .water-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmer 2s ease-in-out infinite;
+    }
+    
+    /* Modal styles */
+    .modal { 
+      position: fixed; 
+      inset: 0; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      background: rgba(0,0,0,0.5); 
+      backdrop-filter: blur(4px); 
+      z-index: 1000; 
+    }
+    .hidden { display: none !important; }
+    
+    /* Smooth scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    @media (max-width: 768px) {
+      .hero-title { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- ========================================== -->
+  <!-- HEADER -->
+  <!-- ========================================== -->
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <a href="index.html" class="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Store</span>
+          </a>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- Account Button -->
+          <div class="relative">
+            <button id="accountBtn" onclick="toggleAccountDropdown()" class="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <i class="fas fa-user text-xl"></i>
+            </button>
+            <div id="accountDropdown" class="hidden fixed sm:absolute right-4 sm:right-0 top-20 sm:top-16 w-[calc(100vw-2rem)] sm:w-72 max-w-sm bg-white rounded-2xl shadow-2xl border z-50 p-4 mx-auto sm:mx-0">
+              <div class="text-center pb-4 border-b">
+                <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <i class="fas fa-user text-xl text-primary"></i>
+                </div>
+                <p id="dropdownUserName" class="font-bold">Guest</p>
+                <p id="dropdownUserEmail" class="text-xs text-gray-500"></p>
+              </div>
+              <div class="py-2 space-y-1">
+                <button onclick="viewMyOrders()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-3 text-sm">
+                  <i class="fas fa-shopping-bag text-gray-400"></i> My Orders
+                </button>
+                <button onclick="openModal('accountModal'); closeAccountDropdown()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-3 text-sm">
+                  <i class="fas fa-cog text-gray-400"></i> Account Settings
+                </button>
+                <button onclick="handleLogout()" id="logoutBtn" class="w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 text-red-600 flex items-center gap-3 text-sm hidden">
+                  <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+              </div>
+              <div id="loginRegisterBtns" class="pt-2 border-t mt-2">
+                <button onclick="closeAccountDropdown(); openModal('accountModal'); showLoginForm()" class="w-full bg-primary text-white py-2 rounded-xl text-sm font-medium mb-2">Login</button>
+                <button onclick="closeAccountDropdown(); openModal('accountModal'); showRegisterForm()" class="w-full border border-primary text-primary py-2 rounded-xl text-sm font-medium">Register</button>
+              </div>
+            </div>
+          </div>
+          <a href="index.html" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-full transition-all text-sm font-medium shadow-lg shadow-primary/25 hover:shadow-primary/40">
+            🛒 Shop Now
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- MAIN CONTENT -->
+  <!-- ========================================== -->
+  <main>
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden bg-gradient-to-r from-primary to-primaryHover text-white">
+      <!-- Animated Background Elements -->
+      <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-white/5 rounded-full blur-3xl" style="animation-delay: 1s;"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+      </div>
+      
+      <div class="container mx-auto px-4 py-16 md:py-24 text-center relative z-10">
+        <span class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm font-medium mb-4 animate-fade-in-up">
+          📍 Find Us Today
+        </span>
+        <h1 class="hero-title text-5xl md:text-6xl font-extrabold mb-4 animate-fade-in-up" style="animation-delay: 0.2s;">
+          Visit Our Store
+        </h1>
+        <p class="text-xl opacity-90 max-w-2xl mx-auto animate-fade-in-up" style="animation-delay: 0.4s;">
+          We're here to help and serve you with excellence
+        </p>
+      </div>
+    </section>
+
+    <!-- Shop Photo Section with Water Reflection -->
+    <div id="shopPhotoSection" class="hidden mx-auto -mt-8 relative z-10 max-w-5xl px-4">
+      <div class="relative group">
+        <!-- Main Shop Image -->
+        <div class="rounded-2xl overflow-hidden shadow-2xl border-4 border-white transform transition-transform duration-500 group-hover:scale-[1.01]">
+          <img id="shopPhotoDisplay" src="" class="w-full h-64 md:h-80 object-cover" alt="Our Shop" />
+          
+          <!-- Gradient Overlay -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
+          
+          <!-- Location Badge -->
+          <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg flex items-center gap-2 animate-float">
+            <span class="animate-bounce">📍</span>
+            <span class="text-gray-800 font-medium text-sm">Visit Us Today!</span>
+          </div>
+          
+          <!-- Open Hours Badge -->
+          <div id="shopHoursBadge" class="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm text-white rounded-full px-4 py-2 shadow-lg text-sm font-medium animate-pulse-glow">
+            🕐 Open Now
+          </div>
+        </div>
+
+        <!-- Water Reflection Effect -->
+        <div class="relative -mt-1">
+          <div class="relative overflow-hidden rounded-b-2xl" style="height: 100px;">
+            <!-- Reflected Image -->
+            <img id="shopPhotoReflection" src="" 
+                 class="w-full h-64 md:h-80 object-cover transform scale-y-[-1] opacity-30"
+                 style="filter: blur(3px);" 
+                 alt="Reflection" />
+            
+            <!-- Water Gradient -->
+            <div class="absolute inset-0 bg-gradient-to-b from-blue-400/10 via-blue-500/20 to-transparent"></div>
+            
+            <!-- Water Surface Shimmer -->
+            <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer"></div>
+            
+            <!-- Animated Water Lines -->
+            <div class="absolute inset-0">
+              <div class="water-line" style="top: 20%; animation-delay: 0s;"></div>
+              <div class="water-line" style="top: 45%; animation-delay: 0.5s;"></div>
+              <div class="water-line" style="top: 70%; animation-delay: 1s;"></div>
+            </div>
+            
+            <!-- Ripple Effects -->
+            <div class="absolute bottom-4 left-1/4">
+              <div class="w-2 h-1 bg-white/30 rounded-full animate-ripple"></div>
+            </div>
+            <div class="absolute bottom-6 left-1/2">
+              <div class="w-2 h-1 bg-white/20 rounded-full animate-ripple" style="animation-delay: 0.7s;"></div>
+            </div>
+            <div class="absolute bottom-3 left-3/4">
+              <div class="w-2 h-1 bg-white/30 rounded-full animate-ripple" style="animation-delay: 1.4s;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Info + Map -->
+    <section class="py-12 md:py-16">
+      <div class="container mx-auto px-4 max-w-6xl">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+          
+          <!-- Left Column: Info Cards -->
+          <div class="space-y-6">
+            <!-- Location Card -->
+            <div class="bg-white rounded-2xl p-6 shadow-md border-l-4 border-primary transform hover:scale-[1.02] transition-all duration-300 hover:shadow-lg animate-fade-in-up">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                  📍
+                </div>
+                <div>
+                  <h3 class="font-bold text-lg text-gray-900 mb-1">Our Location</h3>
+                  <p id="previewAddressMain" class="text-gray-700 leading-relaxed">123 Commerce Street</p>
+                  <a href="#" id="contactMapLink" target="_blank" class="mt-2 text-primary text-sm font-medium hover:underline inline-flex items-center gap-1">
+                    <span>View on Google Maps</span>
+                    <span>→</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact Card -->
+            <div class="bg-white rounded-2xl p-6 shadow-md border-l-4 border-green-500 transform hover:scale-[1.02] transition-all duration-300 hover:shadow-lg animate-fade-in-up" style="animation-delay: 0.1s;">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                  📱
+                </div>
+                <div>
+                  <h3 class="font-bold text-lg text-gray-900 mb-1">Get in Touch</h3>
+                  <a id="previewPhoneMain" href="tel:+18005551234" class="text-gray-700 font-mono mb-2 block hover:text-primary transition-colors">
+                    +1 800 555 1234
+                  </a>
+                  <a id="previewEmailMain" href="mailto:hello@example.com" class="text-gray-700 font-mono block hover:text-primary transition-colors">
+                    hello@example.com
+                  </a>
+                  <div class="flex flex-wrap gap-2 mt-3">
+                    <a href="#" id="contactWhatsApp" target="_blank" class="bg-green-500 text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-green-600 transition-colors inline-flex items-center gap-1">
+                      💬 WhatsApp
+                    </a>
+                    <a href="#" id="contactEmailLink" class="bg-blue-500 text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-blue-600 transition-colors inline-flex items-center gap-1">
+                      ✉️ Email Us
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hours Card -->
+            <div class="bg-white rounded-2xl p-6 shadow-md border-l-4 border-blue-500 transform hover:scale-[1.02] transition-all duration-300 hover:shadow-lg animate-fade-in-up" style="animation-delay: 0.2s;">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                  🕐
+                </div>
+                <div>
+                  <h3 class="font-bold text-lg text-gray-900 mb-1">Business Hours</h3>
+                  <div id="previewHours" class="text-gray-700 whitespace-pre-line text-sm leading-relaxed">
+                    Mon - Fri: 9:00 AM - 6:00 PM<br>
+                    Sat: 10:00 AM - 4:00 PM<br>
+                    Sun: Closed
+                  </div>
+                  <span id="openNowBadge" class="inline-block mt-2 px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                    🟢 Open Now
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Store Info Card -->
+            <div class="bg-white rounded-2xl p-6 shadow-md border-l-4 border-purple-500 transform hover:scale-[1.02] transition-all duration-300 hover:shadow-lg animate-fade-in-up" style="animation-delay: 0.3s;">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                  🏪
+                </div>
+                <div>
+                  <h3 class="font-bold text-lg text-gray-900 mb-1">Our Store</h3>
+                  <p id="contactShopName" class="text-xl font-bold text-primary">Sucess Technology</p>
+                  <p class="text-sm text-gray-500 mt-1">Your trusted technology partner</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Map -->
+          <div class="bg-white rounded-2xl overflow-hidden shadow-md border min-h-[400px] flex items-center justify-center animate-fade-in-up" style="animation-delay: 0.4s;">
+            <div id="mapContainer" class="w-full h-full min-h-[400px] flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+              <div class="text-center">
+                <span class="text-6xl block mb-4 animate-float">🗺️</span>
+                <p class="text-slate-600 font-bold text-lg mb-2">Find Us Here</p>
+                <p class="text-sm text-slate-500 mb-4" id="mapAddress">Loading address...</p>
+                <p class="text-xs text-slate-400 mb-4" id="mapCoordinates"></p>
+                <a href="#" id="mapDirectionsBtn" target="_blank" class="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-primaryHover transition-colors inline-flex items-center gap-2">
+                  📍 Open in Google Maps
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div id="previewDescriptionDiv" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 mb-10 animate-fade-in-up">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+              ℹ️
+            </div>
+            <div>
+              <h3 class="font-bold text-lg text-gray-900 mb-2">Additional Information</h3>
+              <p id="previewDescription" class="text-gray-700 leading-relaxed"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <a href="#" id="directionsBtn" target="_blank" class="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all text-center hover:scale-105 transform">
+            <span class="text-2xl block mb-2">🧭</span>
+            <span class="font-medium text-sm">Get Directions</span>
+          </a>
+          <a href="#" id="callBtn" class="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all text-center hover:scale-105 transform">
+            <span class="text-2xl block mb-2">📞</span>
+            <span class="font-medium text-sm">Call Store</span>
+          </a>
+          <button onclick="shareLocation()" class="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all text-center hover:scale-105 transform">
+            <span class="text-2xl block mb-2">📤</span>
+            <span class="font-medium text-sm">Share Location</span>
+          </button>
+          <a href="index.html" class="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all text-center hover:scale-105 transform">
+            <span class="text-2xl block mb-2">🛍️</span>
+            <span class="font-medium text-sm">Browse Products</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-gradient-to-r from-primary to-primaryHover text-white relative overflow-hidden">
+      <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-10 -left-10 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
+      </div>
+      <div class="container mx-auto px-4 text-center relative z-10">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to Visit Us?</h2>
+        <p class="text-lg opacity-90 mb-8 max-w-xl mx-auto">Come experience our products in person. We're excited to serve you!</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="#" id="directionsBtn2" target="_blank" class="bg-white text-primary px-8 py-3.5 rounded-full font-bold hover:bg-gray-100 transition-all shadow-lg inline-flex items-center gap-2">
+            📍 Get Directions
+          </a>
+          <a href="#" id="callBtn2" class="bg-dark text-white px-8 py-3.5 rounded-full font-bold hover:bg-black transition-all shadow-lg inline-flex items-center gap-2">
+            📞 Call Us Now
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- ACCOUNT MODAL -->
+  <!-- ========================================== -->
+  <div id="accountModal" class="modal hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 mx-4 shadow-2xl relative">
+      <div id="loginForm">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-user text-2xl text-primary"></i>
+          </div>
+          <h2 class="text-2xl font-bold">Welcome Back</h2>
+          <p class="text-gray-500 text-sm">Login to your account</p>
+        </div>
+        <div class="space-y-3">
+          <input type="email" id="loginEmail" placeholder="Email address" class="w-full border p-3 rounded-xl" />
+          <input type="password" id="loginPassword" placeholder="Password" class="w-full border p-3 rounded-xl" />
+          <button onclick="handleLogin()" class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primaryHover transition-colors">Login</button>
+        </div>
+        <p class="text-center text-sm text-gray-500 mt-4">Don't have an account? <button onclick="showRegisterForm()" class="text-primary font-semibold hover:underline">Register</button></p>
+      </div>
+      <div id="registerForm" class="hidden">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-user-plus text-2xl text-primary"></i>
+          </div>
+          <h2 class="text-2xl font-bold">Create Account</h2>
+          <p class="text-gray-500 text-sm">Join our community</p>
+        </div>
+        <div class="space-y-3">
+          <input type="text" id="regName" placeholder="Full Name" class="w-full border p-3 rounded-xl" />
+          <input type="email" id="regEmail" placeholder="Email address" class="w-full border p-3 rounded-xl" />
+          <input type="tel" id="regPhone" placeholder="Phone number (optional)" class="w-full border p-3 rounded-xl" />
+          <input type="text" id="regAddress" placeholder="Address (optional)" class="w-full border p-3 rounded-xl" />
+          <input type="password" id="regPassword" placeholder="Password" class="w-full border p-3 rounded-xl" />
+          <input type="password" id="regConfirmPassword" placeholder="Confirm Password" class="w-full border p-3 rounded-xl" />
+          <button onclick="handleRegister()" class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primaryHover transition-colors">Create Account</button>
+        </div>
+        <p class="text-center text-sm text-gray-500 mt-4">Already have an account? <button onclick="showLoginForm()" class="text-primary font-semibold hover:underline">Login</button></p>
+      </div>
+      <button onclick="closeModal('accountModal')" class="absolute top-4 right-4 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200">✕</button>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- FOOTER -->
+  <!-- ========================================== -->
+  <footer class="bg-dark text-white py-12">
+    <div class="container mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div>
+        <h4 class="font-bold mb-4">Products</h4>
+        <p class="text-slate-400 text-sm">Phone</p>
+        <p class="text-slate-400 text-sm">Tablet</p>
+        <p class="text-slate-400 text-sm">Audio</p>
+      </div>
+      <div>
+        <h4 class="font-bold mb-4">📱 Follow Us</h4>
+        <div class="flex gap-4 mt-2">
+          <a id="facebookLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-facebook"></i></a>
+          <a id="instagramLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-instagram"></i></a>
+          <a id="tiktokLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-tiktok"></i></a>
+        </div>
+      </div>
+      <div>
+        <h4 class="font-bold mb-4">About</h4>
+        <p class="text-slate-400 text-sm">About Us</p>
+        <p class="text-slate-400 text-sm">Press</p>
+      </div>
+      <div>
+        <h4 class="font-bold mb-4">📞 Contact</h4>
+        <p id="footerEmail" class="text-slate-400 text-sm"></p>
+        <p id="footerPhone" class="text-slate-400 text-sm"></p>
+        <p id="footerAddress" class="text-slate-400 text-sm"></p>
+      </div>
+    </div>
+    <div class="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400">
+      <p>&copy; 2024 Sucess Technology. All rights reserved. Made with ❤️</p>
+    </div>
+  </footer>
+
+
+  <!-- Toast Message -->
+  <div id="toastMsg" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 10px 24px; border-radius: 40px; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 9999; white-space: nowrap;"></div>
+
+  <script src="supabase-config.js"></script>
+  <script src="supabase-api.js"></script>
+  <script src="shared-header.js"></script>
+  <script>
+    // ===============================================
+    //        SUPABASE-BACKED CONTACT PAGE
+    // ===============================================
+    
+    // Toast function
+    function showToast(msg) {
+      const toast = document.getElementById('toastMsg');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.style.opacity = '1';
+      setTimeout(() => toast.style.opacity = '0', 2500);
+    }
+
+    // Modal functions
+    window.openModal = (id) => document.getElementById(id)?.classList.remove('hidden');
+    window.closeModal = (id) => document.getElementById(id)?.classList.add('hidden');
+    
+    // Share location
+    function shareLocation() {
+      const address = document.getElementById('previewAddressMain')?.textContent || 'Our Store';
+      const mapsUrl = document.getElementById('contactMapLink')?.href || window.location.href;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: 'Visit Our Store',
+          text: `Find us at: ${address}`,
+          url: mapsUrl
+        }).catch(() => {
+          navigator.clipboard.writeText(mapsUrl);
+          showToast('📍 Location link copied!');
+        });
+      } else {
+        navigator.clipboard.writeText(mapsUrl);
+        showToast('📍 Location link copied!');
+      }
+    }
+
+    // Check if store is open now
+    function isStoreOpen(hoursText) {
+      const now = new Date();
+      const day = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const hour = now.getHours();
+      const minute = now.getMinutes();
+      const currentTime = hour * 60 + minute;
+      
+      // Parse hours text
+      const lines = hoursText.toLowerCase().split('\n');
+      
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        
+        // Check if closed
+        if (trimmed.includes('closed') && (
+          (day === 0 && trimmed.includes('sun')) ||
+          (day === 1 && trimmed.includes('mon')) ||
+          (day === 2 && trimmed.includes('tue')) ||
+          (day === 3 && trimmed.includes('wed')) ||
+          (day === 4 && trimmed.includes('thu')) ||
+          (day === 5 && trimmed.includes('fri')) ||
+          (day === 6 && trimmed.includes('sat'))
+        )) {
+          return false;
+        }
+        
+        // Parse time ranges
+        const timeMatch = trimmed.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*[-–to]+\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+        
+        if (timeMatch) {
+          let startHour = parseInt(timeMatch[1]);
+          const startMin = parseInt(timeMatch[2] || '0');
+          const startPeriod = timeMatch[3]?.toLowerCase();
+          let endHour = parseInt(timeMatch[4]);
+          const endMin = parseInt(timeMatch[5] || '0');
+          const endPeriod = timeMatch[6]?.toLowerCase();
+          
+          // Convert to 24-hour
+          if (startPeriod === 'pm' && startHour !== 12) startHour += 12;
+          if (startPeriod === 'am' && startHour === 12) startHour = 0;
+          if (endPeriod === 'pm' && endHour !== 12) endHour += 12;
+          if (endPeriod === 'am' && endHour === 12) endHour = 0;
+          
+          const startTime = startHour * 60 + startMin;
+          const endTime = endHour * 60 + endMin;
+          
+          // Check if current day matches
+          const dayMatch = 
+            (day === 0 && trimmed.includes('sun')) ||
+            (day === 1 && trimmed.includes('mon')) ||
+            (day === 2 && trimmed.includes('tue')) ||
+            (day === 3 && trimmed.includes('wed')) ||
+            (day === 4 && trimmed.includes('thu')) ||
+            (day === 5 && trimmed.includes('fri')) ||
+            (day === 6 && trimmed.includes('sat')) ||
+            (day >= 1 && day <= 5 && trimmed.includes('mon') && trimmed.includes('fri'));
+          
+          if (dayMatch && currentTime >= startTime && currentTime <= endTime) {
+            return true;
+          }
+        }
+      }
+      
+      return false;
+    }
+
+    // Initialize page
+    async function initializePage() {
+      try {
+        // Fetch business and contact info from Supabase
+        const business = await getBusinessInfo();
+        const contact = await fetchContactInfoFromDB() || {};
+        
+        const shopName = business.shopName || business.shop_name || 'Sucess Technology';
+        const address = business.address || '123 Commerce Street';
+        const phone = business.phone || '+1 800 555 1234';
+        const email = business.email || 'hello@Sucess Technology.com';
+        const hoursText = contact.hours || 'Mon - Fri: 9:00 AM - 6:00 PM\nSat: 10:00 AM - 4:00 PM\nSun: Closed';
+        const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(address)}`;
+        const waPhone = phone.replace(/\D/g, '');
+        
+        // Update all contact info elements
+        document.getElementById('contactShopName').textContent = shopName;
+        document.getElementById('previewAddressMain').textContent = address;
+        document.getElementById('previewPhoneMain').textContent = phone;
+        document.getElementById('previewPhoneMain').href = `tel:${phone}`;
+        document.getElementById('previewEmailMain').textContent = email;
+        document.getElementById('previewEmailMain').href = `mailto:${email}`;
+        document.getElementById('previewHours').textContent = hoursText;
+        
+        // Map info
+        document.getElementById('mapAddress').textContent = address;
+        document.getElementById('mapCoordinates').textContent = `📍 ${contact.latitude || 40.7128}, ${contact.longitude || -74.0060}`;
+        document.getElementById('mapDirectionsBtn').href = mapsUrl;
+        
+        // Action links
+        document.getElementById('contactMapLink').href = mapsUrl;
+        document.getElementById('directionsBtn').href = mapsUrl;
+        document.getElementById('directionsBtn2').href = mapsUrl;
+        document.getElementById('contactEmailLink').href = `mailto:${email}`;
+        document.getElementById('contactWhatsApp').href = `https://wa.me/${waPhone}`;
+        document.getElementById('callBtn').href = `tel:${phone}`;
+        document.getElementById('callBtn2').href = `tel:${phone}`;
+        
+        // Open now badge
+        const openNow = isStoreOpen(hoursText);
+        const openBadge = document.getElementById('openNowBadge');
+        const shopHoursBadge = document.getElementById('shopHoursBadge');
+        
+        if (openBadge) {
+          openBadge.textContent = openNow ? '🟢 Open Now' : '🔴 Closed';
+          openBadge.className = openNow 
+            ? 'inline-block mt-2 px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full'
+            : 'inline-block mt-2 px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full';
+        }
+        
+        if (shopHoursBadge) {
+          shopHoursBadge.textContent = openNow ? '🟢 Open Now' : '🔴 Currently Closed';
+        }
+
+        // Footer
+        document.getElementById('footerEmail').textContent = email;
+        document.getElementById('footerPhone').textContent = phone;
+        document.getElementById('footerAddress').textContent = address;
+
+        // Social links
+        const fb = document.getElementById('facebookLink');
+        const ig = document.getElementById('instagramLink');
+        const tt = document.getElementById('tiktokLink');
+        
+        if (fb) {
+          if (business.facebook) { fb.href = business.facebook; fb.style.display = 'inline-block'; } 
+          else { fb.style.display = 'none'; }
+        }
+        if (ig) {
+          if (business.instagram) { ig.href = business.instagram; ig.style.display = 'inline-block'; } 
+          else { ig.style.display = 'none'; }
+        }
+        if (tt) {
+          if (business.tiktok) { tt.href = business.tiktok; tt.style.display = 'inline-block'; } 
+          else { tt.style.display = 'none'; }
+        }
+
+        // Shop photo with water reflection
+        if (contact.shopPhoto) {
+          const photoSection = document.getElementById('shopPhotoSection');
+          const photoDisplay = document.getElementById('shopPhotoDisplay');
+          const photoReflection = document.getElementById('shopPhotoReflection');
+          
+          if (photoSection && photoDisplay) {
+            photoDisplay.src = contact.shopPhoto;
+            if (photoReflection) photoReflection.src = contact.shopPhoto;
+            photoSection.classList.remove('hidden');
+          }
+        }
+
+        // Additional info
+        if (contact.description && contact.description.trim()) {
+          document.getElementById('previewDescription').textContent = contact.description;
+          document.getElementById('previewDescriptionDiv').classList.remove('hidden');
+        }
+        
+        // Page title
+        document.title = `Contact & Locate Us · ${shopName}`;
+        
+      } catch (error) {
+        console.error('Error loading contact page:', error);
+        showToast('Could not load all contact information');
+      }
+    }
+
+    // Account dropdown
+    window.toggleAccountDropdown = function() {
+      const dropdown = document.getElementById('accountDropdown');
+      if (!dropdown) return;
+      dropdown.classList.toggle('hidden');
+    };
+    
+    window.closeAccountDropdown = function() {
+      document.getElementById('accountDropdown')?.classList.add('hidden');
+    };
+
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', initializePage);
+  </script>
+
+</body>
+</html>
