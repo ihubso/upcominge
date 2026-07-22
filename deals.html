@@ -1,0 +1,1955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>🔥 Deals & Offers · Sucess Technology</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="global-header.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#6C3CE1',
+                        primaryHover: '#5A2FC4',
+                        dark: '#0F172A',
+                        'dark-secondary': '#1E293B'
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ============================================
+           DEALS PAGE - ULTRA MODERN
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #0F172A;
+            padding-top: 80px;
+            padding-bottom: 40px;
+        }
+
+        /* ----- Hero Banner with Slider ----- */
+        .deals-hero {
+            position: relative;
+            padding: 60px 56px;
+            overflow: hidden;
+            min-height: 380px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Hero Slider Container */
+        .deals-hero .hero-slider-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+    
+            z-index: 0;
+        }
+
+        .deals-hero .hero-slides {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .deals-hero .hero-slide {
+            min-width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transition: opacity 1.2s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .deals-hero .hero-slide.active {
+            opacity: 1;
+        }
+
+        /* Hero Overlay */
+        .deals-hero .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(15,23,42,0.88) 0%, rgba(15,23,42,0.6) 50%, rgba(15,23,42,0.4) 100%);
+            z-index: 1;
+            
+        }
+
+        /* Hero Skeleton */
+        .deals-hero .hero-skeleton {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            background: linear-gradient(135deg, #0F172A 0%, #1a1a2e 40%, #16213e 70%, #0f3460 100%);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-badge {
+            width: 160px;
+            height: 28px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 30px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-badge .shimmer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+            animation: heroShimmer 2s ease-in-out infinite;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-title {
+            width: 320px;
+            height: 48px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-title .shimmer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+            animation: heroShimmer 2s ease-in-out infinite;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-subtitle {
+            width: 240px;
+            height: 20px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 4px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-subtitle .shimmer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+            animation: heroShimmer 2s ease-in-out infinite;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-stats {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 24px;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-stat .stat-number {
+            width: 60px;
+            height: 32px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-stat .stat-number .shimmer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+            animation: heroShimmer 2s ease-in-out infinite;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-stat .stat-label {
+            width: 50px;
+            height: 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-stat .stat-label .shimmer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+            animation: heroShimmer 2s ease-in-out infinite;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-countdown {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-countdown .skeleton-cd-unit {
+            width: 64px;
+            height: 64px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-countdown .skeleton-cd-unit .shimmer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+            animation: heroShimmer 2s ease-in-out infinite;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-btn {
+            width: 180px;
+            height: 48px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .deals-hero .hero-skeleton .skeleton-btn .shimmer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+            animation: heroShimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes heroShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .deals-hero .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 55%;
+        }
+
+        .deals-hero .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(239, 68, 68, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #FCA5A5;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .deals-hero .hero-badge i {
+            font-size: 14px;
+            color: #EF4444;
+            animation: fire 1.5s ease-in-out infinite;
+        }
+
+        @keyframes fire {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(-10deg); }
+        }
+
+        .deals-hero h1 {
+            font-size: 48px;
+            font-weight: 900;
+            color: white;
+            line-height: 1.1;
+            margin-bottom: 12px;
+        }
+
+        .deals-hero h1 span {
+            background: linear-gradient(135deg, #EF4444, #F59E0B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .deals-hero p {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            max-width: 480px;
+        }
+
+        .deals-hero .hero-stats {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 28px;
+        }
+
+        .deals-hero .hero-stats .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .deals-hero .hero-stats .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: white;
+        }
+
+        .deals-hero .hero-stats .stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .deals-hero .hero-countdown {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .deals-hero .hero-countdown .cd-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 12px;
+            min-width: 64px;
+        }
+
+        .deals-hero .hero-countdown .cd-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: white;
+            line-height: 1;
+        }
+
+        .deals-hero .hero-countdown .cd-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        .deals-hero .hero-countdown .cd-separator {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 28px;
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+        }
+
+        .deals-hero .hero-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 36px;
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .deals-hero .hero-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 40px rgba(239, 68, 68, 0.6);
+        }
+
+        .deals-hero .floating-elements {
+            position: absolute;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            opacity: 0.8;
+        }
+
+        .deals-hero .floating-elements .float-item {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 16px 20px;
+            text-align: center;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .deals-hero .floating-elements .float-item:nth-child(2) {
+            animation-delay: 2s;
+        }
+        .deals-hero .floating-elements .float-item:nth-child(3) {
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .deals-hero .floating-elements .float-item .float-icon {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .deals-hero .floating-elements .float-item .float-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+        }
+
+        /* ----- Deals Container ----- */
+        .deals-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ----- Section Header ----- */
+        .deals-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .deals-section-header h2 {
+            font-size: 28px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .deals-section-header h2 i {
+            color: #EF4444;
+        }
+
+        .deals-section-header .deals-subtitle {
+            font-size: 14px;
+            color: #94A3B8;
+            font-weight: 500;
+        }
+
+        .deals-section-header .deals-filter {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .deals-section-header .deals-filter button {
+            padding: 6px 16px;
+            border: 2px solid #E2E8F0;
+            background: transparent;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            color: #475569;
+        }
+
+        .deals-section-header .deals-filter button:hover {
+            border-color: #6C3CE1;
+            color: #6C3CE1;
+        }
+
+        .deals-section-header .deals-filter button.active {
+            background: #6C3CE1;
+            color: white;
+            border-color: #6C3CE1;
+        }
+
+        /* ----- Products Grid ----- */
+        .deals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        /* ----- Deal Card ----- */
+        .deal-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #f0f0f0;
+            position: relative;
+        }
+
+        .deal-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+            border-color: transparent;
+        }
+
+        .deal-card .deal-image {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        .deal-card .deal-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .deal-card:hover .deal-image img {
+            transform: scale(1.08);
+        }
+
+        /* Deal badges */
+        .deal-card .deal-badge-top {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .deal-card .deal-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .deal-card .deal-badge.mega {
+            background: #EF4444;
+            color: white;
+            animation: pulse-badge 1.5s ease-in-out infinite;
+        }
+
+        .deal-card .deal-badge.hot {
+            background: #F59E0B;
+            color: white;
+        }
+
+        .deal-card .deal-badge.new {
+            background: #10B981;
+            color: white;
+        }
+
+        .deal-card .deal-badge.deal {
+            background: #6C3CE1;
+            color: white;
+        }
+
+        .deal-card .deal-discount-float {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            z-index: 2;
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 800;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
+            animation: pulse-discount 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-discount {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .deal-card .deal-wishlist {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 2;
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(8px);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94A3B8;
+            font-size: 16px;
+        }
+
+        .deal-card .deal-wishlist:hover {
+            background: #EF4444;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .deal-card .deal-wishlist.active {
+            background: #EF4444;
+            color: white;
+        }
+
+        /* Deal body */
+        .deal-card .deal-body {
+            padding: 16px 20px 20px;
+        }
+
+        .deal-card .deal-name {
+            font-weight: 700;
+            font-size: 16px;
+            color: #0F172A;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-decoration: none;
+            transition: color 0.2s ease;
+            margin-bottom: 2px;
+        }
+
+        .deal-card .deal-name:hover {
+            color: #6C3CE1;
+        }
+
+        .deal-card .deal-brand {
+            font-size: 13px;
+            color: #94A3B8;
+            margin-bottom: 6px;
+        }
+
+        .deal-card .deal-rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .deal-card .deal-rating .stars {
+            color: #F59E0B;
+            letter-spacing: 1px;
+        }
+
+        .deal-card .deal-rating .count {
+            color: #94A3B8;
+            font-size: 12px;
+        }
+
+        .deal-card .deal-price-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .deal-card .deal-current-price {
+            font-weight: 800;
+            font-size: 22px;
+            color: #EF4444;
+        }
+
+        .deal-card .deal-original-price {
+            font-size: 15px;
+            color: #94A3B8;
+            text-decoration: line-through;
+        }
+
+        .deal-card .deal-savings {
+            font-size: 12px;
+            font-weight: 700;
+            color: #10B981;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+
+        .deal-card .deal-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .deal-card .deal-btn-cart {
+            flex: 1;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #0F172A, #1E293B);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .deal-card .deal-btn-cart:hover {
+            background: linear-gradient(135deg, #6C3CE1, #5A2FC4);
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(108, 60, 225, 0.4);
+        }
+
+        .deal-card .deal-btn-view {
+            padding: 10px 14px;
+            border: 2px solid #E2E8F0;
+            background: transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #475569;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .deal-card .deal-btn-view:hover {
+            border-color: #6C3CE1;
+            color: #6C3CE1;
+            background: rgba(108, 60, 225, 0.05);
+        }
+
+        /* Deal progress bar */
+        .deal-card .deal-stock {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .deal-card .deal-stock .stock-bar {
+            flex: 1;
+            height: 4px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .deal-card .deal-stock .stock-bar .stock-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #EF4444, #F59E0B);
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        .deal-card .deal-stock .stock-text {
+            font-size: 11px;
+            font-weight: 600;
+            color: #94A3B8;
+            white-space: nowrap;
+        }
+
+        /* ----- Loading Skeletons for Products ----- */
+        .deal-skeleton-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #f0f0f0;
+        }
+
+        .deal-skeleton-card .skeleton-image {
+            width: 100%;
+            aspect-ratio: 1/1;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.5s ease-in-out infinite;
+        }
+
+        .deal-skeleton-card .skeleton-body {
+            padding: 16px 20px 20px;
+        }
+
+        .deal-skeleton-card .skeleton-text {
+            height: 14px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.5s ease-in-out infinite;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+
+        .deal-skeleton-card .skeleton-text.w-75 { width: 75%; }
+        .deal-skeleton-card .skeleton-text.w-50 { width: 50%; }
+        .deal-skeleton-card .skeleton-text.w-40 { width: 40%; }
+        .deal-skeleton-card .skeleton-text.w-60 { width: 60%; }
+
+        .deal-skeleton-card .skeleton-price {
+            height: 24px;
+            width: 45%;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.5s ease-in-out infinite;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .deal-skeleton-card .skeleton-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .deal-skeleton-card .skeleton-btn {
+            height: 40px;
+            flex: 1;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.5s ease-in-out infinite;
+            border-radius: 12px;
+        }
+
+        .deal-skeleton-card .skeleton-btn-view {
+            height: 40px;
+            width: 48px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.5s ease-in-out infinite;
+            border-radius: 12px;
+        }
+
+        @keyframes skeletonShimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        /* ----- Loading ----- */
+        .deals-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            flex-direction: column;
+            gap: 16px;
+            grid-column: 1 / -1;
+        }
+
+        /* ----- Empty ----- */
+        .deals-empty {
+            text-align: center;
+            padding: 60px 20px;
+            grid-column: 1 / -1;
+        }
+
+        .deals-empty .empty-icon {
+            font-size: 64px;
+            color: #E2E8F0;
+            margin-bottom: 16px;
+        }
+
+        .deals-empty h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0F172A;
+            margin-bottom: 8px;
+        }
+
+        .deals-empty p {
+            color: #94A3B8;
+            margin-bottom: 24px;
+        }
+
+        /* ----- Toast ----- */
+        .deals-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 30000;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            max-width: 90%;
+            text-align: center;
+            animation: toastUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        .deals-toast.success { background: #10B981; }
+        .deals-toast.error { background: #EF4444; }
+        .deals-toast.info { background: #3B82F6; }
+
+        @keyframes toastUp {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        /* ----- Responsive ----- */
+        @media (max-width: 1024px) {
+            .deals-hero {
+                margin: 0 16px 32px;
+                padding: 40px 32px;
+                min-height: 320px;
+            }
+
+            .deals-hero .hero-content {
+                max-width: 70%;
+            }
+
+            .deals-hero h1 {
+                font-size: 36px;
+            }
+
+            .deals-hero .floating-elements {
+                display: none;
+            }
+
+            .deals-hero .hero-skeleton .skeleton-title {
+                width: 250px;
+                height: 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 68px;
+            }
+
+            .deals-hero {
+                margin: 0 12px 24px;
+                padding: 28px 20px;
+                min-height: 280px;
+                border-radius: 16px;
+            }
+
+            .deals-hero .hero-content {
+                max-width: 100%;
+            }
+
+            .deals-hero h1 {
+                font-size: 28px;
+            }
+
+            .deals-hero p {
+                font-size: 15px;
+            }
+
+            .deals-hero .hero-stats {
+                gap: 20px;
+            }
+
+            .deals-hero .hero-stats .stat-number {
+                font-size: 24px;
+            }
+
+            .deals-hero .hero-countdown .cd-unit {
+                min-width: 48px;
+                padding: 6px 10px;
+            }
+
+            .deals-hero .hero-countdown .cd-number {
+                font-size: 22px;
+            }
+
+            .deals-hero .hero-countdown .cd-separator {
+                font-size: 20px;
+            }
+
+            .deals-hero .hero-btn {
+                padding: 10px 24px;
+                font-size: 14px;
+            }
+
+            .deals-hero .hero-skeleton .skeleton-title {
+                width: 200px;
+                height: 32px;
+            }
+            .deals-hero .hero-skeleton .skeleton-subtitle {
+                width: 160px;
+                height: 16px;
+            }
+            .deals-hero .hero-skeleton .skeleton-countdown .skeleton-cd-unit {
+                width: 48px;
+                height: 48px;
+            }
+            .deals-hero .hero-skeleton .skeleton-stats {
+                gap: 16px;
+            }
+            .deals-hero .hero-skeleton .skeleton-stat .stat-number {
+                width: 40px;
+                height: 24px;
+            }
+
+            .deals-container {
+                padding: 0 12px;
+            }
+
+            .deals-section-header h2 {
+                font-size: 22px;
+            }
+
+            .deals-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .deal-card .deal-body {
+                padding: 12px 14px 16px;
+            }
+
+            .deal-card .deal-name {
+                font-size: 14px;
+            }
+
+            .deal-card .deal-current-price {
+                font-size: 18px;
+            }
+
+            .deal-card .deal-original-price {
+                font-size: 13px;
+            }
+
+            .deal-card .deal-btn-cart {
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .deals-hero {
+                padding: 20px 16px;
+                min-height: 220px;
+                border-radius: 12px;
+            }
+
+            .deals-hero h1 {
+                font-size: 22px;
+            }
+
+            .deals-hero p {
+                font-size: 13px;
+            }
+
+            .deals-hero .hero-stats .stat-number {
+                font-size: 20px;
+            }
+
+            .deals-hero .hero-countdown .cd-unit {
+                min-width: 40px;
+                padding: 4px 8px;
+            }
+
+            .deals-hero .hero-countdown .cd-number {
+                font-size: 18px;
+            }
+
+            .deals-hero .hero-countdown .cd-label {
+                font-size: 8px;
+            }
+
+            .deals-hero .hero-countdown .cd-separator {
+                font-size: 16px;
+            }
+
+            .deals-hero .hero-skeleton .skeleton-title {
+                width: 160px;
+                height: 26px;
+            }
+            .deals-hero .hero-skeleton .skeleton-subtitle {
+                width: 130px;
+                height: 14px;
+            }
+            .deals-hero .hero-skeleton .skeleton-countdown .skeleton-cd-unit {
+                width: 38px;
+                height: 38px;
+            }
+            .deals-hero .hero-skeleton .skeleton-badge {
+                width: 120px;
+                height: 22px;
+            }
+            .deals-hero .hero-skeleton .skeleton-btn {
+                width: 140px;
+                height: 40px;
+            }
+
+            .deals-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .deal-card .deal-body {
+                padding: 10px 10px 12px;
+            }
+
+            .deal-card .deal-name {
+                font-size: 12px;
+                -webkit-line-clamp: 1;
+            }
+
+            .deal-card .deal-brand {
+                font-size: 11px;
+            }
+
+            .deal-card .deal-current-price {
+                font-size: 15px;
+            }
+
+            .deal-card .deal-original-price {
+                font-size: 11px;
+            }
+
+            .deal-card .deal-savings {
+                font-size: 10px;
+                padding: 1px 8px;
+            }
+
+            .deal-card .deal-btn-cart {
+                font-size: 10px;
+                padding: 6px 8px;
+            }
+
+            .deal-card .deal-btn-view {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .deal-card .deal-discount-float {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+
+            .deals-section-header h2 {
+                font-size: 18px;
+            }
+
+            .deals-section-header .deals-filter button {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         HEADER WILL BE INJECTED HERE
+         ============================================ -->
+
+    <!-- ============================================
+         DEALS PAGE CONTENT
+         ============================================ -->
+    <main>
+
+        <!-- Hero Banner with Slider & Skeleton -->
+        <section class="deals-hero" id="dealsHero">
+            <!-- Hero Skeleton -->
+            <div class="hero-skeleton" id="heroSkeleton">
+                <div class="skeleton-badge">
+                    <div class="shimmer"></div>
+                </div>
+                <div class="skeleton-title">
+                    <div class="shimmer"></div>
+                </div>
+                <div class="skeleton-subtitle">
+                    <div class="shimmer"></div>
+                </div>
+                <div class="skeleton-stats">
+                    <div class="skeleton-stat">
+                        <div class="stat-number"><div class="shimmer"></div></div>
+                        <div class="stat-label"><div class="shimmer"></div></div>
+                    </div>
+                    <div class="skeleton-stat">
+                        <div class="stat-number"><div class="shimmer"></div></div>
+                        <div class="stat-label"><div class="shimmer"></div></div>
+                    </div>
+                    <div class="skeleton-stat">
+                        <div class="stat-number"><div class="shimmer"></div></div>
+                        <div class="stat-label"><div class="shimmer"></div></div>
+                    </div>
+                </div>
+                <div class="skeleton-countdown">
+                    <div class="skeleton-cd-unit"><div class="shimmer"></div></div>
+                    <div class="skeleton-cd-unit"><div class="shimmer"></div></div>
+                    <div class="skeleton-cd-unit"><div class="shimmer"></div></div>
+                    <div class="skeleton-cd-unit"><div class="shimmer"></div></div>
+                </div>
+                <div class="skeleton-btn">
+                    <div class="shimmer"></div>
+                </div>
+            </div>
+
+            <!-- Hero Slider Container -->
+            <div class="hero-slider-container" id="heroSliderContainer">
+                <div class="hero-slides" id="heroSlides">
+                    <!-- Slides will be dynamically added -->
+                </div>
+            </div>
+
+            <!-- Hero Overlay -->
+            <div class="hero-overlay"></div>
+
+            <!-- Hero Content -->
+            <div class="hero-content" id="heroContent" style="display:none;">
+                <div class="hero-badge">
+                    <i class="fas fa-fire"></i> Limited Time Offers
+                </div>
+                <h1>🔥 Mega <span>Deals</span> of the Day</h1>
+                <p>Grab the best offers on premium products. Discounts up to <strong style="color:#EF4444;">70%</strong> on selected items. Hurry, these deals won't last!</p>
+
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalDeals">0</span>
+                        <span class="stat-label">Active Deals</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalSavings">0%</span>
+                        <span class="stat-label">Max Savings</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalItems">0</span>
+                        <span class="stat-label">Items On Sale</span>
+                    </div>
+                </div>
+
+                <div class="hero-countdown" id="heroCountdown">
+                    <div class="cd-unit">
+                        <span class="cd-number" id="cdDays">00</span>
+                        <span class="cd-label">Days</span>
+                    </div>
+                    <span class="cd-separator">:</span>
+                    <div class="cd-unit">
+                        <span class="cd-number" id="cdHours">00</span>
+                        <span class="cd-label">Hours</span>
+                    </div>
+                    <span class="cd-separator">:</span>
+                    <div class="cd-unit">
+                        <span class="cd-number" id="cdMinutes">00</span>
+                        <span class="cd-label">Minutes</span>
+                    </div>
+                    <span class="cd-separator">:</span>
+                    <div class="cd-unit">
+                        <span class="cd-number" id="cdSeconds">00</span>
+                        <span class="cd-label">Seconds</span>
+                    </div>
+                </div>
+
+                <a href="#dealsGrid" class="hero-btn">
+                    <i class="fas fa-bolt"></i> Explore Deals
+                </a>
+            </div>
+
+            <!-- Floating Elements -->
+            <div class="floating-elements">
+                <div class="float-item">
+                    <span class="float-icon">🔥</span>
+                    <span class="float-label">70% OFF</span>
+                </div>
+                <div class="float-item">
+                    <span class="float-icon">⚡</span>
+                    <span class="float-label">Flash Sale</span>
+                </div>
+                <div class="float-item">
+                    <span class="float-icon">🎯</span>
+                    <span class="float-label">Limited Stock</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Deals Section -->
+        <div class="deals-container">
+            <div class="deals-section-header">
+                <div>
+                    <h2><i class="fas fa-tags"></i> All Deals</h2>
+                    <span class="deals-subtitle">Handpicked offers just for you</span>
+                </div>
+                <div class="deals-filter" id="dealsFilter">
+                    <button class="active" data-filter="all">All</button>
+                    <button data-filter="mega">🔥 Mega</button>
+                    <button data-filter="hot">⚡ Hot</button>
+                    <button data-filter="new">✨ New</button>
+                </div>
+            </div>
+
+            <!-- Deals Grid -->
+            <div class="deals-grid" id="dealsGrid">
+                <!-- Product Skeletons -->
+                <div id="productSkeletons">
+                    ${Array(8).fill(0).map(() => `
+                        <div class="deal-skeleton-card">
+                            <div class="skeleton-image"></div>
+                            <div class="skeleton-body">
+                                <div class="skeleton-text w-75"></div>
+                                <div class="skeleton-text w-50"></div>
+                                <div class="skeleton-text w-60"></div>
+                                <div class="skeleton-price"></div>
+                                <div class="skeleton-actions">
+                                    <div class="skeleton-btn"></div>
+                                    <div class="skeleton-btn-view"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    </main>
+    <section class="relateted-section">
+         <div class="related-section">
+            <h2><i class="fas fa-boxes"></i> You May Also Like</h2>
+            <div id="randomProducts"></div>
+        </div>
+
+    </section>
+
+    <!-- ============================================
+         SCRIPTS
+         ============================================ -->
+    <script>
+
+        // --- State ---
+        let allDeals = [];
+        let filteredDeals = [];
+        let wishlist = [];
+        let currentFilter = 'all';
+        let countdownInterval = null;
+        let heroImages = [];
+        let heroImageIndex = 0;
+        let heroInterval = null;
+        let isHeroReady = false;
+
+        // --- DOM Elements ---
+        const elements = {
+            grid: document.getElementById('dealsGrid'),
+            productSkeletons: document.getElementById('productSkeletons'),
+            totalDeals: document.getElementById('totalDeals'),
+            totalSavings: document.getElementById('totalSavings'),
+            totalItems: document.getElementById('totalItems'),
+            filterBtns: document.querySelectorAll('#dealsFilter button'),
+            cdDays: document.getElementById('cdDays'),
+            cdHours: document.getElementById('cdHours'),
+            cdMinutes: document.getElementById('cdMinutes'),
+            cdSeconds: document.getElementById('cdSeconds'),
+            heroSkeleton: document.getElementById('heroSkeleton'),
+            heroContent: document.getElementById('heroContent'),
+            heroSlides: document.getElementById('heroSlides')
+        };
+
+        // ============================================================
+        //  FETCH RANDOM PRODUCT IMAGES FOR HERO
+        // ============================================================
+
+        async function fetchHeroImages(count = 5) {
+            const client = getSupabaseClient();
+            if (!client) return [];
+
+            try {
+                const { data, error } = await client
+                    .from('products')
+                    .select('image')
+                    .not('image', 'is', null)
+                    .limit(20);
+
+                if (error) throw error;
+
+                // Shuffle and pick random images
+                const shuffled = shuffleArray(data || []);
+                const selected = shuffled.slice(0, count);
+                return selected.map(p => p.image).filter(Boolean);
+            } catch (err) {
+                console.error('❌ Error fetching hero images:', err.message);
+                return [];
+            }
+        }
+
+        // ============================================================
+        //  SHUFFLE ARRAY
+        // ============================================================
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // ============================================================
+        //  HERO SLIDER
+        // ============================================================
+
+        function initHeroSlider(images) {
+            if (!elements.heroSlides || !images || images.length === 0) {
+                // Fallback images if none from DB
+                const fallbackImages = [
+                    'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200&q=80',
+                    'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1200&q=80',
+                    'https://images.unsplash.com/photo-1517994112540-009c47ea476b?w=1200&q=80',
+                    'https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=1200&q=80',
+                    'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&q=80'
+                ];
+                images = fallbackImages;
+            }
+
+            heroImages = images;
+            elements.heroSlides.innerHTML = '';
+
+            images.forEach((img, index) => {
+                const slide = document.createElement('div');
+                slide.className = `hero-slide ${index === 0 ? 'active' : ''}`;
+                slide.style.backgroundImage = `url(${img})`;
+                elements.heroSlides.appendChild(slide);
+            });
+
+            // Show hero content, hide skeleton
+            elements.heroSkeleton.style.display = 'none';
+            elements.heroContent.style.display = 'block';
+            isHeroReady = true;
+
+            // Start rotation if more than 1 image
+            if (images.length > 1) {
+                if (heroInterval) clearInterval(heroInterval);
+                heroInterval = setInterval(() => {
+                    const slides = elements.heroSlides.querySelectorAll('.hero-slide');
+                    slides.forEach(s => s.classList.remove('active'));
+                    heroImageIndex = (heroImageIndex + 1) % images.length;
+                    slides[heroImageIndex].classList.add('active');
+                }, 4000);
+            }
+        }
+
+        // ============================================================
+        //  HELPERS
+        // ============================================================
+
+        function showToast(message, type = 'success') {
+            const existing = document.querySelector('.deals-toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `deals-toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(-20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function renderStars(rating) {
+            const full = Math.floor(rating);
+            let html = '';
+            for (let i = 0; i < full; i++) html += '★';
+            for (let i = full; i < 5; i++) html += '☆';
+            return html;
+        }
+
+        function formatPrice(price) {
+            return price.toFixed(2);
+        }
+
+        function getBadge(discount, isHot, isNew) {
+            if (discount >= 40) return { label: '🔥 Mega', class: 'mega' };
+            if (discount >= 25) return { label: '⚡ Hot', class: 'hot' };
+            if (isNew) return { label: '✨ New', class: 'new' };
+            if (discount >= 10) return { label: '💸 Deal', class: 'deal' };
+            return null;
+        }
+
+        // ============================================================
+        //  FETCH DEALS
+        // ============================================================
+
+        async function fetchDeals() {
+            const client = getSupabaseClient();
+            if (!client) return [];
+
+            try {
+                const { data: dealsData, error: dealsError } = await client
+                    .from('deals')
+                    .select('product_id, discount')
+
+                if (dealsError) throw dealsError;
+
+                if (!dealsData || dealsData.length === 0) {
+                    console.log('ℹ️ No deals found');
+                    return [];
+                }
+
+                const productIds = dealsData.map(d => d.product_id).filter(Boolean);
+
+                if (productIds.length === 0) return [];
+
+                const { data: productsData, error: productsError } = await client
+                    .from('products')
+                    .select('*')
+                    .in('id', productIds);
+
+                if (productsError) throw productsError;
+
+                const deals = dealsData
+                    .map(deal => {
+                        const product = productsData?.find(p => p.id === deal.product_id);
+                        if (!product) return null;
+                        return {
+                            ...product,
+                            dealDiscount: deal.discount,
+                            isDeal: true,
+                            originalPrice: product.price,
+                            discountedPrice: product.price * (1 - deal.discount / 100)
+                        };
+                    })
+                    .filter(item => item !== null);
+
+                console.log(`✅ Loaded ${deals.length} deals`);
+                return deals;
+
+            } catch (err) {
+                console.error('❌ Error fetching deals:', err.message);
+                return [];
+            }
+        }
+
+        // ============================================================
+        //  LOAD WISHLIST
+        // ============================================================
+
+        function loadWishlist() {
+            try {
+                wishlist = JSON.parse(localStorage.getItem('st_wishlist') || '[]');
+            } catch (e) {
+                wishlist = [];
+            }
+        }
+
+        // ============================================================
+        //  RENDER DEALS
+        // ============================================================
+
+        function renderDeals(deals) {
+            const grid = elements.grid;
+
+            // Hide skeletons
+            if (elements.productSkeletons) {
+                elements.productSkeletons.style.display = 'none';
+            }
+
+            if (!deals || deals.length === 0) {
+                grid.innerHTML = `
+                    <div class="deals-empty">
+                        <div class="empty-icon"><i class="fas fa-tags"></i></div>
+                        <h2>No Deals Available</h2>
+                        <p>Check back soon for amazing offers!</p>
+                        <a href="products.html" style="display:inline-block;padding:12px 32px;background:#6C3CE1;color:white;border-radius:12px;text-decoration:none;font-weight:600;">
+                            <i class="fas fa-store"></i> Browse Products
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Update stats
+            elements.totalDeals.textContent = deals.length;
+            const maxDiscount = Math.max(...deals.map(d => d.dealDiscount || 0));
+            elements.totalSavings.textContent = maxDiscount + '%';
+            const totalItems = deals.reduce((sum, d) => sum + (d.stock || 0), 0);
+            elements.totalItems.textContent = totalItems;
+
+            grid.innerHTML = deals.map(deal => {
+                const discount = deal.dealDiscount || 0;
+                const originalPrice = deal.originalPrice || deal.price || 0;
+                const currentPrice = deal.discountedPrice || originalPrice * (1 - discount / 100);
+                const isWished = wishlist.includes(deal.id);
+                const rating = deal.rating || 0;
+                const reviewCount = deal.reviewCount || 0;
+                const stock = deal.stock || 0;
+                const stockPercent = stock > 0 ? Math.min((stock / 50) * 100, 100) : 0;
+
+                const badge = getBadge(discount, deal.isHot, deal.isNew);
+                const image = deal.image || deal.images?.[0] || 'https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product';
+
+                return `
+                    <div class="deal-card" data-id="${deal.id}" data-discount="${discount}">
+                        <div class="deal-image">
+                            <img src="${image}" alt="${deal.name || 'Product'}" loading="lazy"
+                                 onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'">
+                            <div class="deal-badge-top">
+                                ${badge ? `<span class="deal-badge ${badge.class}">${badge.label}</span>` : ''}
+                            </div>
+                            <span class="deal-discount-float">-${discount}%</span>
+                            <button class="deal-wishlist ${isWished ? 'active' : ''}" 
+                                    onclick="event.stopPropagation(); toggleWishlist('${deal.id}')">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="deal-body">
+                            <a href="item.html?product=${deal.id}" class="deal-name">${deal.name || 'Unknown Product'}</a>
+                            ${deal.brand ? `<div class="deal-brand">${deal.brand}</div>` : ''}
+                            <div class="deal-rating">
+                                <span class="stars">${renderStars(rating)}</span>
+                                <span class="count">(${reviewCount})</span>
+                            </div>
+                            <div class="deal-price-row">
+                                <span class="deal-current-price">FCFA ${formatPrice(currentPrice)}</span>
+                                <span class="deal-original-price">FCFA ${formatPrice(originalPrice)}</span>
+                                <span class="deal-savings">Save ${discount}%</span>
+                            </div>
+                            <div class="deal-actions">
+                                <button class="deal-btn-cart" onclick="event.stopPropagation(); addToCart('${deal.id}')">
+                                    <i class="fas fa-shopping-bag"></i> Add to Cart
+                                </button>
+                                <button class="deal-btn-view" onclick="event.stopPropagation(); window.location.href='item.html?product=${deal.id}'">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            ${stock > 0 ? `
+                                <div class="deal-stock">
+                                    <span class="stock-text">${stock} left</span>
+                                    <div class="stock-bar">
+                                        <div class="stock-fill" style="width:${stockPercent}%"></div>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="deal-stock">
+                                    <span class="stock-text" style="color:#EF4444;">Out of Stock</span>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================================
+        //  ADD TO CART
+        // ============================================================
+
+        async function addToCart(productId) {
+            try {
+                const client = getSupabaseClient();
+                let product = null;
+
+                product = allDeals.find(d => d.id === productId);
+
+                if (!product && client) {
+                    const { data, error } = await client
+                        .from('products')
+                        .select('*')
+                        .eq('id', productId)
+                        .single();
+
+                    if (!error && data) {
+                        product = data;
+                    }
+                }
+
+                if (!product) {
+                    showToast('❌ Product not found', 'error');
+                    return;
+                }
+
+                let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
+                const existing = cart.find(item => item.product_id === productId || item.id === productId);
+
+                const deal = allDeals.find(d => d.id === productId);
+                const discount = deal?.dealDiscount || 0;
+                const price = discount > 0 ? product.price * (1 - discount / 100) : product.price;
+
+                if (existing) {
+                    existing.qty = (existing.qty || 0) + 1;
+                } else {
+                    cart.push({
+                        product_id: productId,
+                        id: productId,
+                        name: product.name || 'Unknown',
+                        price: price,
+                        qty: 1,
+                        image: product.image || 'https://placehold.co/400x400',
+                        variants: product.variants || {},
+                        isDeal: discount > 0,
+                        originalPrice: discount > 0 ? product.price : null,
+                        discount: discount > 0 ? discount : null,
+                        brand: product.brand || ''
+                    });
+                }
+
+                localStorage.setItem('st_cart', JSON.stringify(cart));
+
+                const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
+                if (customerId && window.saveCartToDB) {
+                    await window.saveCartToDB(customerId, cart);
+                }
+
+                if (window.STHeader) {
+                    window.STHeader.AppState.cart = cart;
+                    if (window.STHeader.updateCounts) {
+                        window.STHeader.updateCounts();
+                    }
+                }
+
+                showToast(`✅ ${product.name || 'Product'} added to cart!`);
+            } catch (err) {
+                console.error('❌ Add to cart error:', err);
+                showToast('❌ Failed to add to cart', 'error');
+            }
+        }
+
+        // ============================================================
+        //  TOGGLE WISHLIST
+        // ============================================================
+
+        async function toggleWishlist(productId) {
+            try {
+                const index = wishlist.indexOf(productId);
+                if (index !== -1) {
+                    wishlist.splice(index, 1);
+                    showToast('❤️ Removed from wishlist', 'info');
+                } else {
+                    wishlist.push(productId);
+                    showToast('❤️ Added to wishlist!');
+                }
+
+                localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
+
+                const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
+                if (customerId && window.saveWishlistToDB) {
+                    await window.saveWishlistToDB(customerId, wishlist);
+                }
+
+                if (window.STHeader) {
+                    window.STHeader.AppState.wishlist = wishlist;
+                    if (window.STHeader.updateCounts) {
+                        window.STHeader.updateCounts();
+                    }
+                }
+
+                renderDeals(filteredDeals);
+            } catch (err) {
+                console.error('❌ Wishlist error:', err);
+                showToast('❌ Failed to update wishlist', 'error');
+            }
+        }
+
+        // ============================================================
+        //  COUNTDOWN TIMER
+        // ============================================================
+
+        function startCountdown() {
+            const target = new Date();
+            target.setHours(target.getHours() + 24);
+            target.setMinutes(0);
+            target.setSeconds(0);
+            target.setMilliseconds(0);
+
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            countdownInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = target.getTime() - now;
+
+                if (distance < 0) {
+                    clearInterval(countdownInterval);
+                    elements.cdDays.textContent = '00';
+                    elements.cdHours.textContent = '00';
+                    elements.cdMinutes.textContent = '00';
+                    elements.cdSeconds.textContent = '00';
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                elements.cdDays.textContent = String(days).padStart(2, '0');
+                elements.cdHours.textContent = String(hours).padStart(2, '0');
+                elements.cdMinutes.textContent = String(minutes).padStart(2, '0');
+                elements.cdSeconds.textContent = String(seconds).padStart(2, '0');
+            }, 1000);
+        }
+
+        // ============================================================
+        //  FILTER DEALS
+        // ============================================================
+
+        function filterDeals(filter) {
+            currentFilter = filter;
+
+            if (filter === 'all') {
+                filteredDeals = [...allDeals];
+            } else if (filter === 'mega') {
+                filteredDeals = allDeals.filter(d => (d.dealDiscount || 0) >= 40);
+            } else if (filter === 'hot') {
+                filteredDeals = allDeals.filter(d => (d.dealDiscount || 0) >= 25 && (d.dealDiscount || 0) < 40);
+            } else if (filter === 'new') {
+                filteredDeals = allDeals.filter(d => d.isNew === true);
+            }
+
+            renderDeals(filteredDeals);
+        }
+
+        // ============================================================
+        //  INITIALIZE
+        // ============================================================
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Load wishlist
+            loadWishlist();
+
+            // Start countdown
+            startCountdown();
+
+            // Fetch hero images and deals in parallel
+            const [heroImages, deals] = await Promise.all([
+                fetchHeroImages(6),
+                fetchDeals()
+            ]);
+
+            // Initialize hero slider
+            initHeroSlider(heroImages);
+
+            // Set deals
+            allDeals = deals;
+            filteredDeals = [...allDeals];
+
+            // Render
+            renderDeals(filteredDeals);
+
+            // Filter buttons
+            elements.filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    elements.filterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    filterDeals(this.dataset.filter);
+                });
+            });
+
+            // Watch for header updates
+            if (window.STHeader) {
+                const originalUpdate = window.STHeader.updateAuthUI;
+                window.STHeader.updateAuthUI = function() {
+                    if (originalUpdate) originalUpdate();
+                    loadWishlist();
+                    renderDeals(filteredDeals);
+                };
+            }
+
+            console.log('📄 Deals page loaded');
+            console.log(`🔥 ${allDeals.length} deals available`);
+            console.log(`🖼️ ${heroImages.length} hero images loaded`);
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (heroInterval) {
+                clearInterval(heroInterval);
+                heroInterval = null;
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        });
+
+        // ============================================================
+        //  EXPOSE GLOBALLY
+        // ============================================================
+
+        window.addToCart = addToCart;
+        window.toggleWishlist = toggleWishlist;
+        window.filterDeals = filterDeals;
+
+        console.log('✅ Deals page ready');
+    </script>
+     <script src="related-products.js"></script>
+</body>
+</html>

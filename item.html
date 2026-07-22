@@ -23,13 +23,13 @@
             }
         }
     </script>
-        <script src="global-header.js"></script>
+    <script src="global-header.js"></script>
     <style>
         
 .zoommodal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6); /* translucent */
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(12px);
     z-index: 20000000000000;
     display: flex;
@@ -37,7 +37,6 @@
     justify-content: center;
 }
 
-/* Image Zoom Modal Styles */
 #imageZoomModal {
     cursor: zoom-out;
     opacity: 0;
@@ -81,7 +80,6 @@
     transform: scale(0.95);
 }
 
-/* Prevent image dragging */
 #zoomedImage {
     -webkit-user-drag: none;
     user-select: none;
@@ -90,7 +88,7 @@
     -ms-user-select: none;
 }
 
-        /* Extra styles for product page */
+        /* Product page styles */
         .product-page-hero {
             background: linear-gradient(135deg, #fef9e6 0%, #eef2ff 100%);
             padding: 2rem 0;
@@ -101,7 +99,6 @@
             font-weight: 700;
         }
 
-        /* Loading shimmer */
         .shimmer-loading {
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 200% 100%;
@@ -124,7 +121,6 @@
             border-color: #e60012 !important;
         }
 
-        /* Image gallery thumbnails */
         .thumb-gallery {
             display: flex;
             gap: 0.75rem;
@@ -183,7 +179,6 @@
             transform: scale(1.05);
         }
 
-        /* Quantity selector */
         .qty-selector {
             display: flex;
             align-items: center;
@@ -225,7 +220,6 @@
             margin: 0;
         }
 
-        /* Related products grid */
         .related-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -268,7 +262,6 @@
             font-size: 0.95rem;
         }
 
-        /* Related Skeleton Cards */
         .related-skeleton-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -367,7 +360,6 @@
             animation: shimmer 1.5s ease-in-out infinite;
         }
 
-        /* Star rating */
         .star-rating {
             color: #f59e0b;
             font-size: 1.1rem;
@@ -377,7 +369,6 @@
             color: #d1d5db;
         }
 
-        /* Reviews */
         .reviews-dropdown-section .reviews-toggle {
             border: none;
             background: transparent;
@@ -402,7 +393,6 @@
             transition: max-height 0.3s ease, opacity 0.3s ease;
         }
 
-        /* Toast */
         .toast-msg {
             position: fixed;
             bottom: 2rem;
@@ -424,7 +414,6 @@
             opacity: 1;
         }
 
-        /* Loading skeleton */
         .skeleton {
             background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
             background-size: 200% 100%;
@@ -476,7 +465,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Back button */
         .back-btn {
             display: inline-flex;
             align-items: center;
@@ -497,7 +485,6 @@
             transform: translateX(-2px);
         }
 
-        /* Related Load More - Skeleton Loader */
         .related-loadmore {
             text-align: center;
             padding: 2rem 0;
@@ -609,9 +596,254 @@
 
         #productContent {
             margin-top: 90px;
-         
         }
-        /* Responsive */
+
+        /* Deals Slider Styles */
+        .deals-slider-wrapper {
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            padding: 8px 0;
+        }
+
+        .deals-slider-track {
+            display: flex;
+            gap: 20px;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        .deal-slide {
+            flex: 0 0 220px;
+            min-width: 220px;
+        }
+
+        .deal-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+            position: relative;
+            height: 100%;
+        }
+
+        .deal-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            border-color: #6C3CE1;
+        }
+
+        .deal-card .deal-card-image {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        .deal-card .deal-card-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .deal-card:hover .deal-card-image img {
+            transform: scale(1.05);
+        }
+
+        .deal-discount-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: #EF4444;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 800;
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .deal-card .deal-card-body {
+            padding: 14px 16px;
+        }
+
+        .deal-card .deal-card-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: #0F172A;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        .deal-card .deal-card-brand {
+            font-size: 12px;
+            color: #94A3B8;
+            margin: 2px 0 6px;
+        }
+
+        .deal-card .deal-card-price {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .deal-card .deal-current-price {
+            font-weight: 700;
+            font-size: 18px;
+            color: #EF4444;
+        }
+
+        .deal-card .deal-original-price {
+            font-size: 14px;
+            color: #94A3B8;
+            text-decoration: line-through;
+            font-weight: 400;
+        }
+
+        .deal-card .deal-card-actions {
+            margin-top: 10px;
+        }
+
+        .deal-card .deal-btn-cart {
+            width: 100%;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .deal-card .deal-btn-cart:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+        }
+
+        .deals-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            overflow: hidden;
+        }
+
+        .deals-section .deals-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .deals-section .deals-header h2 {
+            font-size: 28px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .deals-section .deals-header h2 i {
+            color: #EF4444;
+        }
+
+        .deals-section .deals-header .deals-subtitle {
+            font-size: 14px;
+            color: #94A3B8;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .deals-section {
+                padding: 0 16px;
+            }
+
+            .deals-section .deals-header h2 {
+                font-size: 22px;
+            }
+
+            .deal-slide {
+                flex: 0 0 160px;
+                min-width: 160px;
+            }
+
+            .deal-card .deal-card-title {
+                font-size: 13px;
+            }
+
+            .deal-card .deal-current-price {
+                font-size: 15px;
+            }
+
+            .deal-card .deal-original-price {
+                font-size: 12px;
+            }
+
+            .deal-card .deal-btn-cart {
+                font-size: 11px;
+                padding: 6px 10px;
+            }
+
+            .deal-discount-badge {
+                font-size: 12px;
+                padding: 2px 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .deal-slide {
+                flex: 0 0 140px;
+                min-width: 140px;
+            }
+
+            .deal-card .deal-card-body {
+                padding: 10px 12px;
+            }
+
+            .deal-card .deal-card-title {
+                font-size: 12px;
+                -webkit-line-clamp: 1;
+            }
+
+            .deal-card .deal-current-price {
+                font-size: 14px;
+            }
+
+            .deal-card .deal-original-price {
+                font-size: 11px;
+            }
+
+            .deal-card .deal-btn-cart {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+
+            .deals-section .deals-header h2 {
+                font-size: 18px;
+            }
+        }
+
         @media (max-width: 768px) {
             .product-page-hero h1 {
                 font-size: 1.8rem;
@@ -801,6 +1033,15 @@
                     </div>
                 </div>
 
+                <!-- Deals Section -->
+                <div id="dealsSection" class="mt-12 pt-8 border-t border-gray-200 deals-section">
+                    <div class="deals-header">
+                        <h2><i class="fas fa-bolt"></i> Special Deals</h2>
+                        <span class="deals-subtitle">🔥 Limited time offers</span>
+                    </div>
+                    <div id="dealsContainer"></div>
+                </div>
+
                 <!-- Reviews Section -->
                 <div id="reviewsSection" class="mt-12 pt-8 border-t border-gray-200 reviews-dropdown-section collapsed">
                     <button id="reviewsToggleBtn" type="button" class="reviews-toggle text-left w-full mb-6" aria-expanded="false">
@@ -860,8 +1101,6 @@
         </div>
     </main>
 
-
-
     <!-- Footer -->
     <footer class="bg-dark text-white py-12 mt-12">
         <div class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -899,14 +1138,12 @@
 
     <!-- Global Header -->
     <div id="imageZoomModal" class="zoommodal-overlay hidden" onclick="closeImageZoom()">
-        <!-- Close Button -->
         <button class="absolute top-4 right-4 text-white text-3xl z-10 hover:text-gray-300 transition-colors duration-200" 
                 onclick="event.stopPropagation(); closeImageZoom()" 
                 title="Close (ESC)">
             &times;
         </button>
         
-        <!-- Download Button -->
         <button id="downloadImageBtn" 
                 class="absolute top-4 right-16 text-white p-2 rounded-full hover:bg-white/10 transition-colors duration-200"
                 onclick="event.stopPropagation(); downloadZoomedImage()" 
@@ -916,7 +1153,6 @@
             </svg>
         </button>
         
-        <!-- Zoom Controls -->
         <div class="absolute top-4 left-4 flex gap-2">
             <button class="zoom-control-btn" onclick="event.stopPropagation(); zoomIn()" title="Zoom In (+)">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -935,7 +1171,6 @@
             </button>
         </div>
         
-        <!-- Image Container -->
         <div class="relative max-w-full max-h-full flex items-center justify-center">
             <img id="zoomedImage" 
                 alt="Zoomed Image" 
@@ -944,18 +1179,15 @@
                 oncontextmenu="return false;">
         </div>
         
-        <!-- Image Title -->
         <div id="zoomedImageTitle" 
             class="absolute bottom-4 left-0 w-full text-center text-white text-lg font-medium px-4">
         </div>
         
-        <!-- Zoom Level Indicator -->
         <div id="zoomLevelIndicator" 
             class="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm hidden">
             100%
         </div>
         
-        <!-- Drag Instruction (only shows on mobile) -->
         <div id="dragInstruction" 
             class="absolute bottom-16 left-0 w-full text-center text-white/70 text-sm px-4 hidden sm:block">
             Drag to pan • Pinch to zoom
@@ -966,7 +1198,6 @@
         // ============================================================
         //  PRODUCT PAGE — Standalone Product Detail with Supabase
         // ============================================================
-
 
         let currentProduct = null;
         let currentProductId = null;
@@ -1002,7 +1233,6 @@
             for (let i = full; i < 5; i++) html += '<span class="empty">☆</span>';
             return html;
         }
-
         // --- Fetch Product Details ---
         async function fetchProductDetails(productId) {
             const client = getSupabaseClient();
@@ -1031,12 +1261,282 @@
                     data.images = [data.image];
                 }
 
+                // Check if product has a deal
+                const deal = await checkProductDeal(productId);
+                if (deal) {
+                    data.isDeal = true;
+                    data.discount = deal.discount;
+                }
+
                 return data;
             } catch (err) {
                 console.error('Error:', err.message);
                 return null;
             }
         }
+
+        // --- Check Product Deal ---
+        async function checkProductDeal(productId) {
+            const client = getSupabaseClient();
+            if (!client) return null;
+
+            try {
+                const { data, error } = await client
+                    .from('deals')
+                    .select('discount')
+                    .eq('product_id', productId)
+                    .single();
+
+                if (error || !data) return null;
+                return data;
+            } catch (err) {
+                return null;
+            }
+        }
+
+        // --- Fetch All Deals ---
+        async function fetchAllDeals() {
+            const client = getSupabaseClient();
+            if (!client) return [];
+
+            try {
+                const { data: dealsData, error: dealsError } = await client
+                    .from('deals')
+                    .select('product_id, discount');
+
+                if (dealsError) throw dealsError;
+                if (!dealsData || dealsData.length === 0) {
+                    console.log('ℹ️ No deals found');
+                    return [];
+                }
+
+                const productIds = dealsData.map(d => d.product_id).filter(id => id);
+                if (productIds.length === 0) return [];
+
+                const { data: productsData, error: productsError } = await client
+                    .from('products')
+                    .select('*')
+                    .in('id', productIds);
+
+                if (productsError) throw productsError;
+
+                const dealsWithProducts = dealsData
+                    .map(deal => {
+                        const product = productsData?.find(p => p.id === deal.product_id);
+                        if (!product) return null;
+                        return {
+                            ...product,
+                            dealDiscount: deal.discount,
+                            isDeal: true,
+                            originalPrice: product.price,
+                            discountedPrice: product.price * (1 - deal.discount / 100)
+                        };
+                    })
+                    .filter(item => item !== null);
+
+                return dealsWithProducts;
+            } catch (err) {
+                console.error('❌ Error fetching deals:', err.message);
+                return [];
+            }
+        }
+
+        // --- Deals Slider ---
+        let slideInterval = null;
+        let currentPosition = 0;
+
+        function renderDealsSlider(deals, containerId = 'dealsContainer') {
+            const container = document.getElementById(containerId);
+            if (!container) {
+                console.warn(`⚠️ Container #${containerId} not found`);
+                return;
+            }
+
+            if (!deals || deals.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center;padding:20px;color:#94A3B8;">
+                        <p style="font-size:14px;">No deals available right now</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Clear any existing interval
+            if (slideInterval) {
+                clearInterval(slideInterval);
+                slideInterval = null;
+            }
+
+            let html = `
+                <div class="deals-slider-wrapper">
+                    <div class="deals-slider-track" id="dealsSliderTrack">
+            `;
+
+            // Duplicate deals for seamless looping
+            const doubledDeals = [...deals, ...deals, ...deals];
+
+            doubledDeals.forEach((deal, index) => {
+                const image = deal.image || deal.images?.[0] || 'https://placehold.co/400x400/6C3CE1/FFFFFF?text=Deal';
+                const discount = deal.dealDiscount || 0;
+                const originalPrice = deal.originalPrice || deal.price || 0;
+                const currentPrice = deal.discountedPrice || originalPrice * (1 - discount / 100);
+
+                html += `
+                    <div class="deal-slide" data-index="${index}">
+                        <div class="deal-card" onclick="window.location.href='item.html?product=${deal.id}'">
+                            <div class="deal-card-image">
+                                <img src="${image}" alt="${deal.name || 'Product'}" loading="lazy"
+                                     onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Deal'">
+                                <div class="deal-discount-badge">-${discount}%</div>
+                            </div>
+                            <div class="deal-card-body">
+                                <h3 class="deal-card-title">${deal.name || 'Unknown Product'}</h3>
+                                ${deal.brand ? `<p class="deal-card-brand">${deal.brand}</p>` : ''}
+                                <div class="deal-card-price">
+                                    <span class="deal-current-price">FCFA ${currentPrice.toFixed(2)}</span>
+                                    <span class="deal-original-price">FCFA ${originalPrice.toFixed(2)}</span>
+                                </div>
+                                <div class="deal-card-actions">
+                                    <button class="deal-btn-cart" onclick="event.stopPropagation(); window.addToCartFromDeal('${deal.id}')">
+                                        <i class="fas fa-shopping-bag"></i> Add to Cart
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+
+            // Initialize slider after DOM update
+            setTimeout(() => {
+                startSlider(deals.length);
+            }, 100);
+        }
+
+        function startSlider(totalItems) {
+            const track = document.getElementById('dealsSliderTrack');
+            if (!track) return;
+
+            if (slideInterval) {
+                clearInterval(slideInterval);
+                slideInterval = null;
+            }
+
+            const slideWidth = track.querySelector('.deal-slide')?.offsetWidth || 220;
+            const gap = 20;
+            const itemWidth = slideWidth + gap;
+            currentPosition = 0;
+            track.style.transform = `translateX(0)`;
+
+            slideInterval = setInterval(() => {
+                currentPosition -= itemWidth;
+                track.style.transform = `translateX(${currentPosition}px)`;
+                track.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                
+                const totalWidth = totalItems * itemWidth;
+                if (Math.abs(currentPosition) >= totalWidth) {
+                    setTimeout(() => {
+                        track.style.transition = 'none';
+                        currentPosition = 0;
+                        track.style.transform = `translateX(0)`;
+                        track.offsetHeight;
+                        setTimeout(() => {
+                            track.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                        }, 50);
+                    }, 800);
+                }
+            }, 3000);
+
+            const wrapper = track.closest('.deals-slider-wrapper');
+            if (wrapper) {
+                wrapper.addEventListener('mouseenter', () => {
+                    if (slideInterval) {
+                        clearInterval(slideInterval);
+                        slideInterval = null;
+                    }
+                });
+                wrapper.addEventListener('mouseleave', () => {
+                    if (!slideInterval) {
+                        startSlider(totalItems);
+                    }
+                });
+            }
+        }
+
+        // --- Add to Cart from Deal ---
+        window.addToCartFromDeal = async function(productId) {
+            try {
+                const client = getSupabaseClient();
+                let product = null;
+
+                if (client) {
+                    const { data, error } = await client
+                        .from('products')
+                        .select('*')
+                        .eq('id', productId)
+                        .single();
+
+                    if (!error && data) {
+                        product = data;
+                    }
+                }
+
+                if (!product) {
+                    showToast('❌ Product not found');
+                    return;
+                }
+
+                let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
+                const existing = cart.find(item => item.product_id === productId || item.id === productId);
+
+                if (existing) {
+                    existing.qty = (existing.qty || 0) + 1;
+                } else {
+                    // Check if this product has a deal
+                    const deal = await checkProductDeal(productId);
+                    const dealDiscount = deal ? deal.discount : 0;
+                    cart.push({
+                        product_id: productId,
+                        id: productId,
+                        name: product.name || 'Unknown',
+                        price: dealDiscount > 0 ? product.price * (1 - dealDiscount / 100) : product.price,
+                        qty: 1,
+                        image: product.image || 'https://placehold.co/400x400',
+                        variants: product.variants || {},
+                        isDeal: dealDiscount > 0,
+                        originalPrice: dealDiscount > 0 ? product.price : null,
+                        discount: dealDiscount > 0 ? dealDiscount : null,
+                        brand: product.brand || ''
+                    });
+                }
+
+                localStorage.setItem('st_cart', JSON.stringify(cart));
+
+                const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
+                if (customerId && window.saveCartToDB) {
+                    await window.saveCartToDB(customerId, cart);
+                }
+
+                if (window.STHeader) {
+                    window.STHeader.AppState.cart = cart;
+                    if (window.STHeader.updateCounts) {
+                        window.STHeader.updateCounts();
+                    }
+                }
+
+                showToast(`✅ ${product.name || 'Product'} added to cart!`);
+            } catch (err) {
+                console.error('❌ Add to cart error:', err);
+                showToast('❌ Failed to add to cart');
+            }
+        };
 
         // --- Fetch All Products (for related) ---
         async function getAllProducts() {
@@ -1077,7 +1577,6 @@
         async function saveCart(cart) {
             localStorage.setItem('st_cart', JSON.stringify(cart));
 
-            // Sync with Supabase
             const customerId = window.getCurrentCustomerId?.();
             const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
             const client = getSupabaseClient();
@@ -1107,7 +1606,6 @@
                 }
             }
 
-            // Update header
             if (window.STHeader) {
                 window.STHeader.AppState.cart = cart;
                 if (window.STHeader.updateCounts) {
@@ -1130,7 +1628,6 @@
         async function saveWishlist(wishlist) {
             localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
 
-            // Sync with Supabase
             const customerId = window.getCurrentCustomerId?.();
             const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
             const client = getSupabaseClient();
@@ -1153,7 +1650,6 @@
                 }
             }
 
-            // Update header
             if (window.STHeader) {
                 window.STHeader.AppState.wishlist = wishlist;
                 if (window.STHeader.updateCounts) {
@@ -1212,7 +1708,6 @@
             const qtyInput = document.getElementById('qtyInput');
             const qty = parseInt(qtyInput.value) || 1;
 
-            // Check stock
             if (product.stock !== undefined && qty > product.stock) {
                 showToast('⚠️ Only ' + product.stock + ' items available');
                 return;
@@ -1228,17 +1723,19 @@
             if (existingIndex !== -1) {
                 cart[existingIndex].qty = (cart[existingIndex].qty || 0) + qty;
             } else {
+                const deal = await checkProductDeal(product.id);
+                const dealDiscount = deal ? deal.discount : 0;
                 cart.push({
                     product_id: product.id,
                     id: product.id,
                     name: product.name,
-                    price: product.price || 0,
+                    price: dealDiscount > 0 ? product.price * (1 - dealDiscount / 100) : product.price,
                     qty: qty,
                     image: product.image || 'https://placehold.co/400x400',
                     variants: variants,
-                    isDeal: currentDealInfo ? true : false,
-                    originalPrice: currentDealInfo ? product.price : null,
-                    discount: currentDealInfo ? currentDealInfo.discount : null,
+                    isDeal: dealDiscount > 0,
+                    originalPrice: dealDiscount > 0 ? product.price : null,
+                    discount: dealDiscount > 0 ? dealDiscount : null,
                     brand: product.brand || ''
                 });
             }
@@ -1344,12 +1841,10 @@
                     date: new Date().toLocaleDateString()
                 });
 
-                // Save to localStorage for persistence
                 localStorage.setItem('st_reviews', JSON.stringify(window._cachedReviews));
 
                 renderReviews(productId);
 
-                // Update rating display
                 const avg = getAverageRating(productId);
                 const count = getReviewCount(productId);
                 document.getElementById('productRating').innerHTML = renderStars(avg);
@@ -1508,10 +2003,8 @@
             isLoadingMore = true;
             showRelatedSkeletonLoader();
 
-            // Simulate loading delay for smoother UX
             setTimeout(() => {
                 const nextBatch = relatedProductsPool.splice(0, RELATED_BATCH_SIZE);
-                // Remove skeleton loader
                 const loadMore = document.getElementById('relatedLoadMore');
                 if (loadMore) {
                     loadMore.classList.add('hidden');
@@ -1520,7 +2013,6 @@
                 relatedLoadedCount += nextBatch.length;
                 isLoadingMore = false;
                 updateRelatedLoadMore(Boolean(relatedProductsPool.length));
-                // Re-setup observer after content update
                 setTimeout(setupRelatedObserver, 100);
             }, 400);
         }
@@ -1575,7 +2067,6 @@
             document.title = `${product.name} · Sucess Technology`;
 
             // Breadcrumb
-           
             const brandLink = document.getElementById('breadcrumbBrand');
             if (product.brand) {
                 brandLink.textContent = product.brand;
@@ -1584,7 +2075,6 @@
             } else {
                 brandLink.style.display = 'none';
             }
-            // Breadcrumb
             const categoryLink = document.getElementById('breadcrumbCategory');
             if (product.category) {
                 categoryLink.textContent = product.category;
@@ -1593,16 +2083,12 @@
             } else {
                 categoryLink.style.display = 'none';
             }
-                        document.getElementById('breadcrumbName').textContent = product.name;
+            document.getElementById('breadcrumbName').textContent = product.name;
 
-            // Brand
             document.getElementById('productBrand').textContent = product.brand || 'all';
-             document.getElementById('productcategory').textContent = product.category || 'all';
-
-            // Name
+            document.getElementById('productcategory').textContent = product.category || 'all';
             document.getElementById('productName').textContent = product.name;
 
-            // Load reviews from localStorage
             try {
                 const saved = JSON.parse(localStorage.getItem('st_reviews') || '{}');
                 window._cachedReviews = saved;
@@ -1610,14 +2096,12 @@
                 window._cachedReviews = {};
             }
 
-            // Rating
             const avg = getAverageRating(product.id);
             const count = getReviewCount(product.id);
             document.getElementById('productRating').innerHTML = renderStars(avg);
             document.getElementById('reviewCount').textContent = `${count} Reviews`;
             document.getElementById('reviewCountLabel').textContent = count;
 
-            // --- Images ---
             let allImages = [product.image];
             if (product.images && Array.isArray(product.images)) {
                 const extra = product.images.filter(img => img !== product.image);
@@ -1630,25 +2114,22 @@
             mainImg.alt = product.name;
             mainImg.onerror = () => { mainImg.src = 'https://placehold.co/600x400?text=No+Image'; };
 
-
-            // Thumbnails
             const gallery = document.getElementById('thumbnailGallery');
             gallery.innerHTML = allImages.map((img, i) =>
                 `<img src="${img}" alt="View ${i+1}" class="${i === 0 ? 'active' : ''}"
                       onclick="switchImage('${img}', ${i})"
                       onerror="this.src='https://placehold.co/70x70?text=No+Image'">`
             ).join('');
-            // Click main image to zoom
+
             mainImg.onclick = () => {
                 if (typeof zoomImage === 'function') {
                     zoomImage(mainImg.src, product.name, allImages, 0);
                 }
             };
-            // --- Price ---
+
             const originalPrice = product.price || 0;
             const priceSection = document.getElementById('priceSection');
 
-            // Check for deal
             const hasDeal = product.isDeal || false;
             const discount = product.discount || 0;
             const discountedPrice = hasDeal ? originalPrice * (1 - discount / 100) : originalPrice;
@@ -1673,10 +2154,8 @@
                 document.getElementById('dealInfo').classList.add('hidden');
             }
 
-            // --- Description ---
             document.getElementById('productDescription').textContent = product.description || 'No description available.';
 
-            // --- Specs ---
             const specsGrid = document.getElementById('specsGrid');
             const specItems = [];
             if (product.cpu) specItems.push({ label: 'Processor', value: product.cpu });
@@ -1695,7 +2174,6 @@
                 ).join('');
             }
 
-            // --- Variants ---
             const variantsSection = document.getElementById('variantsSection');
             if (product.variants && product.variants.length > 0) {
                 variantsSection.innerHTML = product.variants.map(v => `
@@ -1709,7 +2187,6 @@
                         </div>
                     </div>
                 `).join('');
-                // Attach variant click events
                 variantsSection.querySelectorAll('.variant-option').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const container = this.closest('div[data-variant-type]');
@@ -1721,7 +2198,6 @@
                         currentVariants[type] = this.dataset.variantValue;
                     });
                 });
-                // Auto-select first variant
                 variantsSection.querySelectorAll('div[data-variant-type]').forEach(container => {
                     const first = container.querySelector('.variant-option');
                     if (first) {
@@ -1736,7 +2212,6 @@
                 variantsSection.classList.add('hidden');
             }
 
-            // --- Stock ---
             const stockDisplay = document.getElementById('stockDisplay');
             if (product.stock !== undefined) {
                 stockDisplay.textContent = product.stock > 0 ? `${product.stock} available` : 'Out of stock';
@@ -1745,34 +2220,25 @@
                 stockDisplay.textContent = '';
             }
 
-            // --- Wishlist status ---
             const wishlist = await getWishlist();
             isWished = wishlist.includes(product.id);
             updateWishlistButton();
 
-            // --- Reviews ---
             renderReviews(product.id);
-
-            // --- Related ---
             await renderRelatedProducts(product);
 
-            // --- Show content ---
+            // Load and render deals
+            const deals = await fetchAllDeals();
+            renderDealsSlider(deals, 'dealsContainer');
+
             document.getElementById('loadingState').classList.add('hidden');
             document.getElementById('productContent').classList.remove('hidden');
 
-            // --- Setup add to cart ---
             document.getElementById('addToCartBtn').onclick = () => handleAddToCart(product);
-
-            // --- Setup wishlist toggle ---
             document.getElementById('wishlistBtn').onclick = () => handleToggleWishlist(product.id);
-
-            // --- Setup share ---
             document.getElementById('shareBtn').onclick = () => handleShare(product);
-
-            // --- Setup review submit ---
             document.getElementById('submitReviewBtn').onclick = () => handleSubmitReview(product.id);
 
-            // --- Setup quantity ---
             const qtyInput = document.getElementById('qtyInput');
             qtyInput.max = product.stock || 99;
             qtyInput.addEventListener('change', () => {
@@ -1781,7 +2247,6 @@
                 if (product.stock && val > product.stock) qtyInput.value = product.stock;
             });
 
-            // Update header
             if (window.STHeader) {
                 const cart = await getCart();
                 window.STHeader.AppState.cart = cart;
@@ -1804,7 +2269,6 @@
             try {
                 let product = await fetchProductDetails(id);
                 if (!product) {
-                    // Try to find by name match
                     const all = await getAllProducts();
                     const normalizedId = String(id).trim().toLowerCase();
                     product = all.find(p =>
@@ -1840,7 +2304,6 @@
                 section.setAttribute('aria-expanded', expanded ? 'true' : 'false');
             });
 
-            // Desktop always expanded
             if (window.matchMedia('(min-width: 640px)').matches) {
                 section.classList.remove('collapsed');
                 section.classList.add('expanded');
@@ -1850,7 +2313,6 @@
 
         // --- Initialize ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Load reviews from localStorage
             try {
                 const saved = JSON.parse(localStorage.getItem('st_reviews') || '{}');
                 window._cachedReviews = saved;
@@ -1862,7 +2324,6 @@
             renderCart();
             initReviewDropdown();
 
-            // Update header when it loads
             setTimeout(async () => {
                 if (window.STHeader) {
                     const cart = await getCart();
@@ -1881,9 +2342,8 @@
         window.toggleWishlist = handleToggleWishlist;
         window.renderCart = renderCart;
         window.showToast = showToast;
-      
 
-        console.log('📄 Product page loaded with Supabase integration');
+        console.log('📄 Product page loaded with Supabase integration and deals');
     </script>
     <script src="viewer/zoom.js"></script>
 

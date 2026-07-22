@@ -24,10 +24,27 @@
 <section class="hot-products-section">
     <div id="hotProducts"></div>
 </section>
+<section class="deals-section">
+    <div class="deals-header">
+        <h2><i class="fas fa-fire"></i> Deals du Jour</h2>
+        <a href="deals.html" class="deals-view-all">Voir Plus →</a>
+    </div>
+    <div id="dealsContainer"></div>
+</section>
+<section class="categoryShowcase-section">
+<div id="categoryShowcase" 
+     data-filter-type="category" 
+     data-filter-value="phone"
+     data-title="📱 Smartphones"
+     data-countdown-hours="48">
+</div>
+</section>
      <div class="related-section">
             <h2><i class="fas fa-boxes"></i> You May Also Like</h2>
             <div id="randomProducts"></div>
         </div>
+
+      
 <footer id="support">
   <div>
     <h4>Products</h4>
@@ -63,6 +80,9 @@
  
   <script src="hero-banner.js"></script>
     <script src="renderHotProducts.js"></script>
+    <script src="deals-component.js"></script>
     <script src="related-products.js"></script>
+    <script src="category-showcase.js"></script>
+
 </body>
 </html>

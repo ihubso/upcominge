@@ -631,453 +631,545 @@
     </footer>
     
     <script>
-        // ============================================================
-        // 1. CART STATE
-        // ============================================================
+     // ============================================================
+// 1. CART STATE
+// ============================================================
 
-        let cartItems = [];
-        let discountApplied = 0;
-        let discountCode = '';
+let cartItems = [];
+let discountApplied = 0;
+let discountCode = '';
 
-        // ============================================================
-        // 2. RENDER CART
-        // ============================================================
+// ============================================================
+// 2. RENDER CART
+// ============================================================
 
-        function renderCart() {
-            const container = document.getElementById('stCartItemsContainer');
-            const loading = document.getElementById('stCartLoading');
-            const cartCount = document.getElementById('stCartPageCount');
+function renderCart() {
+    const container = document.getElementById('stCartItemsContainer');
+    const loading = document.getElementById('stCartLoading');
+    const cartCount = document.getElementById('stCartPageCount');
 
-            // Hide loading
-            loading.style.display = 'none';
+    // Hide loading
+    loading.style.display = 'none';
 
-            if (!cartItems || cartItems.length === 0) {
-                container.innerHTML = `
-                    <div class="st-empty-cart">
-                        <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
-                        <h2>Your cart is empty</h2>
-                        <p>Looks like you haven't added any items to your cart yet.</p>
-                        <a href="Search.html" class="st-btn-shop">
-                            <i class="fas fa-store"></i> Start Shopping
-                        </a>
-                    </div>
-                `;
-                cartCount.textContent = '0 items';
-                updateSummary();
+    if (!cartItems || cartItems.length === 0) {
+        container.innerHTML = `
+            <div class="st-empty-cart">
+                <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
+                <h2>Your cart is empty</h2>
+                <p>Looks like you haven't added any items to your cart yet.</p>
+                <a href="Search.html" class="st-btn-shop">
+                    <i class="fas fa-store"></i> Start Shopping
+                </a>
+            </div>
+        `;
+        cartCount.textContent = '0 items';
+        updateSummary();
+        return;
+    }
+
+    cartCount.textContent = cartItems.length + ' item' + (cartItems.length > 1 ? 's' : '');
+
+    container.innerHTML = cartItems.map((item, index) => `
+        <div class="st-cart-item" data-index="${index}">
+            <div class="st-cart-item-image">
+                <img src="${item.image || 'https://placehold.co/600x400'}" 
+                     alt="${item.name || 'Product'}" 
+                     onerror="this.src='https://placehold.co/600x400'">
+            </div>
+            <div class="st-cart-item-details">
+                <a href="item.html?product=${item.product_id || item.id}" class="st-item-name">
+                    ${item.name || 'Unknown Product'}
+                </a>
+                ${item.brand ? `<span class="st-item-brand">${item.brand}</span>` : ''}
+                ${item.variants && Object.keys(item.variants).length > 0 ? `
+                    <span class="st-item-variant">
+                        ${Object.entries(item.variants).map(([key, val]) => `${key}: ${val}`).join(' | ')}
+                    </span>
+                ` : ''}
+                <div class="st-item-price">
+                    $${(item.price || 0).toFixed(2)}
+                    ${item.originalPrice && item.originalPrice > item.price ? `
+                        <span class="st-original-price">$${item.originalPrice.toFixed(2)}</span>
+                        <span class="st-deal-badge">-${Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}%</span>
+                    ` : ''}
+                </div>
+            </div>
+            <div class="st-cart-item-actions">
+                <div class="st-quantity-control">
+                    <button onclick="updateQuantity(${index}, -1)" aria-label="Decrease quantity">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <span class="st-qty-value">${item.qty || 1}</span>
+                    <button onclick="updateQuantity(${index}, 1)" aria-label="Increase quantity">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <button class="st-remove-btn" onclick="removeItem(${index})" aria-label="Remove item">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    updateSummary();
+}
+
+// ============================================================
+// 3. CART OPERATIONS - FIXED
+// ============================================================
+
+function updateQuantity(index, change) {
+    if (!cartItems[index]) return;
+    const newQty = (cartItems[index].qty || 1) + change;
+    if (newQty < 1) return;
+    
+    // Update the quantity
+    cartItems[index].qty = newQty;
+    
+    // Save to localStorage AND Supabase
+    saveCart();
+    renderCart();
+}
+
+function removeItem(index) {
+    if (!cartItems[index]) return;
+    
+    const removedItem = cartItems[index];
+    cartItems.splice(index, 1);
+    
+    // Save to localStorage AND Supabase
+    saveCart();
+    renderCart();
+    
+    if (removedItem && removedItem.name) {
+        showNotification(`🗑️ Removed "${removedItem.name}" from cart`);
+    }
+}
+
+// ============================================================
+// 4. SAVE CART - FIXED with proper deduplication
+// ============================================================
+
+function saveCart() {
+    // DEDUPLICATE: Remove duplicate product entries before saving
+    // This prevents multiple rows for the same product
+    const uniqueCart = [];
+    const seen = new Set();
+    
+    for (const item of cartItems) {
+        const key = item.product_id || item.id;
+        if (!key) continue;
+        
+        if (seen.has(key)) {
+            // If we already have this product, merge quantities
+            const existing = uniqueCart.find(i => (i.product_id || i.id) === key);
+            if (existing) {
+                existing.qty = (existing.qty || 0) + (item.qty || 1);
+            }
+        } else {
+            seen.add(key);
+            uniqueCart.push({ ...item });
+        }
+    }
+    
+    // Use the deduplicated cart
+    cartItems = uniqueCart;
+    
+    // Save to localStorage
+    localStorage.setItem('st_cart', JSON.stringify(cartItems));
+    
+    // Get customer_id or session_id
+    const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
+    const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+    
+    // Save to Supabase
+    const client = getSupabaseClient();
+    if (client) {
+        if (cartItems.length === 0) {
+            if (customerId) {
+                deleteCartFromDB(customerId, true);
+            } else {
+                deleteCartFromDB(sessionId, false);
+            }
+        } else {
+            if (customerId) {
+                saveCartToDB(customerId, cartItems, true);
+            } else {
+                saveCartToDB(sessionId, cartItems, false);
+            }
+        }
+    }
+    
+    // Update header badge counts
+    if (window.STHeader && window.STHeader.updateCounts) {
+        window.STHeader.AppState.cart = cartItems;
+        window.STHeader.updateCounts();
+    }
+}
+
+// ============================================================
+// 5. DELETE CART FROM DATABASE
+// ============================================================
+
+async function deleteCartFromDB(identifier, hasCustomerId = false) {
+    const client = getSupabaseClient();
+    if (!client) return;
+    
+    try {
+        let query;
+        if (hasCustomerId) {
+            // Delete ONLY customer_id rows
+            query = client.from('cart').delete().eq('customer_id', identifier);
+        } else {
+            // Delete ONLY session_id rows
+            query = client.from('cart').delete().eq('session_id', identifier);
+        }
+        
+        const { error } = await query;
+        if (error) {
+            console.error('❌ Error deleting cart from DB:', error.message);
+        } else {
+            console.log(`✅ Cart cleared from DB (${hasCustomerId ? 'customer_id' : 'session_id'})`);
+        }
+    } catch (err) {
+        console.error('❌ Error deleting cart from DB:', err.message);
+    }
+}
+
+// ============================================================
+// 6. SAVE CART TO DB - FIXED with UPSERT approach
+// ============================================================
+
+async function saveCartToDB(identifier, cart, hasCustomerId = false) {
+    const client = getSupabaseClient();
+    if (!client) return;
+    
+    try {
+        // CRITICAL FIX: Delete ONLY the rows for this specific identifier
+        // and ONLY in the column that matches (customer_id OR session_id)
+        if (hasCustomerId) {
+            // Delete ONLY customer_id rows for this customer
+            await client.from('cart').delete().eq('customer_id', identifier);
+            console.log(`🗑️ Deleted customer_id rows for: ${identifier}`);
+        } else {
+            // Delete ONLY session_id rows for this session
+            await client.from('cart').delete().eq('session_id', identifier);
+            console.log(`🗑️ Deleted session_id rows for: ${identifier}`);
+        }
+        
+        // If cart is empty, we're done
+        if (cart.length === 0) {
+            console.log('✅ Cart cleared from DB (empty cart)');
+            return;
+        }
+        
+        // Insert new cart items
+        const rows = cart.map(item => {
+            const row = {
+                product_id: item.product_id || item.id || '',
+                name: item.name || 'Unknown Product',
+                price: item.price || 0,
+                qty: item.qty || 1,
+                image: item.image || 'https://placehold.co/600x400',
+                variants: item.variants || {},
+                is_deal: item.isDeal || false,
+                original_price: item.originalPrice || null,
+                discount: item.discount || null,
+                brand: item.brand || ''
+            };
+            
+            // CRITICAL: Set ONLY the correct column
+            if (hasCustomerId) {
+                row.customer_id = identifier;
+                row.session_id = null; // Ensure session_id is NULL
+            } else {
+                row.session_id = identifier;
+                row.customer_id = null; // Ensure customer_id is NULL
+            }
+            
+            return row;
+        });
+        
+        const validRows = rows.filter(row => row.product_id);
+        if (validRows.length > 0) {
+            const { error } = await client.from('cart').insert(validRows);
+            if (error) {
+                console.error('❌ Error saving cart:', error.message);
+            } else {
+                console.log(`✅ Cart saved to DB: ${validRows.length} items (${hasCustomerId ? 'customer_id' : 'session_id'})`);
+            }
+        }
+    } catch (err) {
+        console.error('❌ Error saving cart:', err.message);
+    }
+}
+
+// ============================================================
+// 7. SUMMARY
+// ============================================================
+
+function updateSummary() {
+    const subtotal = cartItems.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 1), 0);
+    const totalItems = cartItems.reduce((sum, item) => sum + (item.qty || 1), 0);
+    
+    const shipping = subtotal >= 50 ? 0 : 5.99;
+    const discountAmount = discountApplied > 0 ? (subtotal * discountApplied / 100) : 0;
+    const total = subtotal + shipping - discountAmount;
+
+    document.getElementById('stSubtotal').textContent = '$' + subtotal.toFixed(2);
+    document.getElementById('stShipping').textContent = shipping === 0 ? 'Free' : '$' + shipping.toFixed(2);
+    document.getElementById('stDiscount').textContent = discountAmount > 0 ? '-$' + discountAmount.toFixed(2) : '$0.00';
+    document.getElementById('stTotal').textContent = '$' + total.toFixed(2);
+
+    const checkoutBtn = document.getElementById('stCheckoutBtn');
+    checkoutBtn.disabled = cartItems.length === 0;
+}
+
+// ============================================================
+// 8. DISCOUNT CODE
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const applyBtn = document.getElementById('stApplyDiscount');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+            const code = document.getElementById('stDiscountCode').value.trim().toUpperCase();
+            if (code === 'SAVE10') {
+                discountApplied = 10;
+                discountCode = code;
+                showNotification('✅ 10% discount applied!');
+            } else if (code === 'SAVE20') {
+                discountApplied = 20;
+                discountCode = code;
+                showNotification('✅ 20% discount applied!');
+            } else if (code === '') {
+                discountApplied = 0;
+                discountCode = '';
+                showNotification('ℹ️ Discount removed');
+            } else {
+                showNotification('❌ Invalid discount code', 'error');
                 return;
             }
-
-            cartCount.textContent = cartItems.length + ' item' + (cartItems.length > 1 ? 's' : '');
-
-            container.innerHTML = cartItems.map((item, index) => `
-                <div class="st-cart-item" data-index="${index}">
-                    <div class="st-cart-item-image">
-                        <img src="${item.image || 'https://placehold.co/600x400'}" 
-                             alt="${item.name || 'Product'}" 
-                             onerror="this.src='https://placehold.co/600x400'">
-                    </div>
-                    <div class="st-cart-item-details">
-                        <a href="item.html?product=${item.product_id || item.id}" class="st-item-name">
-                            ${item.name || 'Unknown Product'}
-                        </a>
-                        ${item.brand ? `<span class="st-item-brand">${item.brand}</span>` : ''}
-                        ${item.variants && Object.keys(item.variants).length > 0 ? `
-                            <span class="st-item-variant">
-                                ${Object.entries(item.variants).map(([key, val]) => `${key}: ${val}`).join(' | ')}
-                            </span>
-                        ` : ''}
-                        <div class="st-item-price">
-                            $${(item.price || 0).toFixed(2)}
-                            ${item.originalPrice && item.originalPrice > item.price ? `
-                                <span class="st-original-price">$${item.originalPrice.toFixed(2)}</span>
-                                <span class="st-deal-badge">-${Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}%</span>
-                            ` : ''}
-                        </div>
-                    </div>
-                    <div class="st-cart-item-actions">
-                        <div class="st-quantity-control">
-                            <button onclick="updateQuantity(${index}, -1)" aria-label="Decrease quantity">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <span class="st-qty-value">${item.qty || 1}</span>
-                            <button onclick="updateQuantity(${index}, 1)" aria-label="Increase quantity">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
-                        <button class="st-remove-btn" onclick="removeItem(${index})" aria-label="Remove item">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-
             updateSummary();
-        }
+        });
+    }
+});
 
-        // ============================================================
-        // 3. CART OPERATIONS
-        // ============================================================
+// ============================================================
+// 9. CHECKOUT
+// ============================================================
 
-        function updateQuantity(index, change) {
-            if (!cartItems[index]) return;
-            const newQty = (cartItems[index].qty || 1) + change;
-            if (newQty < 1) return;
+document.addEventListener('DOMContentLoaded', () => {
+    const checkoutBtn = document.getElementById('stCheckoutBtn');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', () => {
+            if (cartItems.length === 0) return;
             
-            cartItems[index].qty = newQty;
             saveCart();
-            renderCart();
-        }
-
-        function removeItem(index) {
-            if (!cartItems[index]) return;
-            cartItems.splice(index, 1);
-            saveCart();
-            renderCart();
-        }
-
-        function saveCart() {
-            // Save to localStorage
-            localStorage.setItem('st_cart', JSON.stringify(cartItems));
             
-            // Get customer_id or session_id
-            const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
-            const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+            const isLoggedIn = window.STHeader?.AppState?.isLoggedIn || false;
             
-            // Save to Supabase - use customer_id if available, otherwise session_id
-            const client = getSupabaseClient();
-            if (client) {
-                if (customerId) {
-                    // Use customer_id (logged in user)
-                    saveCartToDB(customerId, cartItems, true);
-                } else {
-                    // Use session_id (guest user)
-                    saveCartToDB(sessionId, cartItems, false);
+            if (!isLoggedIn) {
+                showNotification('⚠️ Please login to checkout', 'error');
+                if (window.STHeader?.openLoginModal) {
+                    window.STHeader.openLoginModal();
                 }
+                return;
             }
             
-            // Update header badge counts
-            if (window.STHeader && window.STHeader.updateCounts) {
-                window.STHeader.AppState.cart = cartItems;
+            window.location.href = 'checkout.html';
+        });
+    }
+});
+
+// ============================================================
+// 10. NOTIFICATION
+// ============================================================
+
+function showNotification(message, type = 'success') {
+    const existing = document.querySelector('.st-notification');
+    if (existing) existing.remove();
+    
+    const notif = document.createElement('div');
+    notif.className = 'st-notification';
+    notif.style.cssText = `
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 14px 24px;
+        background: ${type === 'error' ? '#EF4444' : '#10B981'};
+        color: white;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 30000;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        max-width: 90%;
+        text-align: center;
+        animation: slideUp 0.3s ease;
+        font-family: 'Inter', sans-serif;
+    `;
+    notif.textContent = message;
+    document.body.appendChild(notif);
+    
+    setTimeout(() => {
+        notif.style.opacity = '0';
+        notif.style.transform = 'translateX(-50%) translateY(-20px)';
+        notif.style.transition = 'all 0.3s ease';
+        setTimeout(() => notif.remove(), 300);
+    }, 3000);
+}
+
+// ============================================================
+// 11. SUPABASE CART SYNC
+// ============================================================
+
+async function fetchCartFromDB(identifier, hasCustomerId = false) {
+    const client = getSupabaseClient();
+    if (!client) return [];
+    
+    try {
+        let query = client.from('cart').select('*');
+        
+        if (hasCustomerId) {
+            query = query.eq('customer_id', identifier);
+        } else {
+            query = query.eq('session_id', identifier);
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) throw error;
+        
+        return (data || []).map(item => ({
+            product_id: item.product_id,
+            id: item.product_id,
+            name: item.name || 'Unknown Product',
+            price: item.price || 0,
+            qty: item.qty || 1,
+            image: item.image || 'https://placehold.co/600x400',
+            variants: item.variants || {},
+            isDeal: item.is_deal || false,
+            originalPrice: item.original_price || null,
+            discount: item.discount || null,
+            brand: item.brand || ''
+        }));
+    } catch (err) {
+        console.error('❌ Error fetching cart:', err.message);
+        return [];
+    }
+}
+
+// ============================================================
+// 12. LOAD CART DATA
+// ============================================================
+
+async function loadCartData() {
+    try {
+        // Get the ACTUAL customer ID (from customer_accounts) if logged in
+        const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
+        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+        
+        let dbCart = [];
+        
+        // IMPORTANT: These are two DIFFERENT identifiers
+        // - customerId comes from customer_accounts table (actual user ID)
+        // - sessionId is a randomly generated session ID for guests
+        
+        if (customerId) {
+            // User is logged in - load from customer_id
+            dbCart = await fetchCartFromDB(customerId, true);
+            if (dbCart && dbCart.length > 0) {
+                console.log('📦 Cart loaded from DB using customer_id');
+            }
+        }
+        
+        // If no customer cart, check for guest cart
+        if (!dbCart || dbCart.length === 0) {
+            dbCart = await fetchCartFromDB(sessionId, false);
+            if (dbCart && dbCart.length > 0) {
+                console.log('📦 Cart loaded from DB using session_id');
+                
+                // If user is now logged in, migrate guest cart to customer_id
+                if (customerId && dbCart.length > 0) {
+                    console.log('🔄 Migrating guest cart to customer_id');
+                    await saveCartToDB(customerId, dbCart, true);
+                    // Clear the guest cart from session_id
+                    await saveCartToDB(sessionId, [], false);
+                }
+            }
+        }
+        
+        // Use DB cart or fallback to localStorage
+        if (dbCart && dbCart.length > 0) {
+            cartItems = dbCart;
+            localStorage.setItem('st_cart', JSON.stringify(dbCart));
+        } else {
+            const localCart = JSON.parse(localStorage.getItem('st_cart') || '[]');
+            cartItems = localCart;
+            
+            // If user is logged in and has local cart, migrate to DB
+            if (customerId && cartItems.length > 0) {
+                console.log('🔄 Migrating local cart to DB with customer_id');
+                await saveCartToDB(customerId, cartItems, true);
+                // Clear local cart from storage
+                localStorage.setItem('st_cart', JSON.stringify(cartItems));
+            }
+        }
+        
+        // Update AppState
+        if (window.STHeader) {
+            window.STHeader.AppState.cart = cartItems;
+            if (window.STHeader.updateCounts) {
                 window.STHeader.updateCounts();
             }
         }
-
-        // ============================================================
-        // 4. SUMMARY
-        // ============================================================
-
-        function updateSummary() {
-            const subtotal = cartItems.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 1), 0);
-            const totalItems = cartItems.reduce((sum, item) => sum + (item.qty || 1), 0);
-            
-            // Shipping (free over $50)
-            const shipping = subtotal >= 50 ? 0 : 5.99;
-            
-            // Discount
-            const discountAmount = discountApplied > 0 ? (subtotal * discountApplied / 100) : 0;
-            
-            const total = subtotal + shipping - discountAmount;
-
-            document.getElementById('stSubtotal').textContent = '$' + subtotal.toFixed(2);
-            document.getElementById('stShipping').textContent = shipping === 0 ? 'Free' : '$' + shipping.toFixed(2);
-            document.getElementById('stDiscount').textContent = discountAmount > 0 ? '-$' + discountAmount.toFixed(2) : '$0.00';
-            document.getElementById('stTotal').textContent = '$' + total.toFixed(2);
-
-            // Enable/disable checkout
-            const checkoutBtn = document.getElementById('stCheckoutBtn');
-            checkoutBtn.disabled = cartItems.length === 0;
+        
+        renderCart();
+    } catch (err) {
+        console.warn('⚠️ Failed to load cart:', err.message);
+        try {
+            cartItems = JSON.parse(localStorage.getItem('st_cart') || '[]');
+            renderCart();
+        } catch (e) {
+            cartItems = [];
+            renderCart();
         }
+    }
+}
 
-        // ============================================================
-        // 5. DISCOUNT CODE
-        // ============================================================
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const applyBtn = document.getElementById('stApplyDiscount');
-            if (applyBtn) {
-                applyBtn.addEventListener('click', () => {
-                    const code = document.getElementById('stDiscountCode').value.trim().toUpperCase();
-                    if (code === 'SAVE10') {
-                        discountApplied = 10;
-                        discountCode = code;
-                        showNotification('✅ 10% discount applied!');
-                    } else if (code === 'SAVE20') {
-                        discountApplied = 20;
-                        discountCode = code;
-                        showNotification('✅ 20% discount applied!');
-                    } else if (code === '') {
-                        discountApplied = 0;
-                        discountCode = '';
-                        showNotification('ℹ️ Discount removed');
-                    } else {
-                        showNotification('❌ Invalid discount code', 'error');
-                        return;
-                    }
-                    updateSummary();
-                });
-            }
-        });
+// ============================================================
+// 13. INITIALIZATION
+// ============================================================
 
-        // ============================================================
-        // 6. CHECKOUT
-        // ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    loadCartData();
+    
+    window.cartOperations = {
+        updateQuantity,
+        removeItem,
+        saveCart,
+        renderCart,
+        getCart: () => cartItems,
+        setCart: (items) => { cartItems = items; renderCart(); }
+    };
+});
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const checkoutBtn = document.getElementById('stCheckoutBtn');
-            if (checkoutBtn) {
-                checkoutBtn.addEventListener('click', () => {
-                    if (cartItems.length === 0) return;
-                    
-                    // Save cart before checkout
-                    saveCart();
-                    
-                    // Check if user is logged in
-                    const isLoggedIn = window.STHeader?.AppState?.isLoggedIn || false;
-                    
-                    if (!isLoggedIn) {
-                        showNotification('⚠️ Please login to checkout', 'error');
-                        if (window.STHeader?.openLoginModal) {
-                            window.STHeader.openLoginModal();
-                        }
-                        return;
-                    }
-                    
-                    // Redirect to checkout page
-                    window.location.href = 'checkout.html';
-                });
-            }
-        });
+// ============================================================
+// 14. EXPOSE FUNCTIONS GLOBALLY
+// ============================================================
 
-        // ============================================================
-        // 7. NOTIFICATION
-        // ============================================================
-
-        function showNotification(message, type = 'success') {
-            const existing = document.querySelector('.st-notification');
-            if (existing) existing.remove();
-            
-            const notif = document.createElement('div');
-            notif.className = 'st-notification';
-            notif.style.cssText = `
-                position: fixed;
-                bottom: 80px;
-                left: 50%;
-                transform: translateX(-50%);
-                padding: 14px 24px;
-                background: ${type === 'error' ? '#EF4444' : '#10B981'};
-                color: white;
-                border-radius: 12px;
-                font-weight: 600;
-                font-size: 14px;
-                z-index: 30000;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-                max-width: 90%;
-                text-align: center;
-                animation: slideUp 0.3s ease;
-                font-family: 'Inter', sans-serif;
-            `;
-            notif.textContent = message;
-            document.body.appendChild(notif);
-            
-            setTimeout(() => {
-                notif.style.opacity = '0';
-                notif.style.transform = 'translateX(-50%) translateY(-20px)';
-                notif.style.transition = 'all 0.3s ease';
-                setTimeout(() => notif.remove(), 300);
-            }, 3000);
-        }
-
-        // ============================================================
-        // 8. SUPABASE CART SYNC (UPDATED to use customer_id)
-        // ============================================================
-
-        async function fetchCartFromDB(identifier, hasCustomerId = false) {
-            const client = getSupabaseClient();
-            if (!client) return [];
-            
-            try {
-                let query = client.from('cart').select('*');
-                
-                if (hasCustomerId) {
-                    query = query.eq('customer_id', identifier);
-                } else {
-                    query = query.eq('session_id', identifier);
-                }
-                
-                const { data, error } = await query;
-                
-                if (error) throw error;
-                
-                return (data || []).map(item => ({
-                    product_id: item.product_id,
-                    id: item.product_id,
-                    name: item.name || 'Unknown Product',
-                    price: item.price || 0,
-                    qty: item.qty || 1,
-                    image: item.image || 'https://placehold.co/600x400',
-                    variants: item.variants || {},
-                    isDeal: item.is_deal || false,
-                    originalPrice: item.original_price || null,
-                    discount: item.discount || null,
-                    brand: item.brand || ''
-                }));
-            } catch (err) {
-                console.error('❌ Error fetching cart:', err.message);
-                return [];
-            }
-        }
-
-        async function saveCartToDB(identifier, cart, hasCustomerId = false) {
-            const client = getSupabaseClient();
-            if (!client) return;
-            
-            try {
-                if (hasCustomerId) {
-                    await client.from('cart').delete().eq('customer_id', identifier);
-                } else {
-                    await client.from('cart').delete().eq('session_id', identifier);
-                }
-                
-                if (cart.length > 0) {
-                    const rows = cart.map(item => {
-                        const row = {
-                            product_id: item.product_id || item.id || '',
-                            name: item.name || 'Unknown Product',
-                            price: item.price || 0,
-                            qty: item.qty || 1,
-                            image: item.image || 'https://placehold.co/600x400',
-                            variants: item.variants || {},
-                            is_deal: item.isDeal || false,
-                            original_price: item.originalPrice || null,
-                            discount: item.discount || null,
-                            brand: item.brand || ''
-                        };
-                        
-                        if (hasCustomerId) {
-                            row.customer_id = identifier;
-                        } else {
-                            row.session_id = identifier;
-                        }
-                        
-                        return row;
-                    });
-                    
-                    const validRows = rows.filter(row => row.product_id);
-                    if (validRows.length > 0) {
-                        const { error } = await client.from('cart').insert(validRows);
-                        if (error) console.error('❌ Error saving cart:', error.message);
-                    }
-                }
-            } catch (err) {
-                console.error('❌ Error saving cart:', err.message);
-            }
-        }
-
-        // ============================================================
-        // 9. LOAD CART DATA (UPDATED)
-        // ============================================================
-
-        async function loadCartData() {
-            try {
-                // Get customer_id if logged in
-                const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
-                const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-                
-                let dbCart = [];
-                
-                // Try loading from Supabase with customer_id first
-                if (customerId) {
-                    dbCart = await fetchCartFromDB(customerId, true);
-                    if (dbCart && dbCart.length > 0) {
-                        console.log('📦 Cart loaded from DB using customer_id');
-                    }
-                }
-                
-                // If no cart found with customer_id, try session_id (guest cart)
-                if (!dbCart || dbCart.length === 0) {
-                    dbCart = await fetchCartFromDB(sessionId, false);
-                    if (dbCart && dbCart.length > 0) {
-                        console.log('📦 Cart loaded from DB using session_id');
-                        
-                        // If user is logged in and has a guest cart, migrate it to customer_id
-                        if (customerId && dbCart.length > 0) {
-                            console.log('🔄 Migrating guest cart to customer_id');
-                            await saveCartToDB(customerId, dbCart, true);
-                            // Clear guest cart from DB
-                            await saveCartToDB(sessionId, [], false);
-                        }
-                    }
-                }
-                
-                if (dbCart && dbCart.length > 0) {
-                    cartItems = dbCart;
-                    localStorage.setItem('st_cart', JSON.stringify(dbCart));
-                } else {
-                    // Fallback to localStorage
-                    const localCart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-                    cartItems = localCart;
-                    
-                    // If user is logged in and has local cart, migrate to DB
-                    if (customerId && cartItems.length > 0) {
-                        console.log('🔄 Migrating local cart to DB with customer_id');
-                        await saveCartToDB(customerId, cartItems, true);
-                    }
-                }
-                
-                // Update AppState if available
-                if (window.STHeader) {
-                    window.STHeader.AppState.cart = cartItems;
-                    if (window.STHeader.updateCounts) {
-                        window.STHeader.updateCounts();
-                    }
-                }
-                
-                renderCart();
-            } catch (err) {
-                console.warn('⚠️ Failed to load cart:', err.message);
-                // Fallback to localStorage
-                try {
-                    cartItems = JSON.parse(localStorage.getItem('st_cart') || '[]');
-                    renderCart();
-                } catch (e) {
-                    cartItems = [];
-                    renderCart();
-                }
-            }
-        }
-
-        // ============================================================
-        // 10. INITIALIZATION
-        // ============================================================
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load cart data
-            loadCartData();
-            
-            // Expose cart operations globally
-            window.cartOperations = {
-                updateQuantity,
-                removeItem,
-                saveCart,
-                renderCart,
-                getCart: () => cartItems,
-                setCart: (items) => { cartItems = items; renderCart(); }
-            };
-        });
-
-        // ============================================================
-        // 11. EXPOSE FUNCTIONS GLOBALLY
-        // ============================================================
-
-        window.updateQuantity = updateQuantity;
-        window.removeItem = removeItem;
-        window.saveCart = saveCart;
-        window.renderCart = renderCart;
-        window.showNotification = showNotification;
-        window.getSupabaseClient = getSupabaseClient;
-        window.fetchCartFromDB = fetchCartFromDB;
-        window.saveCartToDB = saveCartToDB;
-        window.loadCartData = loadCartData;
+window.updateQuantity = updateQuantity;
+window.removeItem = removeItem;
+window.saveCart = saveCart;
+window.renderCart = renderCart;
+window.showNotification = showNotification;
+window.getSupabaseClient = getSupabaseClient;
+window.fetchCartFromDB = fetchCartFromDB;
+window.saveCartToDB = saveCartToDB;
+window.loadCartData = loadCartData;
     </script>
     <script src="related-products.js"></script>
 </body>

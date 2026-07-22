@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+  <title>Categories · Sucess Technology</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            primary: '#6C3CE1',
+            primaryHover: '#5A2FC4',
+            dark: '#0F172A',
+            'dark-secondary': '#1E293B'
+          },
+        }
+      }
+    }
+  </script>
+    <style>
+        /* ============================================
+           CATEGORIES PAGE - MODERN STORE STYLE
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #0F172A;
+            padding-top: 80px;
+            padding-bottom: 40px;
+        }
+
+        /* ----- Main Container with Grid Layout ----- */
+        .categories-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* ----- Sidebar Styles ----- */
+        .sidebar-left {
+            position: sticky;
+            top: 90px;
+            background: white;
+            border-radius: 16px;
+            padding: 20px 16px;
+            border: 1px solid #E2E8F0;
+            max-height: calc(100vh - 110px);
+            overflow-y: auto;
+        }
+
+        .sidebar-left::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-left::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+
+        .sidebar-left::-webkit-scrollbar-thumb {
+            background: #6C3CE1;
+            border-radius: 8px;
+        }
+
+        .sidebar-header {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0F172A;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #E2E8F0;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header i {
+            color: #6C3CE1;
+        }
+
+        .sidebar-header span {
+            font-size: 12px;
+            font-weight: 400;
+            color: #94A3B8;
+            margin-left: auto;
+        }
+
+        /* Category List - SINGLE COLUMN */
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .category-chip-side {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #334155;
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .category-chip-side:hover {
+            background: #f1f5f9;
+            color: #0F172A;
+        }
+
+        .category-chip-side.active {
+            background: #6C3CE1;
+            color: white;
+        }
+
+        .category-chip-side.active .chip-count {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .category-chip-side .chip-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+            color: #6C3CE1;
+        }
+
+        .category-chip-side.active .chip-icon {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .category-chip-side .chip-label {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .category-chip-side .chip-count {
+            font-size: 12px;
+            color: #94A3B8;
+            background: #f1f5f9;
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .category-chip-side.active .chip-count {
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* ----- Main Content Area ----- */
+        .main-content {
+            min-width: 0;
+        }
+
+        /* ----- Page Header ----- */
+        .page-header {
+            padding: 16px 0 20px;
+            border-bottom: 2px solid #E2E8F0;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header h1 i {
+            color: #6C3CE1;
+        }
+
+        .page-header .header-sub {
+            font-size: 14px;
+            color: #94A3B8;
+            margin-top: 4px;
+        }
+
+        /* ----- Section Header ----- */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .section-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header h2 i {
+            color: #6C3CE1;
+            font-size: 18px;
+        }
+
+        .section-header .view-all {
+            font-size: 14px;
+            color: #6C3CE1;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .section-header .view-all:hover {
+            color: #5A2FC4;
+            text-decoration: underline;
+        }
+
+        /* ============================================
+           SKELETON LOADERS
+           ============================================ */
+
+        /* Sidebar Skeleton */
+        .skeleton-sidebar {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 16px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .skeleton-sidebar .skeleton-header {
+            height: 24px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            width: 60%;
+        }
+
+        .skeleton-sidebar .skeleton-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .skeleton-sidebar .skeleton-item:last-child {
+            border-bottom: none;
+        }
+
+        .skeleton-sidebar .skeleton-item .skeleton-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        .skeleton-sidebar .skeleton-item .skeleton-text {
+            height: 14px;
+            flex: 1;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: 4px;
+        }
+
+        .skeleton-sidebar .skeleton-item .skeleton-count {
+            width: 30px;
+            height: 18px;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        /* Category Skeleton */
+        .skeleton-category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .skeleton-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .skeleton-chip .skeleton-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        .skeleton-chip .skeleton-text {
+            height: 14px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: 4px;
+            flex: 1;
+        }
+
+        .skeleton-chip .skeleton-text.short {
+            width: 30px;
+            flex: none;
+        }
+
+        /* Product Skeleton */
+        .skeleton-product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .skeleton-product-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #f0f0f0;
+        }
+
+        .skeleton-product-card .skeleton-img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        .skeleton-product-card .skeleton-body {
+            padding: 12px 14px 14px;
+        }
+
+        .skeleton-product-card .skeleton-body .skeleton-line {
+            height: 14px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+
+        .skeleton-product-card .skeleton-body .skeleton-line.w-75 { width: 75%; }
+        .skeleton-product-card .skeleton-body .skeleton-line.w-50 { width: 50%; }
+        .skeleton-product-card .skeleton-body .skeleton-line.w-60 { width: 60%; }
+        .skeleton-product-card .skeleton-body .skeleton-line.w-40 { width: 40%; }
+
+        .skeleton-product-card .skeleton-body .skeleton-price {
+            height: 20px;
+            width: 40%;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: 4px;
+            margin: 8px 0 10px;
+        }
+
+        .skeleton-product-card .skeleton-body .skeleton-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .skeleton-product-card .skeleton-body .skeleton-btn {
+            flex: 1;
+            height: 32px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: 8px;
+        }
+
+        .skeleton-product-card .skeleton-body .skeleton-btn-heart {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: 8px;
+        }
+
+        /* For You Skeleton */
+        .skeleton-foryou-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .skeleton-foryou-card {
+            display: flex;
+            gap: 14px;
+            background: white;
+            border-radius: 14px;
+            padding: 12px;
+            border: 1px solid #f0f0f0;
+            align-items: center;
+        }
+
+        .skeleton-foryou-card .skeleton-foryou-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        .skeleton-foryou-card .skeleton-foryou-body {
+            flex: 1;
+        }
+
+        .skeleton-foryou-card .skeleton-foryou-body .skeleton-line {
+            height: 14px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+
+        .skeleton-foryou-card .skeleton-foryou-body .skeleton-line.w-75 { width: 75%; }
+        .skeleton-foryou-card .skeleton-foryou-body .skeleton-line.w-50 { width: 50%; }
+        .skeleton-foryou-card .skeleton-foryou-body .skeleton-line.w-60 { width: 60%; }
+
+        .skeleton-foryou-card .skeleton-foryou-body .skeleton-price {
+            height: 18px;
+            width: 40%;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+
+        .skeleton-foryou-card .skeleton-foryou-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .skeleton-foryou-card .skeleton-foryou-actions .skeleton-btn-sm {
+            width: 60px;
+            height: 28px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: 8px;
+        }
+
+        .skeleton-foryou-card .skeleton-foryou-actions .skeleton-btn-heart-sm {
+            width: 30px;
+            height: 28px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: 8px;
+            margin: 0 auto;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        /* ============================================
+           ACTUAL CONTENT STYLES
+           ============================================ */
+
+        /* Category Grid */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .category-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #0F172A;
+        }
+
+        .category-chip:hover {
+            border-color: #6C3CE1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        .category-chip .chip-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .category-chip .chip-icon i {
+            color: #6C3CE1;
+        }
+
+        .category-chip .chip-label {
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .category-chip .chip-count {
+            font-size: 11px;
+            color: #94A3B8;
+            margin-left: auto;
+        }
+
+        /* Recommended Products */
+        .recommended-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .recommended-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .recommended-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            border-color: #6C3CE1;
+        }
+
+        .recommended-card .card-image {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        .recommended-card .card-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .recommended-card:hover .card-image img {
+            transform: scale(1.05);
+        }
+
+        .recommended-card .card-image .card-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            background: #EF4444;
+            color: white;
+        }
+
+        .recommended-card .card-image .card-sold {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            backdrop-filter: blur(4px);
+        }
+
+        .recommended-card .card-image .card-rating-float {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            background: rgba(0, 0, 0, 0.7);
+            color: #F59E0B;
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .recommended-card .card-body {
+            padding: 12px 14px 14px;
+        }
+
+        .recommended-card .card-body .card-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #0F172A;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 2px;
+        }
+
+        .recommended-card .card-body .card-meta {
+            font-size: 12px;
+            color: #94A3B8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .recommended-card .card-body .card-meta .dot {
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: #94A3B8;
+        }
+
+        .recommended-card .card-body .card-price {
+            font-weight: 700;
+            font-size: 18px;
+            color: #0F172A;
+        }
+
+        .recommended-card .card-body .card-price .original {
+            font-size: 14px;
+            color: #94A3B8;
+            text-decoration: line-through;
+            font-weight: 400;
+            margin-left: 6px;
+        }
+
+        .recommended-card .card-body .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .recommended-card .card-body .btn-add {
+            flex: 1;
+            padding: 6px 12px;
+            background: #0F172A;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .recommended-card .card-body .btn-add:hover {
+            background: #6C3CE1;
+        }
+
+        .recommended-card .card-body .btn-wish {
+            padding: 6px 10px;
+            border: 1px solid #E2E8F0;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #94A3B8;
+            font-size: 14px;
+        }
+
+        .recommended-card .card-body .btn-wish:hover {
+            border-color: #EF4444;
+            color: #EF4444;
+        }
+
+        .recommended-card .card-body .btn-wish.active {
+            border-color: #EF4444;
+            color: #EF4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        /* For You Products */
+        .foryou-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .foryou-card {
+            display: flex;
+            gap: 14px;
+            background: white;
+            border-radius: 14px;
+            padding: 12px;
+            border: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            align-items: center;
+        }
+
+        .foryou-card:hover {
+            transform: translateX(4px);
+            border-color: #6C3CE1;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        .foryou-card .foryou-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #f8fafc;
+        }
+
+        .foryou-card .foryou-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .foryou-card .foryou-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .foryou-card .foryou-info .foryou-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #0F172A;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .foryou-card .foryou-info .foryou-meta {
+            font-size: 12px;
+            color: #94A3B8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+            flex-wrap: wrap;
+        }
+
+        .foryou-card .foryou-info .foryou-meta .tag {
+            background: #f1f5f9;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .foryou-card .foryou-info .foryou-price {
+            font-weight: 700;
+            font-size: 16px;
+            color: #0F172A;
+            margin-top: 4px;
+        }
+
+        .foryou-card .foryou-info .foryou-price .original {
+            font-size: 13px;
+            color: #94A3B8;
+            text-decoration: line-through;
+            font-weight: 400;
+            margin-left: 6px;
+        }
+
+        .foryou-card .foryou-info .foryou-stats {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: #94A3B8;
+            margin-top: 2px;
+        }
+
+        .foryou-card .foryou-info .foryou-stats .rating {
+            color: #F59E0B;
+        }
+
+        .foryou-card .foryou-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .foryou-card .foryou-actions .btn-add-small {
+            padding: 6px 12px;
+            background: #0F172A;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .foryou-card .foryou-actions .btn-add-small:hover {
+            background: #6C3CE1;
+        }
+
+        .foryou-card .foryou-actions .btn-wish-small {
+            padding: 4px 8px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #94A3B8;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .foryou-card .foryou-actions .btn-wish-small:hover {
+            color: #EF4444;
+        }
+
+        .foryou-card .foryou-actions .btn-wish-small.active {
+            color: #EF4444;
+        }
+
+        /* ----- Toast ----- */
+        .toast-msg {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 30000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+            text-align: center;
+            animation: toastUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        .toast-msg.success { background: #10B981; }
+        .toast-msg.error { background: #EF4444; }
+        .toast-msg.info { background: #3B82F6; }
+
+        @keyframes toastUp {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        /* ============================================
+           RESPONSIVE - KEEP SIDEBAR ON LEFT
+           ============================================ */
+
+        /* Tablet and smaller screens */
+        @media (max-width: 1024px) {
+            .categories-container {
+                grid-template-columns: 220px 1fr;
+                gap: 16px;
+                padding: 0 16px;
+            }
+            
+            .sidebar-left {
+                padding: 16px 12px;
+                top: 80px;
+            }
+            
+            .category-list-item {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+            
+            .category-list-item .category-icon {
+                width: 24px;
+                height: 24px;
+                font-size: 11px;
+            }
+        }
+
+        /* Mobile - Keep sidebar on left, just make it narrower */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 68px;
+                padding-bottom: 80px;
+            }
+
+            .categories-container {
+                grid-template-columns: 180px 1fr;
+                gap: 12px;
+                padding: 0 12px;
+            }
+
+            .sidebar-left {
+                position: sticky;
+                top: 72px;
+                padding: 12px 10px;
+                max-height: calc(100vh - 90px);
+                border-radius: 12px;
+            }
+
+            .sidebar-header {
+                font-size: 13px;
+                padding-bottom: 8px;
+                margin-bottom: 8px;
+            }
+            
+            .sidebar-header i {
+                font-size: 12px;
+            }
+            
+            .sidebar-header span {
+                font-size: 10px;
+            }
+
+            .category-list {
+                gap: 2px;
+            }
+
+            .category-list-item {
+                padding: 6px 8px;
+                font-size: 11px;
+                border-radius: 6px;
+                gap: 6px;
+            }
+            
+            .category-list-item .category-icon {
+                width: 20px;
+                height: 20px;
+                font-size: 10px;
+                border-radius: 4px;
+            }
+            
+            .category-list-item .category-count {
+                font-size: 10px;
+                padding: 0 6px;
+            }
+
+            .categories-header h1 {
+                font-size: 20px;
+            }
+
+            .categories-header .header-sub {
+                font-size: 12px;
+            }
+
+            .section-header h2 {
+                font-size: 16px;
+            }
+
+            .category-grid,
+            .skeleton-category-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 8px;
+            }
+
+            .category-chip {
+                padding: 6px 10px;
+            }
+                     .category-chip .chip-icon {
+            display: none !important;
+            }
+            .category-chip .chip-icon {
+                width: 24px;
+                height: 24px;
+                font-size: 12px;
+            }
+            .category-chip .chip-label {
+                font-size: 11px;
+            }
+
+            .recommended-grid,
+            .skeleton-product-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .skeleton-foryou-card .skeleton-foryou-img {
+                width: 64px;
+                height: 64px;
+            }
+            
+            .foryou-card .foryou-image {
+                width: 64px;
+                height: 64px;
+            }
+                     .category-chip .chip-icon {
+            display: none !important;
+            }
+        }
+
+        /* Small Mobile - Keep sidebar on left, very narrow */
+        @media (max-width: 480px) {
+            .categories-container {
+                grid-template-columns: 140px 1fr;
+                gap: 8px;
+                padding: 0 8px;
+            }
+           .category-chip .chip-icon {
+            display: none !important;
+            }
+            .sidebar-left {
+                padding: 10px 8px;
+                top: 64px;
+                border-radius: 10px;
+                max-height: calc(100vh - 80px);
+            }
+
+            .sidebar-header {
+                font-size: 11px;
+                padding-bottom: 6px;
+                margin-bottom: 6px;
+                gap: 6px;
+            }
+            
+            .sidebar-header i {
+                font-size: 10px;
+            }
+            
+            .sidebar-header span {
+                font-size: 9px;
+            }
+
+            .category-list-item {
+                padding: 4px 6px;
+                font-size: 10px;
+                border-radius: 4px;
+                gap: 4px;
+            }
+            
+            .category-list-item .category-icon {
+                width: 16px;
+                height: 16px;
+                font-size: 8px;
+                border-radius: 3px;
+            }
+            
+            .category-list-item .category-count {
+                font-size: 8px;
+                padding: 0 4px;
+            }
+
+            .categories-header h1 {
+                font-size: 16px;
+            }
+            
+            .categories-header h1 i {
+                font-size: 14px;
+            }
+            
+            .categories-header .header-sub {
+                font-size: 10px;
+            }
+
+            .section-header h2 {
+                font-size: 14px;
+            }
+            
+            .section-header h2 i {
+                font-size: 12px;
+            }
+            
+            .section-header .view-all {
+                font-size: 11px;
+            }
+
+            .category-grid,
+            .skeleton-category-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+            .category-chip {
+                padding: 4px 8px;
+                border-radius: 8px;
+                gap: 6px;
+            }
+            .category-chip .chip-icon {
+                width: 20px;
+                height: 20px;
+                font-size: 10px;
+                border-radius: 4px;
+            }
+            .category-chip .chip-label {
+                font-size: 10px;
+            }
+            .category-chip .chip-count {
+                font-size: 9px;
+            }
+
+            .recommended-grid,
+            .skeleton-product-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            
+            .recommended-card .card-body {
+                padding: 8px 10px 10px;
+            }
+            .recommended-card .card-body .card-name {
+                font-size: 11px;
+            }
+            .recommended-card .card-body .card-price {
+                font-size: 14px;
+            }
+            .recommended-card .card-body .card-actions .btn-add {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+
+            .foryou-card {
+                padding: 8px;
+                gap: 10px;
+                border-radius: 10px;
+            }
+            .foryou-card .foryou-image {
+                width: 56px;
+                height: 56px;
+                border-radius: 8px;
+            }
+            .foryou-card .foryou-info .foryou-name {
+                font-size: 12px;
+            }
+            .foryou-card .foryou-info .foryou-price {
+                font-size: 13px;
+            }
+            .foryou-card .foryou-actions .btn-add-small {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+
+            .skeleton-foryou-card .skeleton-foryou-img {
+                width: 56px;
+                height: 56px;
+            }
+            .skeleton-foryou-card .skeleton-foryou-body .skeleton-line {
+                height: 12px;
+            }
+            .skeleton-foryou-card .skeleton-foryou-body .skeleton-price {
+                height: 16px;
+            }
+            .skeleton-foryou-card .skeleton-foryou-actions .skeleton-btn-sm {
+                width: 50px;
+                height: 24px;
+            }
+        }
+        @media (max-width: 768px) {
+  .chip-icon {
+    display: none !important;
+  }
+}
+@media (max-width: 768px) {
+  .chip-icon,
+  .chip-count {
+    display: none !important;
+  }
+}
+    </style>
+</head>
+<body>
+
+  <main class="categories-container">
+
+    <!-- LEFT SIDEBAR: Recommended Categories -->
+    <aside class="sidebar-left" id="sidebarLeft">
+      <div class="sidebar-header">
+        <i class="fas fa-tags"></i> Recommended
+        <span id="categoryBadge">0</span>
+      </div>
+      <div class="category-list" id="categoryList">
+        <!-- skeleton -->
+        <div class="skeleton-category-list" id="categorySkeleton">
+          <div class="skeleton-chip-side"><div class="skeleton-icon"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+          <div class="skeleton-chip-side"><div class="skeleton-icon"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+          <div class="skeleton-chip-side"><div class="skeleton-icon"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+          <div class="skeleton-chip-side"><div class="skeleton-icon"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+          <div class="skeleton-chip-side"><div class="skeleton-icon"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+          <div class="skeleton-chip-side"><div class="skeleton-icon"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT CONTENT -->
+    <section class="content-right">
+      <div class="page-header">
+        <h1><i class="fas fa-th-large"></i> Categories</h1>
+        <div class="header-sub" id="categorySub">Showing products in <strong>All</strong></div>
+      </div>
+
+      <!-- For You -->
+      <div class="section-header">
+        <h2><i class="fas fa-star"></i> For You</h2>
+        <a href="#" class="view-all">See All →</a>
+      </div>
+      <div class="foryou-grid" id="foryouGrid">
+        <div class="skeleton-foryou-grid" id="foryouSkeleton">
+          <div class="skeleton-foryou-card"><div class="skeleton-foryou-img"></div><div class="skeleton-foryou-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div></div><div class="skeleton-foryou-actions"><div class="skeleton-btn-sm"></div><div class="skeleton-btn-heart-sm"></div></div></div>
+          <div class="skeleton-foryou-card"><div class="skeleton-foryou-img"></div><div class="skeleton-foryou-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div></div><div class="skeleton-foryou-actions"><div class="skeleton-btn-sm"></div><div class="skeleton-btn-heart-sm"></div></div></div>
+          <div class="skeleton-foryou-card"><div class="skeleton-foryou-img"></div><div class="skeleton-foryou-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div></div><div class="skeleton-foryou-actions"><div class="skeleton-btn-sm"></div><div class="skeleton-btn-heart-sm"></div></div></div>
+          <div class="skeleton-foryou-card"><div class="skeleton-foryou-img"></div><div class="skeleton-foryou-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div></div><div class="skeleton-foryou-actions"><div class="skeleton-btn-sm"></div><div class="skeleton-btn-heart-sm"></div></div></div>
+          <div class="skeleton-foryou-card"><div class="skeleton-foryou-img"></div><div class="skeleton-foryou-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div></div><div class="skeleton-foryou-actions"><div class="skeleton-btn-sm"></div><div class="skeleton-btn-heart-sm"></div></div></div>
+          <div class="skeleton-foryou-card"><div class="skeleton-foryou-img"></div><div class="skeleton-foryou-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div></div><div class="skeleton-foryou-actions"><div class="skeleton-btn-sm"></div><div class="skeleton-btn-heart-sm"></div></div></div>
+        </div>
+      </div>
+
+      <!-- Recommended Products -->
+      <div class="section-header" style="margin-top:8px;">
+        <h2><i class="fas fa-fire"></i> <span id="productSectionTitle">Recommended</span></h2>
+        <a href="#" class="view-all">View All →</a>
+      </div>
+      <div class="recommended-grid" id="recommendedGrid">
+        <div class="skeleton-product-grid" id="recommendedSkeleton">
+          <div class="skeleton-product-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div><div class="skeleton-actions"><div class="skeleton-btn"></div><div class="skeleton-btn-heart"></div></div></div></div>
+          <div class="skeleton-product-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div><div class="skeleton-actions"><div class="skeleton-btn"></div><div class="skeleton-btn-heart"></div></div></div></div>
+          <div class="skeleton-product-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div><div class="skeleton-actions"><div class="skeleton-btn"></div><div class="skeleton-btn-heart"></div></div></div></div>
+          <div class="skeleton-product-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div><div class="skeleton-actions"><div class="skeleton-btn"></div><div class="skeleton-btn-heart"></div></div></div></div>
+          <div class="skeleton-product-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div><div class="skeleton-actions"><div class="skeleton-btn"></div><div class="skeleton-btn-heart"></div></div></div></div>
+          <div class="skeleton-product-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div><div class="skeleton-actions"><div class="skeleton-btn"></div><div class="skeleton-btn-heart"></div></div></div></div>
+          <div class="skeleton-product-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div><div class="skeleton-actions"><div class="skeleton-btn"></div><div class="skeleton-btn-heart"></div></div></div></div>
+          <div class="skeleton-product-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line w-75"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-60"></div><div class="skeleton-price"></div><div class="skeleton-actions"><div class="skeleton-btn"></div><div class="skeleton-btn-heart"></div></div></div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ============================================================
+    //  CATEGORIES PAGE - LEFT SIDEBAR + FILTER (sticky sidebar, 8 cols desktop, 2 cols mobile)
+    // ============================================================
+
+    const SUPABASE_URL = 'https://bulprhgwuwatzobiojwz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHByaGd3dXdhdHpvYmlvand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDczNDksImV4cCI6MjA5MjA4MzM0OX0.2fcHrGX7iXw5G9nGRNkBy70W1Ex_om1C0v3qbryPmvw';
+
+    let supabaseClient = null;
+    function getSupabase() {
+      if (supabaseClient) return supabaseClient;
+      if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        return supabaseClient;
+      }
+      return null;
+    }
+
+    let wishlist = [];
+    let allProducts = [];
+    let categories = [];
+    let foryouProducts = [];
+    let currentCategory = null; // null = all
+
+    const categoryList = document.getElementById('categoryList');
+    const categorySkeleton = document.getElementById('categorySkeleton');
+    const recommendedGrid = document.getElementById('recommendedGrid');
+    const recommendedSkeleton = document.getElementById('recommendedSkeleton');
+    const foryouGrid = document.getElementById('foryouGrid');
+    const foryouSkeleton = document.getElementById('foryouSkeleton');
+    const categorySub = document.getElementById('categorySub');
+    const productSectionTitle = document.getElementById('productSectionTitle');
+    const categoryBadge = document.getElementById('categoryBadge');
+
+    function showToast(message, type = 'success') {
+      const existing = document.querySelector('.toast-msg');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      toast.className = `toast-msg ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(-20px)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function getCategoryIcon(category) {
+      const icons = {
+        'smartphone': 'fa-mobile-alt', 'phone': 'fa-mobile-alt', 'laptop': 'fa-laptop',
+        'tablet': 'fa-tablet', 'audio': 'fa-headphones', 'accessories': 'fa-plug',
+        'wearable': 'fa-clock', 'gaming': 'fa-gamepad', 'tv': 'fa-tv',
+        'camera': 'fa-camera', 'printer': 'fa-print', 'storage': 'fa-hdd',
+        'network': 'fa-wifi', 'power': 'fa-bolt', 'monitor': 'fa-desktop',
+        'furniture': 'fa-couch', 'clothing': 'fa-tshirt', 'beauty': 'fa-spa',
+        'jewelry': 'fa-gem', 'toys': 'fa-rocket', 'shoes': 'fa-shoe-prints',
+        'health': 'fa-heartbeat', 'pet': 'fa-paw', 'home': 'fa-home',
+        'kitchen': 'fa-utensils', 'office': 'fa-briefcase'
+      };
+      return icons[category?.toLowerCase()] || 'fa-folder';
+    }
+
+    function loadWishlist() {
+      try { wishlist = JSON.parse(localStorage.getItem('st_wishlist') || '[]'); } catch (e) { wishlist = []; }
+    }
+
+    async function fetchAllData() {
+      const client = getSupabase();
+      if (!client) return;
+      try {
+        const { data: products, error } = await client
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        allProducts = products || [];
+
+        const catMap = new Map();
+        allProducts.forEach(p => {
+          if (p.category) {
+            const key = p.category.toLowerCase();
+            if (!catMap.has(key)) catMap.set(key, { name: p.category, count: 1 });
+            else catMap.get(key).count++;
+          }
+        });
+        categories = Array.from(catMap.values()).sort((a,b) => b.count - a.count).slice(0, 20);
+
+        foryouProducts = allProducts.filter(p => p.isHot || p.isNew || (p.rating || 0) >= 4).slice(0, 6);
+        if (foryouProducts.length < 6) {
+          const random = allProducts.filter(p => !foryouProducts.includes(p)).sort(() => Math.random() - 0.5).slice(0, 6 - foryouProducts.length);
+          foryouProducts = [...foryouProducts, ...random];
+        }
+
+        hideSkeletons();
+        renderCategories(categories);
+        renderForYou(foryouProducts);
+        filterProducts(null);
+      } catch (err) {
+        console.error('❌ Fetch error:', err);
+        showToast('Failed to load data', 'error');
+        hideSkeletons();
+      }
+    }
+
+    function hideSkeletons() {
+      if (categorySkeleton) categorySkeleton.style.display = 'none';
+      if (recommendedSkeleton) recommendedSkeleton.style.display = 'none';
+      if (foryouSkeleton) foryouSkeleton.style.display = 'none';
+    }
+
+    function renderCategories(cats) {
+      if (!cats || cats.length === 0) {
+        categoryList.innerHTML = `<div style="padding:12px;color:#94A3B8;">No categories</div>`;
+        categoryBadge.textContent = '0';
+        return;
+      }
+      categoryBadge.textContent = cats.length;
+      const html = `
+        <div class="category-chip-side ${!currentCategory ? 'active' : ''}" data-cat="all" onclick="selectCategory(null)">
+          <div class="chip-icon"><i class="fas fa-th"></i></div>
+          <span class="chip-label">All</span>
+          <span class="chip-count">${allProducts.length}</span>
+        </div>
+        ${cats.map(cat => `
+          <div class="category-chip-side ${currentCategory === cat.name ? 'active' : ''}" data-cat="${cat.name}" onclick="selectCategory('${cat.name}')">
+            <div class="chip-icon"><i class="fas ${getCategoryIcon(cat.name)}"></i></div>
+            <span class="chip-label">${cat.name}</span>
+            <span class="chip-count">${cat.count}</span>
+          </div>
+        `).join('')}
+      `;
+      categoryList.innerHTML = html;
+    }
+
+    window.selectCategory = function(categoryName) {
+      currentCategory = categoryName;
+      document.querySelectorAll('.category-chip-side').forEach(el => {
+        const cat = el.dataset.cat;
+        el.classList.toggle('active', (cat === 'all' && !categoryName) || cat === categoryName);
+      });
+      filterProducts(categoryName);
+      closereccomedsection();
+    };
+
+    function filterProducts(categoryName) {
+      let filtered = allProducts;
+      let title = 'Recommended';
+      let subText = 'All';
+      if (categoryName) {
+        filtered = allProducts.filter(p => p.category && p.category.toLowerCase() === categoryName.toLowerCase());
+        title = categoryName;
+        subText = categoryName;
+      } else {
+        filtered = allProducts.filter(p => p.isDeal || (p.rating || 0) >= 4.5 || p.discount > 0);
+        if (filtered.length === 0) filtered = allProducts.slice(0, 8);
+        title = 'Recommended';
+        subText = 'All';
+      }
+      categorySub.innerHTML = `Showing products in <strong>${subText}</strong> (${filtered.length} items)`;
+      productSectionTitle.textContent = title;
+      renderRecommended(filtered);
+    }
+
+    function renderRecommended(products) {
+      const grid = recommendedGrid;
+      if (!products || products.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:#94A3B8;">No products in this category</div>`;
+        return;
+      }
+      grid.innerHTML = products.map(p => {
+        const image = p.image || 'https://placehold.co/300x300/6C3CE1/FFFFFF?text=Product';
+        const isWished = wishlist.includes(p.id);
+        const rating = p.rating || 0;
+        const sold = p.sold || Math.floor(Math.random() * 500) + 50;
+        const isDeal = p.isDeal || p.discount > 0;
+        return `
+          <div class="recommended-card" onclick="window.location.href='item.html?product=${p.id}'">
+            <div class="card-image">
+              <img src="${image}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/300x300/6C3CE1/FFFFFF?text=Product'">
+              ${isDeal ? `<span class="card-badge">🔥 Deal</span>` : ''}
+              <span class="card-sold">${sold} sold</span>
+              ${rating > 0 ? `<span class="card-rating-float"><i class="fas fa-star" style="color:#F59E0B;"></i> ${rating.toFixed(1)}</span>` : ''}
+            </div>
+            <div class="card-body">
+              <div class="card-name">${p.name || 'Unknown Product'}</div>
+              <div class="card-meta">${p.brand ? `<span>${p.brand}</span>` : ''}${p.brand ? `<span class="dot"></span>` : ''}<span>${sold} sold</span></div>
+              <div class="card-price">FCFA ${(p.price || 0).toFixed(2)}${isDeal && p.originalPrice ? `<span class="original">FCFA ${(p.originalPrice || 0).toFixed(2)}</span>` : ''}</div>
+              <div class="card-actions">
+                <button class="btn-add" onclick="event.stopPropagation(); addToCart('${p.id}')"><i class="fas fa-shopping-bag"></i> Add</button>
+                <button class="btn-wish ${isWished ? 'active' : ''}" onclick="event.stopPropagation(); toggleWishlist('${p.id}')"><i class="fas fa-heart"></i></button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+function closereccomedsection() {
+      const recommendedSection = document.getElementById('foryouGrid');
+      if (recommendedSection) {
+        recommendedSection.style.display = 'none';
+      }
+    }
+  
+
+    function renderForYou(products) {
+      const grid = foryouGrid;
+      if (!products || products.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:#94A3B8;">No recommendations</div>`;
+        return;
+      }
+
+      grid.innerHTML = products.map(p => {
+        const image = p.image || 'https://placehold.co/80x80/6C3CE1/FFFFFF?text=Product';
+        const isWished = wishlist.includes(p.id);
+        const rating = p.rating || 0;
+        const sold = p.sold || Math.floor(Math.random() * 500) + 50;
+        const isDeal = p.isDeal || p.discount > 0;
+        let tag = '';
+        if (p.isHot) tag = 'Hot';
+        else if (p.isNew) tag = 'New';
+        else if (isDeal) tag = 'Deal';
+        return `
+          <div class="foryou-card" onclick="window.location.href='item.html?product=${p.id}'">
+            <div class="foryou-image"><img src="${image}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/80x80/6C3CE1/FFFFFF?text=Product'"></div>
+            <div class="foryou-info">
+              <div class="foryou-name">${p.name || 'Unknown'}</div>
+              <div class="foryou-meta">${p.brand ? `<span>${p.brand}</span>` : ''}${tag ? `<span class="tag">${tag}</span>` : ''}</div>
+              <div class="foryou-price">FCFA ${(p.price || 0).toFixed(2)}${isDeal && p.originalPrice ? `<span class="original">FCFA ${(p.originalPrice || 0).toFixed(2)}</span>` : ''}</div>
+              <div class="foryou-stats">${rating > 0 ? `<span class="rating"><i class="fas fa-star" style="color:#F59E0B;"></i> ${rating.toFixed(1)}</span>` : ''}<span>${sold} sold</span></div>
+            </div>
+            <div class="foryou-actions">
+              <button class="btn-add-small" onclick="event.stopPropagation(); addToCart('${p.id}')"><i class="fas fa-shopping-bag"></i> Add</button>
+              <button class="btn-wish-small ${isWished ? 'active' : ''}" onclick="event.stopPropagation(); toggleWishlist('${p.id}')"><i class="fas fa-heart"></i></button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+
+    }
+
+    async function addToCart(productId) {
+      try {
+        const product = allProducts.find(p => p.id === productId);
+        if (!product) { showToast('❌ Product not found', 'error'); return; }
+        let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
+        const existing = cart.find(item => item.product_id === productId || item.id === productId);
+        if (existing) { existing.qty = (existing.qty || 0) + 1; } else {
+          cart.push({ product_id: productId, id: productId, name: product.name || 'Unknown', price: product.price || 0, qty: 1, image: product.image || 'https://placehold.co/400x400', variants: product.variants || {}, brand: product.brand || '', isDeal: product.isDeal || false, originalPrice: product.originalPrice || null, discount: product.discount || null });
+        }
+        localStorage.setItem('st_cart', JSON.stringify(cart));
+        if (window.STHeader) { window.STHeader.AppState.cart = cart; if (window.STHeader.updateCounts) window.STHeader.updateCounts(); }
+        showToast(`✅ ${product.name || 'Product'} added!`);
+      } catch (err) { console.error(err); showToast('❌ Failed to add', 'error'); }
+    }
+
+    async function toggleWishlist(productId) {
+      try {
+        const index = wishlist.indexOf(productId);
+        if (index !== -1) { wishlist.splice(index, 1); showToast('❤️ Removed from wishlist', 'info'); } else { wishlist.push(productId); showToast('❤️ Added to wishlist!'); }
+        localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
+        if (window.STHeader) { window.STHeader.AppState.wishlist = wishlist; if (window.STHeader.updateCounts) window.STHeader.updateCounts(); }
+        filterProducts(currentCategory);
+        renderForYou(foryouProducts);
+        renderCategories(categories);
+      } catch (err) { console.error(err); showToast('❌ Failed', 'error'); }
+    }
+
+    window.addToCart = addToCart;
+    window.toggleWishlist = toggleWishlist;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadWishlist();
+      fetchAllData();
+      console.log('📄 Categories page with sticky sidebar & 8/2 cols ready');
+    });
+  </script>
+</body>
+</html>

@@ -1176,7 +1176,7 @@ function getHeaderHTML() {
 /* Ensure it is visible on mobile/tablet (screens 1024px and below) */
 @media (max-width: 1024px) {
   button#stMobileToggle {
-    display: inline-block !important;
+    display: none !important;
   }
 }
             /* ============================================
@@ -1704,13 +1704,11 @@ function getHeaderHTML() {
                     <div class="st-brand-icon">${HEADER_CONFIG.logoText}</div>
                     <div class="st-brand-text">${HEADER_CONFIG.shopName}</div>
                 </a>
-                <form action="/search" method="GET" role="search">
-                    <div class="st-search-wrapper">
-                        <i class="fas fa-search st-search-icon"></i>
-                        <input name="query" type="search" class="st-search-input" id="stMobileSearchInput" 
-                            placeholder="Search..." autocomplete="off">
-                        </div>
-                 </div>
+                <div class="st-search-wrapper">
+                    <i class="fas fa-search st-search-icon"></i>
+                    <input type="search" class="st-search-input" id="stMobileSearchInput" 
+                        placeholder="Search..." autocomplete="off" readonly="readonly">
+                </div>
                 
                 <button class="st-mobile-toggle-bar" id="stMobileToggle">
                     <i class="fas fa-bars"></i>
@@ -1774,6 +1772,9 @@ function getHeaderHTML() {
                     </li>
                 `).join('')}
             </ul>
+             <button class="st-account-dropdown-item" id="andstMyOrdersBtn">
+                <i class="fas fa-shopping-bag"></i> My Orders
+            </button>
             <div id="stLogoutactt" style="padding-top:16px;border-top:1px solid var(--st-gray-light);">
                 <button class="st-mobile-nav-link" id="stMobileLoginBtn">
                     <i class="fas fa-sign-in-alt"></i> Login
@@ -2011,6 +2012,7 @@ async function initHeader() {
         switchToRegister: document.getElementById('stSwitchToRegister'),
         switchToLogin: document.getElementById('stSwitchToLogin'),
         myOrdersBtn: document.getElementById('stMyOrdersBtn'),
+         andmyOrdersBtn: document.getElementById('andstMyOrdersBtn'),
         settingsBtn: document.getElementById('stSettingsBtn'),
         andsettingsBtn: document.getElementById('andstSettingsBtn'),
         loginEmailError: document.getElementById('stLoginEmailError'),
@@ -2045,6 +2047,7 @@ async function initHeader() {
     elements.mobileAccountBtn.addEventListener('click', () => {
         if (AppState.isLoggedIn) {
             elements.accountDropdown.classList.toggle('open');
+            openMobileDrawer();
         } else {
             openLoginModal();
         }
@@ -2343,6 +2346,21 @@ function createSearchResultsContainer() {
             text-decoration: none;
             color: #0F172A;
         }
+            /* Prevent mobile search from capturing taps outside */
+.st-mobile-topbar .st-search-wrapper {
+    position: relative;
+    z-index: 1;
+}
+
+.st-search-wrapper {
+    position: relative;
+    z-index: 1;
+}
+
+/* Make sure the search input doesn't capture clicks from outside */
+.st-search-input {
+    pointer-events: auto;
+}
         .st-search-modal .st-search-results-mobile .st-search-item img {
             width: 50px;
             height: 50px;
@@ -2602,19 +2620,27 @@ function hideSearchResults() {
 }
 
 // --- Open Mobile Search ---
+// Update openMobileSearch function
 function openMobileSearch() {
     const overlay = document.getElementById('stSearchOverlay');
     const modal = document.getElementById('stSearchModal');
     const input = document.getElementById('stMobileSearchModalInput');
+    const mobileInput = document.getElementById('stMobileSearchInput');
+    
     if (overlay) overlay.classList.add('active');
     if (modal) modal.classList.add('active');
     if (input) {
         // Copy value from mobile search input
-        const mobileInput = document.getElementById('stMobileSearchInput');
         if (mobileInput) input.value = mobileInput.value;
         setTimeout(() => input.focus(), 100);
     }
     document.body.style.overflow = 'hidden';
+    
+    // Add event listener for the modal close button
+    const closeBtn = document.getElementById('stSearchModalClose');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeMobileSearch);
+    }
 }
 
 // --- Close Mobile Search ---
@@ -2730,31 +2756,51 @@ if (desktopSearch) {
 }
 
 // --- Mobile Search ---
+// --- Mobile Search ---
+// --- Mobile Search (FIXED) ---
 const mobileSearch = document.getElementById('stMobileSearchInput');
 if (mobileSearch) {
-    // Open mobile search on focus (mobile only)
-    mobileSearch.addEventListener('focus', function() {
+    // Remove the problematic focus event
+    // Only use click event with proper prevention
+    
+    mobileSearch.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         if (window.innerWidth <= 768) {
-            openMobileSearch();
-            // Keep the mobile input in sync
-            const modalInput = document.getElementById('stMobileSearchModalInput');
-            if (modalInput) {
-                modalInput.value = this.value;
-                if (this.value.trim().length >= 1) {
-                    performSearch(this.value);
+            // Only open if the click was directly on the input
+            if (e.target === this) {
+                openMobileSearch();
+                const modalInput = document.getElementById('stMobileSearchModalInput');
+                if (modalInput) {
+                    modalInput.value = this.value;
+                    if (this.value.trim().length >= 1) {
+                        performSearch(this.value);
+                    }
+                    // Focus the modal input after a small delay
+                    setTimeout(() => modalInput.focus(), 100);
                 }
             }
         }
     });
-
-    // Also trigger on click for mobile
-    mobileSearch.addEventListener('click', function() {
-        if (window.innerWidth <= 768) {
-            openMobileSearch();
-        }
+    
+    // Prevent touch events from bubbling up
+    mobileSearch.addEventListener('touchstart', function(e) {
+        e.stopPropagation();
     });
+    
+    // Prevent form submission on mobile
+    const mobileForm = mobileSearch.closest('form');
+    if (mobileForm) {
+        mobileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const query = mobileSearch.value.trim();
+            if (query) {
+                window.location.href = `Search.html?search=${encodeURIComponent(query)}`;
+            }
+        });
+    }
 }
-
 // --- Mobile Modal Search ---
 const modalSearchInput = document.getElementById('stMobileSearchModalInput');
 if (modalSearchInput) {
@@ -3215,6 +3261,14 @@ elements.androidLogout.addEventListener('click', () => {
             openLoginModal();
         }
     });
+     elements.andmyOrdersBtn.addEventListener('click', () => {
+       closeMobileDrawer();
+        if (AppState.isLoggedIn) {
+            window.location.href = 'orders.html';
+        } else {
+            openLoginModal();
+        }
+    });
     
     elements.settingsBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
@@ -3589,6 +3643,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.prepend(headerContainer);
     
     initHeader();
+    
 });
 
 // Expose critical functions globally for other scripts
