@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Account Settings · Sucess Technology</title>
+    <title>Account Settings · Success Technology</title>
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-      <script src="global-header.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+    <script src="global-header.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -17,8 +18,8 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { 
-                        primary: '#6C3CE1', 
+                    colors: {
+                        primary: '#6C3CE1',
                         primaryHover: '#5A2FC4',
                         dark: '#0F172A',
                         'dark-secondary': '#1E293B'
@@ -45,14 +46,12 @@
             padding-bottom: 40px;
         }
 
-        /* ----- Account Container ----- */
         .st-account-container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 24px;
         }
 
-        /* ----- Page Header ----- */
         .st-account-header {
             display: flex;
             align-items: center;
@@ -93,14 +92,12 @@
             display: inline-block;
         }
 
-        /* ----- Account Grid ----- */
         .st-account-grid {
             display: grid;
             grid-template-columns: 280px 1fr;
             gap: 32px;
         }
 
-        /* ----- Sidebar ----- */
         .st-account-sidebar {
             background: white;
             border-radius: 16px;
@@ -197,7 +194,6 @@
             background: rgba(239, 68, 68, 0.08);
         }
 
-        /* ----- Main Content ----- */
         .st-account-content {
             background: white;
             border-radius: 16px;
@@ -219,7 +215,6 @@
             color: #6C3CE1;
         }
 
-        /* ----- Profile Form ----- */
         .st-form-group {
             margin-bottom: 20px;
         }
@@ -254,6 +249,7 @@
         .st-form-group .st-form-input:disabled {
             background: #f1f5f9;
             cursor: not-allowed;
+            opacity: 0.7;
         }
 
         .st-form-group .st-form-input.error {
@@ -356,7 +352,6 @@
             gap: 16px;
         }
 
-        /* ----- Orders List ----- */
         .st-order-card {
             border: 1px solid #E2E8F0;
             border-radius: 12px;
@@ -451,7 +446,6 @@
             margin-bottom: 12px;
         }
 
-        /* ----- Notification ----- */
         .st-toast {
             position: fixed;
             bottom: 80px;
@@ -472,7 +466,28 @@
             align-items: center;
             gap: 10px;
         }
+button#stSaveProfileBtn {
+  background-color: #3b82f6; /* Modern Blue */
+  color: #ffffff;            /* High contrast white text */
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease-in-out;
+}
 
+button#stSaveProfileBtn:hover {
+  background-color: #2563eb; /* Darker blue on hover */
+  transform: translateY(-1px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
         .st-toast.success {
             background: #10B981;
         }
@@ -490,11 +505,16 @@
         }
 
         @keyframes toastSlideUp {
-            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            from {
+                transform: translateX(-50%) translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
         }
 
-        /* ----- Modal ----- */
         .st-modal-overlay {
             position: fixed;
             top: 0;
@@ -567,7 +587,6 @@
             color: #EF4444;
         }
 
-        /* ----- Loading ----- */
         .st-loading {
             display: flex;
             align-items: center;
@@ -587,10 +606,11 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
-        /* ----- Responsive ----- */
         @media (max-width: 1024px) {
             .st-account-grid {
                 grid-template-columns: 240px 1fr;
@@ -743,44 +763,50 @@
             <div class="st-account-content" id="stAccountContent">
                 <!-- Profile Section -->
                 <div id="section-profile" class="st-section">
-                    <div class="st-section-title"><i class="fas fa-user"></i> Profile Information</div>
-                    
+                    <div class="st-section-title">
+                        <i class="fas fa-user"></i> Profile Information
+                        <!-- EDIT TOGGLE BUTTON -->
+                        <button id="stEditToggleBtn" class="st-btn-secondary" style="margin-left:auto;padding:6px 18px;font-size:13px;">
+                            <i class="fas fa-pen"></i> Enable Editing
+                        </button>
+                    </div>
+
                     <form id="stProfileForm" autocomplete="off">
                         <div class="st-form-group">
                             <label class="st-form-label">Full Name</label>
-                            <input type="text" class="st-form-input" id="stProfileName" 
-                                   placeholder="Your full name" required />
+                            <input type="text" class="st-form-input" id="stProfileName"
+                            placeholder="Your full name" required disabled />
                             <div class="st-form-error" id="stProfileNameError">Name is required</div>
                         </div>
 
                         <div class="st-form-group">
                             <label class="st-form-label">Email Address</label>
-                            <input type="email" class="st-form-input" id="stProfileEmail" 
-                                   placeholder="you@example.com" disabled />
+                            <input type="email" class="st-form-input" id="stProfileEmail"
+                            placeholder="you@example.com" disabled />
                             <div class="st-form-help">Email cannot be changed</div>
                         </div>
 
                         <div class="st-form-row">
                             <div class="st-form-group">
                                 <label class="st-form-label">Phone Number</label>
-                                <input type="tel" class="st-form-input" id="stProfilePhone" 
-                                       placeholder="+1 234 567 890" />
+                                <input type="tel" class="st-form-input" id="stProfilePhone"
+                                placeholder="+1 234 567 890" disabled />
                             </div>
                             <div class="st-form-group">
                                 <label class="st-form-label">Address</label>
-                                <input type="text" class="st-form-input" id="stProfileAddress" 
-                                       placeholder="123 Main St, City" />
+                                <input type="text" class="st-form-input" id="stProfileAddress"
+                                placeholder="123 Main St, City" disabled />
                             </div>
                         </div>
 
                         <div class="st-form-group" style="margin-top:8px;">
                             <label class="st-form-label">Bio</label>
-                            <textarea class="st-form-input" id="stProfileBio" 
-                                      rows="3" placeholder="Tell us a little about yourself..."></textarea>
+                            <textarea class="st-form-input" id="stProfileBio"
+                            rows="3" placeholder="Tell us a little about yourself..." disabled></textarea>
                         </div>
 
                         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
-                            <button type="submit" class="st-btn-primary">
+                            <button type="submit" class="st-btn-primary" id="stSaveProfileBtn" disabled>
                                 <i class="fas fa-save"></i> Save Changes
                             </button>
                             <button type="button" class="st-btn-secondary" id="stProfileReset">
@@ -793,14 +819,12 @@
                 <!-- Orders Section -->
                 <div id="section-orders" class="st-section" style="display:none;">
                     <div class="st-section-title"><i class="fas fa-shopping-bag"></i> My Orders</div>
-                    
+
                     <div id="stOrdersList">
-                        <!-- Loading State -->
                         <div class="st-loading" id="stOrdersLoading">
                             <div class="st-spinner"></div>
                             <span style="color:#94A3B8;">Loading your orders...</span>
                         </div>
-                        <!-- Orders will be rendered here -->
                         <div id="stOrdersContainer"></div>
                     </div>
                 </div>
@@ -812,22 +836,22 @@
                     <form id="stSecurityForm">
                         <div class="st-form-group">
                             <label class="st-form-label">Current Password</label>
-                            <input type="password" class="st-form-input" id="stCurrentPassword" 
-                                   placeholder="Enter current password" />
+                            <input type="password" class="st-form-input" id="stCurrentPassword"
+                            placeholder="Enter current password" />
                             <div class="st-form-error" id="stCurrentPasswordError">Current password is required</div>
                         </div>
 
                         <div class="st-form-group">
                             <label class="st-form-label">New Password</label>
-                            <input type="password" class="st-form-input" id="stNewPassword" 
-                                   placeholder="Enter new password (min 6 characters)" />
+                            <input type="password" class="st-form-input" id="stNewPassword"
+                            placeholder="Enter new password (min 6 characters)" />
                             <div class="st-form-error" id="stNewPasswordError">Password must be at least 6 characters</div>
                         </div>
 
                         <div class="st-form-group">
                             <label class="st-form-label">Confirm New Password</label>
-                            <input type="password" class="st-form-input" id="stConfirmPassword" 
-                                   placeholder="Confirm new password" />
+                            <input type="password" class="st-form-input" id="stConfirmPassword"
+                            placeholder="Confirm new password" />
                             <div class="st-form-error" id="stConfirmPasswordError">Passwords do not match</div>
                         </div>
 
@@ -920,13 +944,14 @@
          ============================================ -->
     <script>
         // ============================================================
-        //  ACCOUNT SETTINGS - Standalone Page
+        //  ACCOUNT SETTINGS - COMPLETE FIX
         // ============================================================
 
         // --- State ---
         let currentUser = null;
         let isLoggedIn = false;
         let orders = [];
+        let isEditingEnabled = false;
 
         // --- DOM Elements ---
         const elements = {
@@ -963,11 +988,13 @@
             prefPromotions: document.getElementById('stPrefPromotions'),
             prefNewsletter: document.getElementById('stPrefNewsletter'),
             prefProfileVisibility: document.getElementById('stPrefProfileVisibility'),
-            prefOrderHistory: document.getElementById('stPrefOrderHistory')
+            prefOrderHistory: document.getElementById('stPrefOrderHistory'),
+            editToggleBtn: document.getElementById('stEditToggleBtn'),
+            saveProfileBtn: document.getElementById('stSaveProfileBtn')
         };
 
         // ============================================================
-        //  HELPERS
+        //  TOAST NOTIFICATION
         // ============================================================
 
         function showToast(message, type = 'success') {
@@ -987,40 +1014,111 @@
             }, 3000);
         }
 
+        // ============================================================
+        //  GET CURRENT USER - FIXED: Reads from multiple sources
+        // ============================================================
+
         function getCurrentUser() {
-            // Check if header is loaded
+            // --- 1. Try STHeader AppState (primary source) ---
             if (window.STHeader && window.STHeader.AppState) {
                 const user = window.STHeader.AppState.user;
-                const isLoggedIn = window.STHeader.AppState.isLoggedIn;
-                if (isLoggedIn && user) {
+                const loggedIn = window.STHeader.AppState.isLoggedIn;
+                if (loggedIn && user && user.id) {
+                    console.log('✅ Got user from STHeader.AppState:', user.email);
                     return {
                         id: user.id,
-                        name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+                        name: user.user_metadata?.full_name || 
+                              user.name || 
+                              user.email?.split('@')[0] || 
+                              'User',
                         email: user.email,
-                        phone: user.user_metadata?.phone || '',
-                        address: user.user_metadata?.address || '',
-                        bio: user.user_metadata?.bio || ''
+                        phone: user.user_metadata?.phone || user.phone || '',
+                        address: user.user_metadata?.address || user.address || '',
+                        bio: user.user_metadata?.bio || user.bio || ''
                     };
                 }
             }
 
-            // Fallback: check localStorage
+            // --- 2. Try localStorage (persistent "Remember Me") ---
             try {
-                const stored = JSON.parse(localStorage.getItem('st_customer') || 'null');
-                if (stored) return stored;
-            } catch (e) {}
+                const stored = localStorage.getItem('st_customer');
+                if (stored) {
+                    const user = JSON.parse(stored);
+                    if (user && user.id && user.email) {
+                        console.log('✅ Got user from localStorage:', user.email);
+                        return {
+                            id: user.id,
+                            name: user.name || user.email?.split('@')[0] || 'User',
+                            email: user.email,
+                            phone: user.phone || '',
+                            address: user.address || '',
+                            bio: user.bio || ''
+                        };
+                    }
+                }
+            } catch (e) {
+                console.warn('⚠️ Error reading localStorage:', e.message);
+            }
 
+            // --- 3. Try sessionStorage ---
             try {
-                const stored = JSON.parse(sessionStorage.getItem('st_customer') || 'null');
-                if (stored) return stored;
-            } catch (e) {}
+                const stored = sessionStorage.getItem('st_customer');
+                if (stored) {
+                    const user = JSON.parse(stored);
+                    if (user && user.id && user.email) {
+                        console.log('✅ Got user from sessionStorage:', user.email);
+                        return {
+                            id: user.id,
+                            name: user.name || user.email?.split('@')[0] || 'User',
+                            email: user.email,
+                            phone: user.phone || '',
+                            address: user.address || '',
+                            bio: user.bio || ''
+                        };
+                    }
+                }
+            } catch (e) {
+                console.warn('⚠️ Error reading sessionStorage:', e.message);
+            }
 
+            // --- 4. Try Supabase auth directly (fallback) ---
+            try {
+                const client = getSupabase();
+                if (client) {
+                    // Use a sync approach - we'll handle this asynchronously
+                    // For now, return null and let async functions handle it
+                }
+            } catch (e) {
+                console.warn('⚠️ Supabase fallback error:', e.message);
+            }
+
+            console.log('⚠️ No user found in any storage');
             return null;
         }
 
+        // ============================================================
+        //  GET SUPABASE CLIENT
+        // ============================================================
+
         function getSupabase() {
+            // Try via STHeader first
             if (window.STHeader && window.STHeader.getSupabaseClient) {
                 return window.STHeader.getSupabaseClient();
+            }
+            // Try global supabase client
+            if (window.supabaseClient) {
+                return window.supabaseClient;
+            }
+            // Try creating a new client
+            try {
+                if (typeof supabase !== 'undefined' && supabase.createClient) {
+                    return supabase.createClient(
+                        'https://bulprhgwuwatzobiojwz.supabase.co',
+                        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHByaGd3dXdhdHpvYmlvand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDczNDksImV4cCI6MjA5MjA4MzM0OX0.2fcHrGX7iXw5G9nGRNkBy70W1Ex_om1C0v3qbryPmvw'
+                    );
+                }
+            } catch (e) {
+                console.warn('⚠️ Could not create Supabase client:', e.message);
             }
             return null;
         }
@@ -1101,7 +1199,6 @@
                     return;
                 }
 
-                // Try to get orders from Supabase
                 const client = getSupabase();
                 if (client) {
                     const { data, error } = await client
@@ -1117,7 +1214,7 @@
                     }
                 }
 
-                // Fallback: check localStorage
+                // Fallback to local orders
                 const localOrders = JSON.parse(localStorage.getItem('shop_orders_v1') || '[]');
                 const userOrders = localOrders.filter(o => o.customer_id === user.id || o.email === user.email);
                 orders = userOrders;
@@ -1140,24 +1237,24 @@
         }
 
         // ============================================================
-        //  UPDATE PROFILE UI
+        //  UPDATE PROFILE UI - FIXED
         // ============================================================
 
         function updateProfileUI() {
+            console.log('🔄 updateProfileUI called');
             const user = getCurrentUser();
 
-            if (user) {
+            if (user && user.id) {
                 currentUser = user;
                 isLoggedIn = true;
+                console.log('✅ User loaded:', user.email);
 
-                // Sidebar
                 const initial = (user.name || 'User').charAt(0).toUpperCase();
                 elements.sidebarAvatar.textContent = initial;
                 elements.sidebarName.textContent = user.name || 'User';
                 elements.sidebarEmail.textContent = user.email || 'No email';
                 elements.accountStatus.textContent = `Signed in as ${user.name || 'User'}`;
 
-                // Profile form
                 elements.profileName.value = user.name || '';
                 elements.profileEmail.value = user.email || '';
                 elements.profilePhone.value = user.phone || '';
@@ -1166,6 +1263,7 @@
             } else {
                 isLoggedIn = false;
                 currentUser = null;
+                console.log('👤 No user found, showing guest view');
 
                 elements.sidebarAvatar.textContent = 'G';
                 elements.sidebarName.textContent = 'Guest';
@@ -1179,23 +1277,58 @@
                 elements.profileBio.value = '';
             }
 
+            setEditingEnabled(false);
+
             // Show/hide sections based on login
             const sections = ['profile', 'orders', 'security', 'preferences'];
             sections.forEach(section => {
                 const el = document.getElementById(`section-${section}`);
                 if (el) {
-                    if (isLoggedIn) {
-                        el.style.display = section === 'profile' ? 'block' : 'none';
-                    } else {
-                        el.style.display = 'none';
-                    }
+                    el.style.display = (isLoggedIn && section === 'profile') ? 'block' : 'none';
                 }
             });
 
-            // Show profile by default if logged in
             if (isLoggedIn) {
                 showSection('profile');
             }
+        }
+
+        // ============================================================
+        //  EDITING MODE TOGGLE
+        // ============================================================
+
+        function setEditingEnabled(enabled) {
+            isEditingEnabled = enabled;
+            const inputs = [
+                elements.profileName,
+                elements.profilePhone,
+                elements.profileAddress,
+                elements.profileBio
+            ];
+            inputs.forEach(inp => {
+                if (inp) inp.disabled = !enabled;
+            });
+            elements.profileEmail.disabled = true;
+            elements.saveProfileBtn.disabled = !enabled;
+
+            if (enabled) {
+                elements.editToggleBtn.innerHTML = '<i class="fas fa-check-circle"></i> Editing Enabled';
+                elements.editToggleBtn.style.borderColor = '#10B981';
+                elements.editToggleBtn.style.color = '#10B981';
+            } else {
+                elements.editToggleBtn.innerHTML = '<i class="fas fa-pen"></i> Enable Editing';
+                elements.editToggleBtn.style.borderColor = '#E2E8F0';
+                elements.editToggleBtn.style.color = '#475569';
+            }
+        }
+
+        function toggleEditMode() {
+            if (!isLoggedIn) {
+                showToast('Please log in to edit your profile.', 'warning');
+                return;
+            }
+            setEditingEnabled(!isEditingEnabled);
+            showToast(isEditingEnabled ? '✏️ Editing enabled' : '🔒 Editing disabled', 'info');
         }
 
         // ============================================================
@@ -1203,18 +1336,15 @@
         // ============================================================
 
         function showSection(sectionName) {
-            // Hide all sections
             document.querySelectorAll('.st-section').forEach(el => {
                 el.style.display = 'none';
             });
 
-            // Show selected section
             const section = document.getElementById(`section-${sectionName}`);
             if (section) {
                 section.style.display = 'block';
             }
 
-            // Update nav items
             document.querySelectorAll('.st-sidebar-nav .st-nav-item').forEach(el => {
                 el.classList.remove('active');
                 if (el.dataset.section === sectionName) {
@@ -1222,7 +1352,6 @@
                 }
             });
 
-            // Load orders if orders section
             if (sectionName === 'orders' && isLoggedIn) {
                 loadOrders();
             }
@@ -1250,49 +1379,136 @@
             const bio = elements.profileBio.value.trim();
 
             try {
-                // Update in header state
+                const client = getSupabase();
+                if (!client) {
+                    showToast('❌ Supabase client not available', 'error');
+                    return;
+                }
+
+                // Get fresh user ID from storage
+                const user = getCurrentUser();
+                if (!user?.id) {
+                    showToast('❌ No user logged in', 'error');
+                    return;
+                }
+
+                // Update customer_accounts
+                const { error: updateError } = await client
+                    .from('customer_accounts')
+                    .update({
+                        name: name,
+                        phone: phone,
+                        address: address,
+                        bio: bio,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', user.id);
+
+                if (updateError) {
+                    console.error('❌ Supabase update error:', updateError);
+                    showToast('❌ Failed to update profile', 'error');
+                    return;
+                }
+
+                // Update user metadata
+                try {
+                    await client.auth.updateUser({
+                        data: {
+                            full_name: name,
+                            phone: phone,
+                            address: address,
+                            bio: bio
+                        }
+                    });
+                } catch (metaErr) {
+                    console.warn('⚠️ Metadata update warning:', metaErr);
+                }
+
+                // Update STHeader state
                 if (window.STHeader && window.STHeader.AppState) {
-                    const user = window.STHeader.AppState.user;
-                    if (user) {
-                        if (!user.user_metadata) user.user_metadata = {};
-                        user.user_metadata.full_name = name;
-                        user.user_metadata.phone = phone;
-                        user.user_metadata.address = address;
-                        user.user_metadata.bio = bio;
+                    const headerUser = window.STHeader.AppState.user;
+                    if (headerUser) {
+                        if (!headerUser.user_metadata) headerUser.user_metadata = {};
+                        headerUser.user_metadata.full_name = name;
+                        headerUser.user_metadata.phone = phone;
+                        headerUser.user_metadata.address = address;
+                        headerUser.user_metadata.bio = bio;
                     }
                 }
 
-                // Update in localStorage
-                const stored = getCurrentUser();
-                if (stored) {
-                    stored.name = name;
-                    stored.phone = phone;
-                    stored.address = address;
-                    stored.bio = bio;
-                    localStorage.setItem('st_customer', JSON.stringify(stored));
-                    sessionStorage.setItem('st_customer', JSON.stringify(stored));
-                }
+                // Update localStorage/sessionStorage
+                try {
+                    const stored = localStorage.getItem('st_customer');
+                    if (stored) {
+                        const customer = JSON.parse(stored);
+                        customer.name = name;
+                        customer.phone = phone;
+                        customer.address = address;
+                        customer.bio = bio;
+                        localStorage.setItem('st_customer', JSON.stringify(customer));
+                    }
+                    const sessionStored = sessionStorage.getItem('st_customer');
+                    if (sessionStored) {
+                        const customer = JSON.parse(sessionStored);
+                        customer.name = name;
+                        customer.phone = phone;
+                        customer.address = address;
+                        customer.bio = bio;
+                        sessionStorage.setItem('st_customer', JSON.stringify(customer));
+                    }
+                } catch (e) {}
 
-                // Update Supabase if available
-                const client = getSupabase();
-                if (client && currentUser?.id) {
-                    await client
-                        .from('customer_accounts')
-                        .update({
-                            name: name,
-                            phone: phone,
-                            address: address
-                        })
-                        .eq('id', currentUser.id);
-                }
+                // Update currentUser
+                currentUser.name = name;
+                currentUser.phone = phone;
+                currentUser.address = address;
+                currentUser.bio = bio;
 
-                // Update UI
+                // Refresh UI
                 updateProfileUI();
                 showToast('✅ Profile updated successfully!');
 
             } catch (err) {
                 console.error('❌ Error saving profile:', err);
-                showToast('❌ Failed to update profile', 'error');
+                showToast('❌ Failed to update profile: ' + err.message, 'error');
+            }
+        }
+
+        // ============================================================
+        //  REFRESH USER FROM SUPABASE
+        // ============================================================
+
+        async function refreshUserFromSupabase() {
+            try {
+                const client = getSupabase();
+                const user = getCurrentUser();
+                if (!client || !user?.id) return;
+
+                const { data, error } = await client
+                    .from('customer_accounts')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (error) {
+                    console.warn('⚠️ Could not refresh user data:', error);
+                    return;
+                }
+
+                if (data) {
+                    currentUser = {
+                        id: data.id,
+                        name: data.name || user.name,
+                        email: data.email || user.email,
+                        phone: data.phone || '',
+                        address: data.address || '',
+                        bio: data.bio || ''
+                    };
+                    updateProfileUI();
+                    showToast('🔄 Profile refreshed from database');
+                }
+            } catch (err) {
+                console.warn('⚠️ Error refreshing user:', err);
             }
         }
 
@@ -1340,18 +1556,14 @@
 
             try {
                 const client = getSupabase();
-                if (client && currentUser?.email) {
-                    // Update password via Supabase
+                if (client) {
                     const { error } = await client.auth.updateUser({
                         password: newPw
                     });
-
                     if (error) throw error;
                 }
-
                 showToast('✅ Password updated successfully!');
                 elements.securityForm.reset();
-
             } catch (err) {
                 console.error('❌ Error updating password:', err);
                 showToast('❌ Failed to update password: ' + err.message, 'error');
@@ -1365,34 +1577,23 @@
         async function deleteAccount() {
             try {
                 const client = getSupabase();
-                if (client && currentUser?.id) {
-                    // Delete user data from customer_accounts
-                    await client
-                        .from('customer_accounts')
-                        .delete()
-                        .eq('id', currentUser.id);
-
-                    // Sign out
+                const user = getCurrentUser();
+                if (client && user?.id) {
+                    await client.from('customer_accounts').delete().eq('id', user.id);
                     await client.auth.signOut();
                 }
 
-                // Clear local data
-                localStorage.removeItem('st_customer');
-                sessionStorage.removeItem('st_customer');
                 localStorage.removeItem('st_cart');
                 localStorage.removeItem('st_wishlist');
+                localStorage.removeItem('st_customer');
+                sessionStorage.removeItem('st_customer');
 
-                // Reset state
                 currentUser = null;
                 isLoggedIn = false;
-
-                // Update UI
                 updateProfileUI();
                 closeDeleteModal();
-
                 showToast('🗑️ Account deleted successfully');
 
-                // Redirect after delay
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 1500);
@@ -1429,7 +1630,6 @@
                 profileVisibility: elements.prefProfileVisibility.checked,
                 orderHistory: elements.prefOrderHistory.checked
             };
-
             localStorage.setItem('st_preferences', JSON.stringify(prefs));
             showToast('✅ Preferences saved!');
         }
@@ -1456,15 +1656,14 @@
                     await client.auth.signOut();
                 }
 
-                localStorage.removeItem('st_customer');
-                sessionStorage.removeItem('st_customer');
                 localStorage.removeItem('st_cart');
                 localStorage.removeItem('st_wishlist');
+                localStorage.removeItem('st_customer');
+                sessionStorage.removeItem('st_customer');
 
                 currentUser = null;
                 isLoggedIn = false;
                 updateProfileUI();
-
                 showToast('👋 Logged out successfully');
 
                 setTimeout(() => {
@@ -1478,28 +1677,42 @@
         }
 
         // ============================================================
-        //  INITIALIZE
+        //  INITIALIZE - FIXED
         // ============================================================
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Load preferences
+            console.log('📄 Account Settings initializing...');
+
+            // Load preferences first
             loadPreferences();
 
-            // Update UI with user data
+            // Initial UI update
             updateProfileUI();
 
-            // Wait for header to load
-            setTimeout(() => {
+            // Wait for header to be fully loaded and re-check
+            setTimeout(function() {
+                console.log('⏰ Re-checking user after delay...');
                 updateProfileUI();
             }, 500);
 
+            // Also listen for header initialization events
+            if (window.STHeader) {
+                // Check if header has a callback mechanism
+                if (window.STHeader.onAuthChange) {
+                    window.STHeader.onAuthChange(updateProfileUI);
+                }
+            }
+
             // ---- Event Listeners ----
+
+            // Edit toggle
+            elements.editToggleBtn.addEventListener('click', toggleEditMode);
 
             // Sidebar navigation
             document.querySelectorAll('.st-sidebar-nav .st-nav-item').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const section = this.dataset.section;
-                    if (section === 'profile' || section === 'orders' || 
+                    if (section === 'profile' || section === 'orders' ||
                         section === 'security' || section === 'preferences') {
                         showSection(section);
                     }
@@ -1511,8 +1724,8 @@
 
             // Reset profile
             elements.profileReset.addEventListener('click', function() {
-                updateProfileUI();
-                showToast('🔄 Profile reset');
+                refreshUserFromSupabase();
+                setEditingEnabled(false);
             });
 
             // Profile name validation
@@ -1570,6 +1783,8 @@
 
             // Save preferences
             elements.savePreferences.addEventListener('click', savePreferences);
+
+            console.log('✅ Account Settings initialized');
         });
 
         // ============================================================
@@ -1582,10 +1797,17 @@
             loadOrders,
             renderOrders,
             handleLogout,
-            getCurrentUser
+            getCurrentUser,
+            toggleEditMode,
+            setEditingEnabled,
+            refreshUserFromSupabase,
+            saveProfile,
+            updatePassword,
+            deleteAccount
         };
 
-        console.log('📄 Account Settings page loaded');
+        console.log('📄 Account Settings page loaded (FIXED)');
+        console.log('👤 Current user:', getCurrentUser());
     </script>
 </body>
 </html>

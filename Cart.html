@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Cart - Sucess Technology</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="global-header.js"></script>
+
+    <style>
+        /* ============================================
+           CART PAGE STYLES
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 30px; margin-top: 40px; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #0F172A;
+            padding-top: 80px;
+            padding-bottom: 40px;
+        }
+
+        /* ----- Cart Container ----- */
+        .st-cart-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ----- Page Header ----- */
+        .st-cart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 0 20px;
+            border-bottom: 2px solid #E2E8F0;
+            margin-bottom: 24px;
+        }
+
+        .st-cart-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .st-cart-header h1 i {
+            color: #6C3CE1;
+        }
+
+        .st-cart-header .st-cart-count {
+            background: #6C3CE1;
+            color: white;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* ----- Cart Grid ----- */
+        .st-cart-grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 32px;
+        }
+
+        /* ----- Cart Items ----- */
+        .st-cart-items {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .st-cart-item {
+            display: grid;
+            grid-template-columns: 100px 1fr auto;
+            gap: 16px;
+            padding: 20px 24px;
+            border-bottom: 1px solid #E2E8F0;
+            align-items: center;
+            transition: background 0.2s ease;
+        }
+
+        .st-cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .st-cart-item:hover {
+            background: #f8fafc;
+        }
+
+        .st-cart-item-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f1f5f9;
+            flex-shrink: 0;
+        }
+
+        .st-cart-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .st-cart-item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .st-cart-item-details .st-item-name {
+            font-weight: 700;
+            font-size: 16px;
+            color: #0F172A;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .st-cart-item-details .st-item-name:hover {
+            color: #6C3CE1;
+        }
+
+        .st-cart-item-details .st-item-brand {
+            font-size: 13px;
+            color: #94A3B8;
+        }
+
+        .st-cart-item-details .st-item-variant {
+            font-size: 13px;
+            color: #64748B;
+            background: #f1f5f9;
+            padding: 2px 10px;
+            border-radius: 12px;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .st-cart-item-details .st-item-price {
+            font-weight: 700;
+            font-size: 18px;
+            color: #0F172A;
+        }
+
+        .st-cart-item-details .st-item-price .st-original-price {
+            text-decoration: line-through;
+            color: #94A3B8;
+            font-size: 14px;
+            font-weight: 400;
+            margin-left: 8px;
+        }
+
+        .st-cart-item-details .st-item-price .st-deal-badge {
+            background: #EF4444;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .st-cart-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .st-quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .st-quantity-control button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            color: #0F172A;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .st-quantity-control button:hover {
+            background: #e2e8f0;
+        }
+
+        .st-quantity-control .st-qty-value {
+            min-width: 32px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .st-remove-btn {
+            padding: 8px 10px;
+            border: none;
+            background: none;
+            color: #94A3B8;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+        }
+
+        .st-remove-btn:hover {
+            color: #EF4444;
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        /* ----- Empty Cart ----- */
+        .st-empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .st-empty-cart .st-empty-icon {
+            font-size: 64px;
+            color: #E2E8F0;
+            margin-bottom: 16px;
+        }
+
+        .st-empty-cart h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0F172A;
+            margin-bottom: 8px;
+        }
+
+        .st-empty-cart p {
+            color: #94A3B8;
+            margin-bottom: 24px;
+        }
+
+        .st-empty-cart .st-btn-shop {
+            display: inline-block;
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #6C3CE1, #5A2FC4);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(108, 60, 225, 0.3);
+        }
+
+        .st-empty-cart .st-btn-shop:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(108, 60, 225, 0.4);
+        }
+
+        /* ----- Cart Summary (Sidebar) ----- */
+        .st-cart-summary {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+        }
+
+        .st-cart-summary h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #E2E8F0;
+        }
+
+        .st-summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .st-summary-row.st-total {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0F172A;
+            padding-top: 12px;
+            border-top: 2px solid #E2E8F0;
+            margin-top: 8px;
+        }
+
+        .st-summary-row .st-label {
+            color: #64748B;
+        }
+
+        .st-summary-row .st-value {
+            font-weight: 600;
+        }
+
+        .st-summary-row.st-total .st-value {
+            color: #6C3CE1;
+            font-size: 20px;
+        }
+
+        .st-cart-summary .st-discount-input {
+            display: flex;
+            gap: 8px;
+            margin: 12px 0 16px;
+        }
+
+        .st-cart-summary .st-discount-input input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease;
+            font-family: inherit;
+        }
+
+        .st-cart-summary .st-discount-input input:focus {
+            border-color: #6C3CE1;
+        }
+
+        .st-cart-summary .st-discount-input button {
+            padding: 10px 16px;
+            background: #6C3CE1;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .st-cart-summary .st-discount-input button:hover {
+            background: #5A2FC4;
+        }
+
+        .st-btn-checkout {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6C3CE1, #5A2FC4);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(108, 60, 225, 0.3);
+            margin-top: 8px;
+        }
+
+        .st-btn-checkout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(108, 60, 225, 0.4);
+        }
+
+        .st-btn-checkout:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .st-btn-continue {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            color: #6C3CE1;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 12px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .st-btn-continue:hover {
+            background: #f8fafc;
+            border-color: #6C3CE1;
+        }
+
+        /* ============================================
+           LOADING STATE
+           ============================================ */
+        .st-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .st-loading .st-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #E2E8F0;
+            border-top-color: #6C3CE1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 1024px) {
+            .st-cart-grid {
+                grid-template-columns: 1fr 300px;
+                gap: 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 68px;
+                padding-bottom: 80px;
+            }
+
+            .st-cart-container {
+                padding: 0 16px;
+            }
+
+            .st-cart-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .st-cart-header h1 {
+                font-size: 22px;
+            }
+
+            .st-cart-item {
+                grid-template-columns: 80px 1fr;
+                padding: 16px;
+                gap: 12px;
+            }
+
+            .st-cart-item-image {
+                width: 80px;
+                height: 80px;
+            }
+
+            .st-cart-item-actions {
+                grid-column: 1 / -1;
+                justify-content: space-between;
+                padding-top: 8px;
+                border-top: 1px solid #E2E8F0;
+            }
+
+            .st-cart-item-details .st-item-price {
+                font-size: 16px;
+            }
+
+            .st-cart-summary {
+                position: static;
+            }
+
+            .st-cart-header .st-cart-count {
+                font-size: 12px;
+                padding: 2px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .st-cart-item {
+                grid-template-columns: 64px 1fr;
+                padding: 12px;
+                gap: 10px;
+            }
+
+            .st-cart-item-image {
+                width: 64px;
+                height: 64px;
+            }
+
+            .st-cart-item-details .st-item-name {
+                font-size: 14px;
+            }
+
+            .st-cart-item-details .st-item-price {
+                font-size: 14px;
+            }
+
+            .st-cart-header h1 {
+                font-size: 18px;
+            }
+
+            .st-cart-summary {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="st-cart-container" id="stCartPage">
+        <!-- Cart Header -->
+        <div class="st-cart-header">
+            <h1>
+                <i class="fas fa-shopping-bag"></i>
+                Your Cart
+                <span class="st-cart-count" id="stCartPageCount">0 items</span>
+            </h1>
+            <a href="Search.html" class="st-btn-continue" style="display:inline-block;padding:8px 20px;border:2px solid #E2E8F0;border-radius:10px;text-decoration:none;color:#0F172A;font-weight:600;font-size:14px;transition:all 0.2s ease;">
+                <i class="fas fa-arrow-left"></i> Continue Shopping
+            </a>
+        </div>
+
+        <!-- Cart Grid -->
+        <div class="st-cart-grid">
+            <!-- Cart Items -->
+            <div class="st-cart-items" id="stCartItems">
+                <!-- Loading State -->
+                <div class="st-loading" id="stCartLoading">
+                    <div class="st-spinner"></div>
+                    <p style="color:#94A3B8;font-weight:500;">Loading your cart...</p>
+                </div>
+
+                <!-- Cart Items Container -->
+                <div id="stCartItemsContainer"></div>
+            </div>
+
+            <!-- Cart Summary -->
+            <div class="st-cart-summary" id="stCartSummary">
+                <h2>Order Summary</h2>
+                <div id="stSummaryContent">
+                    <div class="st-summary-row">
+                        <span class="st-label">Subtotal</span>
+                        <span class="st-value" id="stSubtotal">$0.00</span>
+                    </div>
+                    <div class="st-summary-row">
+                        <span class="st-label">Shipping</span>
+                        <span class="st-value" id="stShipping">$0.00</span>
+                    </div>
+                    <div class="st-summary-row">
+                        <span class="st-label">Discount</span>
+                        <span class="st-value" id="stDiscount">-$0.00</span>
+                    </div>
+                    <div class="st-summary-row st-total">
+                        <span class="st-label">Total</span>
+                        <span class="st-value" id="stTotal">$0.00</span>
+                    </div>
+
+                    <div class="st-discount-input">
+                        <input type="text" id="stDiscountCode" placeholder="Discount code" />
+                        <button id="stApplyDiscount">Apply</button>
+                    </div>
+
+                    <button class="st-btn-checkout" id="stCheckoutBtn">
+                        <i class="fas fa-lock" style="margin-right:8px;"></i>
+                        Proceed to Checkout
+                    </button>
+
+                    <a href="Search.html" class="st-btn-continue">
+                        <i class="fas fa-arrow-left"></i> Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="related-section">
+        <h2><i class="fas fa-boxes"></i> You May Also Like to add these to your bag too</h2>
+        <div id="randomProducts"></div>
+    </div>
+    
+    <footer id="support">
+        <div>
+            <h4>Products</h4>
+            <p>Phone</p>
+            <p>Tablet</p>
+            <p>Audio</p>
+        </div>
+        <div>
+            <h4>📱 Follow Us</h4>
+            <div class="flex gap-4 mt-2">
+                <a id="facebookLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
+                    <i class="fab fa-facebook"></i>
+                </a>
+                <a id="instagramLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a id="tiktokLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
+                    <i class="fab fa-tiktok"></i>
+                </a>
+            </div>
+        </div>
+        <div>
+            <h4>About</h4>
+            <li class="mobile-nav-item"><a href="contact.html">📍 Locate Us</a></li>
+        </div>
+        <div>
+            <h4>📞 Contact</h4>
+            <p id="footerEmail"></p>
+            <p id="footerPhone"></p>
+            <p id="footerAddress"></p>
+        </div>
+    </footer>
+    
+    <script>
+     // ============================================================
+// 1. CART STATE
+// ============================================================
+
+let cartItems = [];
+let discountApplied = 0;
+let discountCode = '';
+
+// ============================================================
+// 2. RENDER CART
+// ============================================================
+
+function renderCart() {
+    const container = document.getElementById('stCartItemsContainer');
+    const loading = document.getElementById('stCartLoading');
+    const cartCount = document.getElementById('stCartPageCount');
+
+    // Hide loading
+    loading.style.display = 'none';
+
+    if (!cartItems || cartItems.length === 0) {
+        container.innerHTML = `
+            <div class="st-empty-cart">
+                <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
+                <h2>Your cart is empty</h2>
+                <p>Looks like you haven't added any items to your cart yet.</p>
+                <a href="Search.html" class="st-btn-shop">
+                    <i class="fas fa-store"></i> Start Shopping
+                </a>
+            </div>
+        `;
+        cartCount.textContent = '0 items';
+        updateSummary();
+        return;
+    }
+
+    cartCount.textContent = cartItems.length + ' item' + (cartItems.length > 1 ? 's' : '');
+
+    container.innerHTML = cartItems.map((item, index) => `
+        <div class="st-cart-item" data-index="${index}">
+            <div class="st-cart-item-image">
+                <img src="${item.image || 'https://placehold.co/600x400'}" 
+                     alt="${item.name || 'Product'}" 
+                     onerror="this.src='https://placehold.co/600x400'">
+            </div>
+            <div class="st-cart-item-details">
+                <a href="item.html?product=${item.product_id || item.id}" class="st-item-name">
+                    ${item.name || 'Unknown Product'}
+                </a>
+                ${item.brand ? `<span class="st-item-brand">${item.brand}</span>` : ''}
+                ${item.variants && Object.keys(item.variants).length > 0 ? `
+                    <span class="st-item-variant">
+                        ${Object.entries(item.variants).map(([key, val]) => `${key}: ${val}`).join(' | ')}
+                    </span>
+                ` : ''}
+                <div class="st-item-price">
+                    $${(item.price || 0).toFixed(2)}
+                    ${item.originalPrice && item.originalPrice > item.price ? `
+                        <span class="st-original-price">$${item.originalPrice.toFixed(2)}</span>
+                        <span class="st-deal-badge">-${Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}%</span>
+                    ` : ''}
+                </div>
+            </div>
+            <div class="st-cart-item-actions">
+                <div class="st-quantity-control">
+                    <button onclick="updateQuantity(${index}, -1)" aria-label="Decrease quantity">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <span class="st-qty-value">${item.qty || 1}</span>
+                    <button onclick="updateQuantity(${index}, 1)" aria-label="Increase quantity">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <button class="st-remove-btn" onclick="removeItem(${index})" aria-label="Remove item">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    updateSummary();
+}
+
+// ============================================================
+// 3. CART OPERATIONS - FIXED
+// ============================================================
+
+function updateQuantity(index, change) {
+    if (!cartItems[index]) return;
+    const newQty = (cartItems[index].qty || 1) + change;
+    if (newQty < 1) return;
+    
+    // Update the quantity
+    cartItems[index].qty = newQty;
+    
+    // Save to localStorage AND Supabase
+    saveCart();
+    renderCart();
+}
+
+function removeItem(index) {
+    if (!cartItems[index]) return;
+    
+    const removedItem = cartItems[index];
+    cartItems.splice(index, 1);
+    
+    // Save to localStorage AND Supabase
+    saveCart();
+    renderCart();
+    
+    if (removedItem && removedItem.name) {
+        showNotification(`🗑️ Removed "${removedItem.name}" from cart`);
+    }
+}
+
+// ============================================================
+// 4. SAVE CART - FIXED with proper deduplication
+// ============================================================
+
+function saveCart() {
+    // DEDUPLICATE: Remove duplicate product entries before saving
+    // This prevents multiple rows for the same product
+    const uniqueCart = [];
+    const seen = new Set();
+    
+    for (const item of cartItems) {
+        const key = item.product_id || item.id;
+        if (!key) continue;
+        
+        if (seen.has(key)) {
+            // If we already have this product, merge quantities
+            const existing = uniqueCart.find(i => (i.product_id || i.id) === key);
+            if (existing) {
+                existing.qty = (existing.qty || 0) + (item.qty || 1);
+            }
+        } else {
+            seen.add(key);
+            uniqueCart.push({ ...item });
+        }
+    }
+    
+    // Use the deduplicated cart
+    cartItems = uniqueCart;
+    
+  
+    
+    // Get customer_id or session_id
+    const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
+    const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+    
+    // Save to Supabase
+    const client = getSupabaseClient();
+    if (client) {
+        if (cartItems.length === 0) {
+            if (customerId) {
+                deleteCartFromDB(customerId, true);
+            } else {
+                deleteCartFromDB(sessionId, false);
+            }
+        } else {
+            if (customerId) {
+                saveCartToDB(customerId, cartItems, true);
+            } else {
+                saveCartToDB(sessionId, cartItems, false);
+            }
+        }
+    }
+    
+    // Update header badge counts
+    if (window.STHeader && window.STHeader.updateCounts) {
+        window.STHeader.AppState.cart = cartItems;
+        window.STHeader.updateCounts();
+    }
+}
+
+// ============================================================
+// 5. DELETE CART FROM DATABASE
+// ============================================================
+
+async function deleteCartFromDB(identifier, hasCustomerId = false) {
+    const client = getSupabaseClient();
+    if (!client) return;
+    
+    try {
+        let query;
+        if (hasCustomerId) {
+            // Delete ONLY customer_id rows
+            query = client.from('cart').delete().eq('customer_id', identifier);
+        } else {
+            // Delete ONLY session_id rows
+            query = client.from('cart').delete().eq('session_id', identifier);
+        }
+        
+        const { error } = await query;
+        if (error) {
+            console.error('❌ Error deleting cart from DB:', error.message);
+        } else {
+            console.log(`✅ Cart cleared from DB (${hasCustomerId ? 'customer_id' : 'session_id'})`);
+        }
+    } catch (err) {
+        console.error('❌ Error deleting cart from DB:', err.message);
+    }
+}
+
+// ============================================================
+// 6. SAVE CART TO DB - FIXED with UPSERT approach
+// ============================================================
+
+async function saveCartToDB(identifier, cart, hasCustomerId = false) {
+    const client = getSupabaseClient();
+    if (!client) return;
+    
+    try {
+        // CRITICAL FIX: Delete ONLY the rows for this specific identifier
+        // and ONLY in the column that matches (customer_id OR session_id)
+        if (hasCustomerId) {
+            // Delete ONLY customer_id rows for this customer
+            await client.from('cart').delete().eq('customer_id', identifier);
+            console.log(`🗑️ Deleted customer_id rows for: ${identifier}`);
+        } else {
+            // Delete ONLY session_id rows for this session
+            await client.from('cart').delete().eq('session_id', identifier);
+            console.log(`🗑️ Deleted session_id rows for: ${identifier}`);
+        }
+        
+        // If cart is empty, we're done
+        if (cart.length === 0) {
+            console.log('✅ Cart cleared from DB (empty cart)');
+            return;
+        }
+        
+        // Insert new cart items
+        const rows = cart.map(item => {
+            const row = {
+                product_id: item.product_id || item.id || '',
+                name: item.name || 'Unknown Product',
+                price: item.price || 0,
+                qty: item.qty || 1,
+                image: item.image || 'https://placehold.co/600x400',
+                variants: item.variants || {},
+                is_deal: item.isDeal || false,
+                original_price: item.originalPrice || null,
+                discount: item.discount || null,
+                brand: item.brand || ''
+            };
+            
+            // CRITICAL: Set ONLY the correct column
+            if (hasCustomerId) {
+                row.customer_id = identifier;
+                row.session_id = null; // Ensure session_id is NULL
+            } else {
+                row.session_id = identifier;
+                row.customer_id = null; // Ensure customer_id is NULL
+            }
+            
+            return row;
+        });
+        
+        const validRows = rows.filter(row => row.product_id);
+        if (validRows.length > 0) {
+            const { error } = await client.from('cart').insert(validRows);
+            if (error) {
+                console.error('❌ Error saving cart:', error.message);
+            } else {
+                console.log(`✅ Cart saved to DB: ${validRows.length} items (${hasCustomerId ? 'customer_id' : 'session_id'})`);
+            }
+        }
+    } catch (err) {
+        console.error('❌ Error saving cart:', err.message);
+    }
+}
+
+// ============================================================
+// 7. SUMMARY
+// ============================================================
+
+function updateSummary() {
+    const subtotal = cartItems.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 1), 0);
+    const totalItems = cartItems.reduce((sum, item) => sum + (item.qty || 1), 0);
+    
+    const shipping = subtotal >= 50 ? 0 : 5.99;
+    const discountAmount = discountApplied > 0 ? (subtotal * discountApplied / 100) : 0;
+    const total = subtotal + shipping - discountAmount;
+
+    document.getElementById('stSubtotal').textContent = '$' + subtotal.toFixed(2);
+    document.getElementById('stShipping').textContent = shipping === 0 ? 'Free' : '$' + shipping.toFixed(2);
+    document.getElementById('stDiscount').textContent = discountAmount > 0 ? '-$' + discountAmount.toFixed(2) : '$0.00';
+    document.getElementById('stTotal').textContent = '$' + total.toFixed(2);
+
+    const checkoutBtn = document.getElementById('stCheckoutBtn');
+    checkoutBtn.disabled = cartItems.length === 0;
+}
+
+// ============================================================
+// 8. DISCOUNT CODE
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const applyBtn = document.getElementById('stApplyDiscount');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+            const code = document.getElementById('stDiscountCode').value.trim().toUpperCase();
+            if (code === 'SAVE10') {
+                discountApplied = 10;
+                discountCode = code;
+                showNotification('✅ 10% discount applied!');
+            } else if (code === 'SAVE20') {
+                discountApplied = 20;
+                discountCode = code;
+                showNotification('✅ 20% discount applied!');
+            } else if (code === '') {
+                discountApplied = 0;
+                discountCode = '';
+                showNotification('ℹ️ Discount removed');
+            } else {
+                showNotification('❌ Invalid discount code', 'error');
+                return;
+            }
+            updateSummary();
+        });
+    }
+});
+
+// ============================================================
+// 9. CHECKOUT
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const checkoutBtn = document.getElementById('stCheckoutBtn');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', () => {
+            if (cartItems.length === 0) return;
+            
+            saveCart();
+            
+            const isLoggedIn = window.STHeader?.AppState?.isLoggedIn || false;
+            
+            if (!isLoggedIn) {
+                showNotification('⚠️ Please login to checkout', 'error');
+                if (window.STHeader?.openLoginModal) {
+                    window.STHeader.openLoginModal();
+                }
+                return;
+            }
+            
+            window.location.href = 'checkout.html';
+        });
+    }
+});
+
+// ============================================================
+// 10. NOTIFICATION
+// ============================================================
+
+function showNotification(message, type = 'success') {
+    const existing = document.querySelector('.st-notification');
+    if (existing) existing.remove();
+    
+    const notif = document.createElement('div');
+    notif.className = 'st-notification';
+    notif.style.cssText = `
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 14px 24px;
+        background: ${type === 'error' ? '#EF4444' : '#10B981'};
+        color: white;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 30000;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        max-width: 90%;
+        text-align: center;
+        animation: slideUp 0.3s ease;
+        font-family: 'Inter', sans-serif;
+    `;
+    notif.textContent = message;
+    document.body.appendChild(notif);
+    
+    setTimeout(() => {
+        notif.style.opacity = '0';
+        notif.style.transform = 'translateX(-50%) translateY(-20px)';
+        notif.style.transition = 'all 0.3s ease';
+        setTimeout(() => notif.remove(), 300);
+    }, 3000);
+}
+
+// ============================================================
+// 11. SUPABASE CART SYNC
+// ============================================================
+
+async function fetchCartFromDB(identifier, hasCustomerId = false) {
+    const client = getSupabaseClient();
+    if (!client) return [];
+    
+    try {
+        let query = client.from('cart').select('*');
+        
+        if (hasCustomerId) {
+            query = query.eq('customer_id', identifier);
+        } else {
+            query = query.eq('session_id', identifier);
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) throw error;
+        
+        return (data || []).map(item => ({
+            product_id: item.product_id,
+            id: item.product_id,
+            name: item.name || 'Unknown Product',
+            price: item.price || 0,
+            qty: item.qty || 1,
+            image: item.image || 'https://placehold.co/600x400',
+            variants: item.variants || {},
+            isDeal: item.is_deal || false,
+            originalPrice: item.original_price || null,
+            discount: item.discount || null,
+            brand: item.brand || ''
+        }));
+    } catch (err) {
+        console.error('❌ Error fetching cart:', err.message);
+        return [];
+    }
+}
+
+// ============================================================
+// 12. LOAD CART DATA
+// ============================================================
+
+async function loadCartData() {
+    try {
+        // Get the ACTUAL customer ID (from customer_accounts) if logged in
+        const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
+        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+        
+        let dbCart = [];
+        
+
+        
+        if (customerId) {
+            // User is logged in - load from customer_id
+            dbCart = await fetchCartFromDB(customerId, true);
+            if (dbCart && dbCart.length > 0) {
+                console.log('📦 Cart loaded from DB using customer_id');
+            }
+        }
+        
+        // If no customer cart, check for guest cart
+        if (!dbCart || dbCart.length === 0) {
+            dbCart = await fetchCartFromDB(sessionId, false);
+            if (dbCart && dbCart.length > 0) {
+                console.log('📦 Cart loaded from DB using session_id');
+                
+                // If user is now logged in, migrate guest cart to customer_id
+                if (customerId && dbCart.length > 0) {
+                    console.log('🔄 Migrating guest cart to customer_id');
+                    await saveCartToDB(customerId, dbCart, true);
+                    // Clear the guest cart from session_id
+                    await saveCartToDB(sessionId, [], false);
+                }
+            }
+        }
+        
+        // Use DB cart or fallback to localStorage
+        if (dbCart && dbCart.length > 0) {
+            cartItems = dbCart;
+        
+        } else {
+            const localCart = JSON.parse(localStorage.getItem('st_cart') || '[]');
+            cartItems = localCart;
+            
+            // If user is logged in and has local cart, migrate to DB
+            if (customerId && cartItems.length > 0) {
+                console.log('🔄 Migrating local cart to DB with customer_id');
+                await saveCartToDB(customerId, cartItems, true);
+             
+            }
+        }
+        
+        // Update AppState
+        if (window.STHeader) {
+            window.STHeader.AppState.cart = cartItems;
+            if (window.STHeader.updateCounts) {
+                window.STHeader.updateCounts();
+            }
+        }
+        
+        renderCart();
+    } catch (err) {
+        console.warn('⚠️ Failed to load cart:', err.message);
+        try {
+            cartItems = JSON.parse(localStorage.getItem('st_cart') || '[]');
+            renderCart();
+        } catch (e) {
+            cartItems = [];
+            renderCart();
+        }
+    }
+}
+
+
+// ============================================================
+// 13. INITIALIZATION
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadCartData();
+    
+    window.cartOperations = {
+        updateQuantity,
+        removeItem,
+        saveCart,
+        renderCart,
+        getCart: () => cartItems,
+        setCart: (items) => { cartItems = items; renderCart(); }
+    };
+});
+
+// ============================================================
+// 14. EXPOSE FUNCTIONS GLOBALLY
+// ============================================================
+
+window.updateQuantity = updateQuantity;
+window.removeItem = removeItem;
+window.saveCart = saveCart;
+window.renderCart = renderCart;
+window.showNotification = showNotification;
+window.getSupabaseClient = getSupabaseClient;
+window.fetchCartFromDB = fetchCartFromDB;
+window.saveCartToDB = saveCartToDB;
+window.loadCartData = loadCartData;
+    </script>
+    <script src="related-products.js"></script>
+</body>
+</html>

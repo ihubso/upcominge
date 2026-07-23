@@ -275,7 +275,7 @@ async function addRandomToCart(productId) {
             });
         }
 
-        localStorage.setItem('st_cart', JSON.stringify(cart));
+        
 
         // Save to Supabase
         const customerId = window.getCurrentCustomerId?.();

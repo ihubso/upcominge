@@ -1232,6 +1232,51 @@
     display: none !important;
   }
 }
+/* Only stack buttons on Mobile (screens under 768px) */
+@media (max-width: 768px) {
+    .card-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .btn-add, 
+    .btn-wish {
+        width: 100% !important;
+        margin: 0 !important;
+        display: block !important;
+        text-align: center !important;
+    }
+
+    .btn-add {
+        order: 1; /* Top */
+    }
+
+    .btn-wish {
+        order: 2; /* Bottom */
+    }
+}
+
+/* On Desktop (larger than 768px), they stay side-by-side */
+@media (min-width: 769px) {
+    .card-actions {
+        flex-direction: row !important;
+    }
+    
+    .btn-add, 
+    .btn-wish {
+        width: auto !important;
+    }
+}
+.category-chip-side {
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.category-chip-side:active {
+    transform: scale(0.95); /* Slight "press" effect when clicked */
+}
     </style>
 </head>
 <body>
@@ -1260,7 +1305,7 @@
     <!-- RIGHT CONTENT -->
     <section class="content-right">
       <div class="page-header">
-        <h1><i class="fas fa-th-large"></i> Categories</h1>
+        <h1><i class="fas fa-th-large"></i> For You</h1>
         <div class="header-sub" id="categorySub">Showing products in <strong>All</strong></div>
       </div>
 
@@ -1283,7 +1328,7 @@
       <!-- Recommended Products -->
       <div class="section-header" style="margin-top:8px;">
         <h2><i class="fas fa-fire"></i> <span id="productSectionTitle">Recommended</span></h2>
-        <a href="#" class="view-all">View All →</a>
+        <a id="viewallforsection" class="view-all">View All →</a>
       </div>
       <div class="recommended-grid" id="recommendedGrid">
         <div class="skeleton-product-grid" id="recommendedSkeleton">
@@ -1319,6 +1364,7 @@
     const foryouSkeleton = document.getElementById('foryouSkeleton');
     const categorySub = document.getElementById('categorySub');
     const productSectionTitle = document.getElementById('productSectionTitle');
+    const viewallforsection = document.getElementById('viewallforsection');
     const categoryBadge = document.getElementById('categoryBadge');
 
     function showToast(message, type = 'success') {
@@ -1449,6 +1495,7 @@
       }
       categorySub.innerHTML = `Showing products in <strong>${subText}</strong> (${filtered.length} items)`;
       productSectionTitle.textContent = title;
+      viewallforsection.href = `category.html?category=${categoryName || ''}`;
       renderRecommended(filtered);
     }
 
@@ -1530,20 +1577,88 @@ function closereccomedsection() {
 
     }
 
-    async function addToCart(productId) {
-      try {
-        const product = allProducts.find(p => p.id === productId);
-        if (!product) { showToast('❌ Product not found', 'error'); return; }
-        let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-        const existing = cart.find(item => item.product_id === productId || item.id === productId);
-        if (existing) { existing.qty = (existing.qty || 0) + 1; } else {
-          cart.push({ product_id: productId, id: productId, name: product.name || 'Unknown', price: product.price || 0, qty: 1, image: product.image || 'https://placehold.co/400x400', variants: product.variants || {}, brand: product.brand || '', isDeal: product.isDeal || false, originalPrice: product.originalPrice || null, discount: product.discount || null });
+async function addToCart(productId) {
+    try {
+        // Get product details
+        const client = getHotSupabaseClient();
+        let product = null;
+
+        if (client) {
+            const { data, error } = await client
+                .from('products')
+                .select('*')
+                .eq('id', productId)
+                .single();
+
+            if (!error && data) {
+                product = data;
+            }
         }
-        localStorage.setItem('st_cart', JSON.stringify(cart));
-        if (window.STHeader) { window.STHeader.AppState.cart = cart; if (window.STHeader.updateCounts) window.STHeader.updateCounts(); }
-        showToast(`✅ ${product.name || 'Product'} added!`);
-      } catch (err) { console.error(err); showToast('❌ Failed to add', 'error'); }
+
+
+        if (!product) {
+            const card = document.querySelector(`.hot-product-card[data-product-id="${productId}"]`);
+            if (card) {
+                const name = card.querySelector('.hot-product-name')?.textContent || 'Unknown Product';
+                const priceText = card.querySelector('.hot-current-price')?.textContent || '$0';
+                const price = parseFloat(priceText.replace('$', ''));
+                const image = card.querySelector('.hot-product-image img')?.src || 'https://placehold.co/400x400';
+                product = { id: productId, name, price, image };
+            }
+        }
+
+        if (!product) {
+            showToast('❌ Product not found', 'error');
+            return;
+        }
+
+        // Get current cart
+        let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
+
+        // Check if product already in cart
+        const existingIndex = cart.findIndex(item => item.product_id === productId || item.id === productId);
+
+        if (existingIndex !== -1) {
+            cart[existingIndex].qty = (cart[existingIndex].qty || 1) + 1;
+        } else {
+            cart.push({
+                product_id: productId,
+                id: productId,
+                name: product.name || 'Unknown Product',
+                price: product.price || 0,
+                qty: 1,
+                image: product.image || product.images?.[0] || 'https://placehold.co/400x400',
+                variants: product.variants || {},
+                isDeal: product.isDeal || false,
+                originalPrice: product.originalPrice || null,
+                discount: product.discount || null,
+                brand: product.brand || ''
+            });
+        }
+
+
+
+        // Save to Supabase
+        const customerId = window.getCurrentCustomerId?.();
+        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+        const client2 = getHotSupabaseClient();
+        if (client2) {
+            await saveCartToDB(customerId || sessionId, cart, !!customerId);
+        }
+
+        // Update header
+        if (window.STHeader) {
+            window.STHeader.AppState.cart = cart;
+            window.STHeader.updateCounts();
+        }
+
+        showToast('✅ Added to cart!', 'success');
+
+    } catch (err) {
+        console.error('❌ Error adding to cart:', err);
+        showToast('❌ Failed to add to cart', 'error');
     }
+}
 
     async function toggleWishlist(productId) {
       try {
@@ -1560,6 +1675,53 @@ function closereccomedsection() {
     window.addToCart = addToCart;
     window.toggleWishlist = toggleWishlist;
 
+document.getElementById('categoryList').addEventListener('click', function(e) {
+    // Find if the click was on a category chip or its child
+    const chip = e.target.closest('.category-chip-side');
+    if (!chip) return;
+    
+    // Get the category from data attribute
+    const category = chip.dataset.cat || null;
+    
+    // Only trigger scroll if it's a category chip (not skeleton)
+    if (chip.classList.contains('skeleton-chip-side')) return;
+    
+    const targetGrid = document.querySelector('#recommendedGrid');
+    if (!targetGrid) return;
+
+    const offset = 100;
+    const targetPosition = targetGrid.getBoundingClientRect().top + window.pageYOffset - offset;
+    const startPosition = window.pageYOffset;
+    const distance = targetPosition - startPosition;
+    const duration = 400;
+    let start = null;
+
+    function animation(currentTime) {
+        if (start === null) start = currentTime;
+        const timeElapsed = currentTime - start;
+        const run = ease(timeElapsed, startPosition, distance, duration);
+        window.scrollTo(0, run);
+        if (timeElapsed < duration) requestAnimationFrame(animation);
+    }
+
+    function ease(t, b, c, d) {
+        t /= d / 2;
+        if (t < 1) return c / 2 * t * t * t + b;
+        t -= 2;
+        return c / 2 * (t * t * t + 2) + b;
+    }
+
+    // Add visual blink
+    chip.style.transition = 'transform 0.1s, background 0.1s';
+    chip.style.transform = 'scale(0.95)';
+    chip.style.background = 'rgba(108, 60, 225, 0.2)';
+    setTimeout(() => {
+        chip.style.transform = 'scale(1)';
+        chip.style.background = '';
+    }, 150);
+
+    requestAnimationFrame(animation);
+});
     document.addEventListener('DOMContentLoaded', function() {
       loadWishlist();
       fetchAllData();

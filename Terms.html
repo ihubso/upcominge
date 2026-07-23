@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>Terms & Conditions · Sucess Technology</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+     <script src="global-header.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#6C3CE1',
+                        primaryHover: '#5A2FC4',
+                        dark: '#0F172A',
+                        'dark-secondary': '#1E293B'
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ============================================
+           TERMS & CONDITIONS - MODERN & PROFESSIONAL
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #0F172A;
+            padding-top: 80px;
+            padding-bottom: 40px;
+        }
+
+        .terms-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ----- Hero Section ----- */
+        .terms-hero {
+            background: linear-gradient(135deg, #0F172A 0%, #1a1a2e 50%, #16213e 100%);
+            border-radius: 24px;
+            padding: 48px 56px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terms-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(108, 60, 225, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .terms-hero .hero-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background: rgba(108, 60, 225, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            margin-bottom: 16px;
+            font-size: 28px;
+            color: #8B6BE8;
+        }
+
+        .terms-hero h1 {
+            font-size: 36px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .terms-hero p {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .terms-hero .hero-badge {
+            display: inline-block;
+            background: rgba(108, 60, 225, 0.2);
+            border: 1px solid rgba(108, 60, 225, 0.3);
+            color: #A78BFA;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        /* ----- Last Updated ----- */
+        .last-updated {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #64748B;
+        }
+
+        .last-updated i {
+            color: #6C3CE1;
+        }
+
+        .last-updated strong {
+            color: #0F172A;
+        }
+
+        /* ----- Table of Contents ----- */
+        .toc-section {
+            background: white;
+            border-radius: 20px;
+            padding: 24px 32px;
+            border: 1px solid #f0f0f0;
+            margin-bottom: 32px;
+        }
+
+        .toc-section h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0F172A;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toc-section h2 i {
+            color: #6C3CE1;
+        }
+
+        .toc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+        }
+
+        .toc-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 13px;
+            color: #475569;
+            text-decoration: none;
+        }
+
+        .toc-item:hover {
+            background: #f8fafc;
+            color: #6C3CE1;
+        }
+
+        .toc-item .toc-number {
+            font-weight: 700;
+            color: #6C3CE1;
+            font-size: 12px;
+            min-width: 24px;
+        }
+
+        /* ----- Terms Content ----- */
+        .terms-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 48px;
+            border: 1px solid #f0f0f0;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .terms-content .term-section {
+            margin-bottom: 32px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid #f1f5f9;
+            scroll-margin-top: 100px;
+        }
+
+        .terms-content .term-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .terms-content .term-section .section-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: #6C3CE1;
+            color: white;
+            border-radius: 50%;
+            font-weight: 800;
+            font-size: 13px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .terms-content .term-section .section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .terms-content .term-section .section-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+
+        .terms-content .term-section .section-header i {
+            color: #6C3CE1;
+            font-size: 18px;
+        }
+
+        .terms-content .term-section p {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.8;
+            margin-bottom: 8px;
+        }
+
+        .terms-content .term-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0 12px;
+        }
+
+        .terms-content .term-section ul li {
+            padding: 6px 0 6px 28px;
+            position: relative;
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .terms-content .term-section ul li::before {
+            content: '▸';
+            position: absolute;
+            left: 8px;
+            color: #6C3CE1;
+            font-weight: 700;
+        }
+
+        .terms-content .term-section .highlight-box {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px 20px;
+            border-left: 4px solid #6C3CE1;
+            margin: 12px 0;
+        }
+
+        .terms-content .term-section .highlight-box p {
+            margin-bottom: 0;
+            font-size: 13px;
+        }
+
+        .terms-content .term-section .highlight-box .box-label {
+            font-weight: 700;
+            color: #0F172A;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        /* ----- Accept Button ----- */
+        .accept-section {
+            background: white;
+            border-radius: 20px;
+            padding: 24px 32px;
+            border: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .accept-section .accept-text {
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .accept-section .accept-text strong {
+            color: #0F172A;
+        }
+
+        .accept-section .accept-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .accept-section .btn-accept {
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #6C3CE1, #5A2FC4);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 16px rgba(108, 60, 225, 0.3);
+        }
+
+        .accept-section .btn-accept:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(108, 60, 225, 0.4);
+        }
+
+        .accept-section .btn-decline {
+            padding: 12px 32px;
+            background: transparent;
+            color: #475569;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .accept-section .btn-decline:hover {
+            background: #f8fafc;
+            border-color: #94A3B8;
+        }
+
+        /* ----- Toast ----- */
+        .toast-msg {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 30000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+            text-align: center;
+            animation: toastUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        .toast-msg.success { background: #10B981; }
+        .toast-msg.error { background: #EF4444; }
+        .toast-msg.info { background: #3B82F6; }
+
+        @keyframes toastUp {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        /* ----- Responsive ----- */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 68px;
+                padding-bottom: 80px;
+            }
+
+            .terms-container {
+                padding: 0 16px;
+            }
+
+            .terms-hero {
+                padding: 32px 24px;
+                border-radius: 16px;
+            }
+
+            .terms-hero h1 {
+                font-size: 26px;
+            }
+
+            .terms-hero p {
+                font-size: 14px;
+            }
+
+            .terms-content {
+                padding: 24px 20px;
+            }
+
+            .terms-content .term-section .section-header h3 {
+                font-size: 16px;
+            }
+
+            .toc-section {
+                padding: 16px 20px;
+            }
+
+            .toc-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .accept-section {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .accept-section .accept-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .accept-section .btn-accept,
+            .accept-section .btn-decline {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .terms-hero {
+                padding: 24px 16px;
+            }
+
+            .terms-hero h1 {
+                font-size: 22px;
+            }
+
+            .terms-hero .hero-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+            }
+
+            .terms-content {
+                padding: 16px 14px;
+            }
+
+            .terms-content .term-section .section-header h3 {
+                font-size: 15px;
+            }
+
+            .terms-content .term-section p {
+                font-size: 13px;
+            }
+
+            .terms-content .term-section ul li {
+                font-size: 13px;
+            }
+
+            .toc-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .last-updated {
+                font-size: 12px;
+                padding: 10px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         HEADER WILL BE INJECTED HERE
+         ============================================ -->
+
+    <!-- ============================================
+         TERMS & CONDITIONS CONTENT
+         ============================================ -->
+    <main class="terms-container">
+
+        <!-- Hero Section -->
+        <div class="terms-hero">
+            <div class="hero-icon">
+                <i class="fas fa-file-contract"></i>
+            </div>
+            <h1>Terms &amp; Conditions</h1>
+            <p>
+                Please read these terms and conditions carefully before using our platform.
+                By accessing or using our services, you agree to be bound by these terms.
+            </p>
+            <span class="hero-badge">
+                <i class="fas fa-check-circle"></i> Effective January 2025
+            </span>
+        </div>
+
+        <!-- Last Updated -->
+        <div class="last-updated">
+            <i class="fas fa-clock"></i>
+            <span>Last Updated: <strong>January 20, 2025</strong></span>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc-section">
+            <h2><i class="fas fa-list-ul"></i> Table of Contents</h2>
+            <div class="toc-grid">
+                <a href="#section-1" class="toc-item">
+                    <span class="toc-number">1.</span> Acceptance of Terms
+                </a>
+                <a href="#section-2" class="toc-item">
+                    <span class="toc-number">2.</span> User Accounts
+                </a>
+                <a href="#section-3" class="toc-item">
+                    <span class="toc-number">3.</span> Orders &amp; Payments
+                </a>
+                <a href="#section-4" class="toc-item">
+                    <span class="toc-number">4.</span> Shipping &amp; Delivery
+                </a>
+                <a href="#section-5" class="toc-item">
+                    <span class="toc-number">5.</span> Returns &amp; Refunds
+                </a>
+                <a href="#section-6" class="toc-item">
+                    <span class="toc-number">6.</span> Product Information
+                </a>
+                <a href="#section-7" class="toc-item">
+                    <span class="toc-number">7.</span> Intellectual Property
+                </a>
+                <a href="#section-8" class="toc-item">
+                    <span class="toc-number">8.</span> Privacy Policy
+                </a>
+                <a href="#section-9" class="toc-item">
+                    <span class="toc-number">9.</span> Limitation of Liability
+                </a>
+                <a href="#section-10" class="toc-item">
+                    <span class="toc-number">10.</span> Governing Law
+                </a>
+                <a href="#section-11" class="toc-item">
+                    <span class="toc-number">11.</span> Changes to Terms
+                </a>
+                <a href="#section-12" class="toc-item">
+                    <span class="toc-number">12.</span> Contact Us
+                </a>
+            </div>
+        </div>
+
+        <!-- Terms Content -->
+        <div class="terms-content">
+
+            <!-- Section 1 -->
+            <div class="term-section" id="section-1">
+                <div class="section-header">
+                    <span class="section-number">1</span>
+                    <h3>Acceptance of Terms</h3>
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <p>
+                    By using the Sucess Technology platform, you agree to comply with and be bound by these Terms &amp; Conditions.
+                    If you do not agree to these terms, please do not use our services.
+                </p>
+                <ul>
+                    <li>You must be at least 18 years old to use our services.</li>
+                    <li>You agree to provide accurate and complete information when using our platform.</li>
+                    <li>You are responsible for maintaining the confidentiality of your account credentials.</li>
+                    <li>We reserve the right to terminate accounts that violate these terms.</li>
+                </ul>
+                <div class="highlight-box">
+                    <span class="box-label">ℹ️ Important</span>
+                    <p>
+                        By continuing to use our platform, you acknowledge that you have read, understood, and agree to be bound by these terms.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="term-section" id="section-2">
+                <div class="section-header">
+                    <span class="section-number">2</span>
+                    <h3>User Accounts</h3>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <p>
+                    To access certain features of our platform, you may be required to create a user account.
+                    You are responsible for all activities that occur under your account.
+                </p>
+                <ul>
+                    <li>You must provide accurate and complete registration information.</li>
+                    <li>You are responsible for keeping your password secure and confidential.</li>
+                    <li>You must notify us immediately of any unauthorized use of your account.</li>
+                    <li>We reserve the right to suspend or terminate accounts that violate our policies.</li>
+                    <li>You may not create multiple accounts for fraudulent purposes.</li>
+                </ul>
+            </div>
+
+            <!-- Section 3 -->
+            <div class="term-section" id="section-3">
+                <div class="section-header">
+                    <span class="section-number">3</span>
+                    <h3>Orders &amp; Payments</h3>
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <p>
+                    All orders placed through our platform are subject to acceptance and availability.
+                    We reserve the right to refuse or cancel any order for any reason.
+                </p>
+                <ul>
+                    <li>Prices are subject to change without prior notice.</li>
+                    <li>We accept various payment methods as displayed on our platform.</li>
+                    <li>All payments are processed securely through our trusted payment partners.</li>
+                    <li>You agree to provide accurate and complete payment information.</li>
+                    <li>We reserve the right to cancel orders if payment is not received or verified.</li>
+                </ul>
+                <div class="highlight-box">
+                    <span class="box-label">💳 Payment Security</span>
+                    <p>
+                        All transactions are encrypted and processed securely. We do not store your full payment details on our servers.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 4 -->
+            <div class="term-section" id="section-4">
+                <div class="section-header">
+                    <span class="section-number">4</span>
+                    <h3>Shipping &amp; Delivery</h3>
+                    <i class="fas fa-truck"></i>
+                </div>
+                <p>
+                    We strive to deliver your orders in a timely and efficient manner.
+                    Delivery times are estimated and may vary depending on your location.
+                </p>
+                <ul>
+                    <li>Shipping costs are calculated based on weight, dimensions, and destination.</li>
+                    <li>Delivery times are estimates and not guaranteed.</li>
+                    <li>We are not responsible for delays caused by customs or shipping carriers.</li>
+                    <li>You are responsible for providing accurate delivery information.</li>
+                    <li>Risk of loss passes to you upon delivery.</li>
+                </ul>
+            </div>
+
+            <!-- Section 5 -->
+            <div class="term-section" id="section-5">
+                <div class="section-header">
+                    <span class="section-number">5</span>
+                    <h3>Returns &amp; Refunds</h3>
+                    <i class="fas fa-undo-alt"></i>
+                </div>
+                <p>
+                    We want you to be completely satisfied with your purchase.
+                    Please refer to our Return Policy for detailed information.
+                </p>
+                <ul>
+                    <li>Returns must be initiated within 10 business days of delivery.</li>
+                    <li>Items must be returned in their original packaging and condition.</li>
+                    <li>Refunds are processed to the original payment method.</li>
+                    <li>Some items are not eligible for return (see Return Policy).</li>
+                    <li>Shipping costs are non-refundable unless the return is due to our error.</li>
+                </ul>
+                <div class="highlight-box">
+                    <span class="box-label">📋 Return Policy</span>
+                    <p>
+                        For full details, please visit our <a href="return-policy.html" style="color:#6C3CE1;font-weight:600;">Return Policy page</a>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 6 -->
+            <div class="term-section" id="section-6">
+                <div class="section-header">
+                    <span class="section-number">6</span>
+                    <h3>Product Information</h3>
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <p>
+                    We strive to provide accurate and up-to-date product information.
+                    However, we do not guarantee that product descriptions, images, or specifications are error-free.
+                </p>
+                <ul>
+                    <li>Product images are for illustrative purposes only.</li>
+                    <li>Actual products may vary slightly from images shown.</li>
+                    <li>We reserve the right to correct errors in pricing or product information.</li>
+                    <li>Product availability is subject to change without notice.</li>
+                    <li>All products are subject to manufacturer warranties where applicable.</li>
+                </ul>
+            </div>
+
+            <!-- Section 7 -->
+            <div class="term-section" id="section-7">
+                <div class="section-header">
+                    <span class="section-number">7</span>
+                    <h3>Intellectual Property</h3>
+                    <i class="fas fa-copyright"></i>
+                </div>
+                <p>
+                    All content on our platform, including text, images, logos, and software, is the property of Sucess Technology
+                    and is protected by copyright and intellectual property laws.
+                </p>
+                <ul>
+                    <li>You may not reproduce, distribute, or modify any content without our permission.</li>
+                    <li>All trademarks and logos are the property of their respective owners.</li>
+                    <li>Unauthorized use of our content may result in legal action.</li>
+                    <li>You are granted a limited license to access and use our platform for personal, non-commercial purposes.</li>
+                </ul>
+            </div>
+
+            <!-- Section 8 -->
+            <div class="term-section" id="section-8">
+                <div class="section-header">
+                    <span class="section-number">8</span>
+                    <h3>Privacy Policy</h3>
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <p>
+                    Your privacy is important to us. Please review our Privacy Policy to understand
+                    how we collect, use, and protect your personal information.
+                </p>
+                <ul>
+                    <li>We collect personal information to provide and improve our services.</li>
+                    <li>We do not sell or share your personal information with third parties without your consent.</li>
+                    <li>We implement security measures to protect your data.</li>
+                    <li>You have the right to access, modify, or delete your personal information.</li>
+                    <li>Cookies are used to enhance your browsing experience.</li>
+                </ul>
+                <div class="highlight-box">
+                    <span class="box-label">🔒 Your Privacy Matters</span>
+                    <p>
+                        We are committed to protecting your privacy and ensuring your data is handled securely.
+                        <a href="privacy-policy.html" style="color:#6C3CE1;font-weight:600;">Read our full Privacy Policy</a>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 9 -->
+            <div class="term-section" id="section-9">
+                <div class="section-header">
+                    <span class="section-number">9</span>
+                    <h3>Limitation of Liability</h3>
+                    <i class="fas fa-gavel"></i>
+                </div>
+                <p>
+                    Sucess Technology is not liable for any damages arising from the use of our platform or products,
+                    to the fullest extent permitted by law.
+                </p>
+                <ul>
+                    <li>We are not responsible for indirect, incidental, or consequential damages.</li>
+                    <li>Our liability is limited to the purchase price of the product.</li>
+                    <li>We do not warrant that our platform will be error-free or uninterrupted.</li>
+                    <li>We are not responsible for third-party content or services.</li>
+                    <li>Some jurisdictions do not allow the exclusion of certain warranties, so this limitation may not apply to you.</li>
+                </ul>
+            </div>
+
+            <!-- Section 10 -->
+            <div class="term-section" id="section-10">
+                <div class="section-header">
+                    <span class="section-number">10</span>
+                    <h3>Governing Law</h3>
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <p>
+                    These Terms &amp; Conditions are governed by and construed in accordance with the laws of the Republic of Cameroon.
+                    Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the courts of Cameroon.
+                </p>
+                <ul>
+                    <li>All disputes shall be resolved in accordance with Cameroonian law.</li>
+                    <li>You agree to submit to the jurisdiction of the courts of Cameroon.</li>
+                    <li>These terms shall not be governed by the United Nations Convention on Contracts for the International Sale of Goods.</li>
+                </ul>
+            </div>
+
+            <!-- Section 11 -->
+            <div class="term-section" id="section-11">
+                <div class="section-header">
+                    <span class="section-number">11</span>
+                    <h3>Changes to Terms</h3>
+                    <i class="fas fa-edit"></i>
+                </div>
+                <p>
+                    We reserve the right to modify these Terms &amp; Conditions at any time.
+                    Changes will be effective immediately upon posting on our platform.
+                </p>
+                <ul>
+                    <li>We will notify users of significant changes via email or platform notification.</li>
+                    <li>Your continued use of our platform constitutes acceptance of the revised terms.</li>
+                    <li>It is your responsibility to review these terms periodically.</li>
+                    <li>The date of the last revision is indicated at the top of this page.</li>
+                </ul>
+            </div>
+
+            <!-- Section 12 -->
+            <div class="term-section" id="section-12" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+                <div class="section-header">
+                    <span class="section-number">12</span>
+                    <h3>Contact Us</h3>
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <p>
+                    If you have any questions, concerns, or comments about these Terms &amp; Conditions,
+                    please feel free to contact us.
+                </p>
+                <ul>
+                    <li><strong>Email:</strong> support@sucesstechnology.com</li>
+                    <li><strong>Phone:</strong> +237 6XX XXX XXX</li>
+                    <li><strong>Address:</strong> Douala, Cameroon</li>
+                    <li><strong>Business Hours:</strong> Monday - Friday, 8:00 AM - 6:00 PM</li>
+                </ul>
+                <div class="highlight-box">
+                    <span class="box-label">📞 We're Here to Help</span>
+                    <p>
+                        Our customer service team is available to assist you with any questions or concerns.
+                        <a href="contact.html" style="color:#6C3CE1;font-weight:600;">Visit our Contact page</a> for more ways to reach us.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Accept Section -->
+        <div class="accept-section">
+            <div class="accept-text">
+                <i class="fas fa-check-circle" style="color:#6C3CE1;margin-right:8px;"></i>
+                By using our platform, you agree to these <strong>Terms &amp; Conditions</strong>
+            </div>
+            <div class="accept-actions">
+                <button class="btn-accept" id="acceptBtn">
+                    <i class="fas fa-check"></i> I Accept
+                </button>
+                <button class="btn-decline" id="declineBtn">
+                    <i class="fas fa-times"></i> Decline
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============================================
+         SCRIPTS
+         ============================================ -->
+    <script>
+        // ============================================================
+        //  TERMS & CONDITIONS PAGE
+        // ============================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 Terms & Conditions page loaded');
+
+            // --- Smooth scroll for TOC links ---
+            document.querySelectorAll('.toc-item').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    const target = document.getElementById(targetId);
+                    if (target) {
+                        const headerOffset = 100;
+                        const elementPosition = target.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // --- Accept Button ---
+            document.getElementById('acceptBtn').addEventListener('click', function() {
+                showToast('✅ Thank you for accepting our Terms & Conditions!');
+                this.innerHTML = '<i class="fas fa-check"></i> Accepted';
+                this.style.background = '#10B981';
+                this.disabled = true;
+                document.getElementById('declineBtn').style.opacity = '0.5';
+                document.getElementById('declineBtn').disabled = true;
+
+                // Store acceptance in localStorage
+                localStorage.setItem('st_terms_accepted', 'true');
+                localStorage.setItem('st_terms_accepted_date', new Date().toISOString());
+            });
+
+            // --- Decline Button ---
+            document.getElementById('declineBtn').addEventListener('click', function() {
+                showToast('⚠️ You must accept the Terms & Conditions to use our platform.', 'error');
+            });
+
+            // --- Check if already accepted ---
+            const termsAccepted = localStorage.getItem('st_terms_accepted');
+            if (termsAccepted === 'true') {
+                const btn = document.getElementById('acceptBtn');
+                btn.innerHTML = '<i class="fas fa-check"></i> Already Accepted';
+                btn.style.background = '#10B981';
+                btn.disabled = true;
+                document.getElementById('declineBtn').style.opacity = '0.5';
+                document.getElementById('declineBtn').disabled = true;
+            }
+
+            // --- Toast ---
+            function showToast(message, type = 'success') {
+                const existing = document.querySelector('.toast-msg');
+                if (existing) existing.remove();
+
+                const toast = document.createElement('div');
+                toast.className = `toast-msg ${type}`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(-50%) translateY(-20px)';
+                    toast.style.transition = 'all 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // --- Animation on scroll for sections ---
+            const sections = document.querySelectorAll('.term-section');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            sections.forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                section.style.transition = `all 0.5s ease ${index * 0.05}s`;
+                observer.observe(section);
+            });
+
+            // Trigger initial animations
+            setTimeout(() => {
+                sections.forEach(section => {
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                });
+            }, 200);
+
+            console.log('✅ Terms & Conditions page ready');
+        });
+    </script>
+</body>
+</html>

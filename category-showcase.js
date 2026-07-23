@@ -337,7 +337,7 @@
                 });
             }
 
-            localStorage.setItem('st_cart', JSON.stringify(cart));
+           
 
             const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
             if (customerId && window.saveCartToDB) {

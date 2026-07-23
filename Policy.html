@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>Return Policy · Sucess Technology</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+     <script src="global-header.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#6C3CE1',
+                        primaryHover: '#5A2FC4',
+                        dark: '#0F172A',
+                        'dark-secondary': '#1E293B'
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ============================================
+           RETURN POLICY PAGE - MODERN & PROFESSIONAL
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #0F172A;
+            padding-top: 80px;
+            padding-bottom: 40px;
+        }
+
+        .policy-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ----- Hero Section ----- */
+        .policy-hero {
+            background: linear-gradient(135deg, #0F172A 0%, #1a1a2e 50%, #16213e 100%);
+            border-radius: 24px;
+            padding: 48px 56px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .policy-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(108, 60, 225, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .policy-hero .hero-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background: rgba(108, 60, 225, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            margin-bottom: 16px;
+            font-size: 28px;
+            color: #8B6BE8;
+        }
+
+        .policy-hero h1 {
+            font-size: 36px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .policy-hero p {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .policy-hero .hero-badge {
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34D399;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        /* ----- Policy Cards ----- */
+        .policy-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .policy-card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+        }
+
+        .policy-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            border-color: #6C3CE1;
+        }
+
+        .policy-card .card-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: #6C3CE1;
+            color: white;
+            border-radius: 50%;
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .policy-card .card-icon {
+            font-size: 24px;
+            color: #6C3CE1;
+            margin-bottom: 8px;
+        }
+
+        .policy-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0F172A;
+            margin-bottom: 6px;
+        }
+
+        .policy-card .card-sub {
+            font-size: 14px;
+            color: #94A3B8;
+            margin-bottom: 12px;
+        }
+
+        .policy-card .card-details {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .policy-card .card-details .highlight {
+            color: #6C3CE1;
+            font-weight: 600;
+        }
+
+        .policy-card .card-details .highlight-red {
+            color: #EF4444;
+            font-weight: 600;
+        }
+
+        .policy-card .card-details ul {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0;
+        }
+
+        .policy-card .card-details ul li {
+            padding: 4px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .policy-card .card-details ul li i {
+            color: #6C3CE1;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+
+        .policy-card .card-details .info-box {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-top: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .policy-card .card-details .info-box i {
+            color: #6C3CE1;
+            font-size: 18px;
+            margin-top: 2px;
+        }
+
+        .policy-card .card-details .info-box .info-text {
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .policy-card .card-details .info-box .info-text strong {
+            color: #0F172A;
+        }
+
+        /* ----- Ineligible Categories ----- */
+        .ineligible-section {
+            background: white;
+            border-radius: 20px;
+            padding: 32px 40px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid #f0f0f0;
+            margin-bottom: 32px;
+        }
+
+        .ineligible-section .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .ineligible-section .section-header i {
+            font-size: 24px;
+            color: #EF4444;
+        }
+
+        .ineligible-section .section-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+
+        .ineligible-section .section-header .badge-warning {
+            background: #FEF3C7;
+            color: #D97706;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .ineligible-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .ineligible-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #f1f5f9;
+            transition: all 0.2s ease;
+        }
+
+        .ineligible-item:hover {
+            background: #f1f5f9;
+            border-color: #E2E8F0;
+        }
+
+        .ineligible-item i {
+            color: #EF4444;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .ineligible-item span {
+            font-size: 13px;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        /* ----- Important Notes ----- */
+        .notes-section {
+            background: linear-gradient(135deg, #fef9e6, #fef3c7);
+            border-radius: 20px;
+            padding: 28px 36px;
+            border: 1px solid #fde68a;
+            margin-bottom: 32px;
+        }
+
+        .notes-section .notes-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .notes-section .notes-header i {
+            font-size: 24px;
+            color: #D97706;
+        }
+
+        .notes-section .notes-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+
+        .notes-section p {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.7;
+        }
+
+        .notes-section p strong {
+            color: #0F172A;
+        }
+
+        /* ----- Contact Section ----- */
+        .contact-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            border-radius: 20px;
+            padding: 24px 32px;
+            border: 1px solid #f0f0f0;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .contact-section .contact-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .contact-section .contact-info i {
+            font-size: 28px;
+            color: #6C3CE1;
+        }
+
+        .contact-section .contact-info .contact-text {
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .contact-section .contact-info .contact-text strong {
+            color: #0F172A;
+            font-size: 16px;
+        }
+
+        .contact-section .contact-btn {
+            padding: 10px 28px;
+            background: #6C3CE1;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .contact-section .contact-btn:hover {
+            background: #5A2FC4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(108, 60, 225, 0.4);
+        }
+
+        /* ----- Responsive ----- */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 68px;
+                padding-bottom: 80px;
+            }
+
+            .policy-container {
+                padding: 0 16px;
+            }
+
+            .policy-hero {
+                padding: 32px 24px;
+                border-radius: 16px;
+            }
+
+            .policy-hero h1 {
+                font-size: 26px;
+            }
+
+            .policy-hero p {
+                font-size: 14px;
+            }
+
+            .policy-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .policy-card {
+                padding: 20px 24px;
+            }
+
+            .ineligible-section {
+                padding: 24px 20px;
+            }
+
+            .ineligible-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .ineligible-item {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            .notes-section {
+                padding: 20px 24px;
+            }
+
+            .contact-section {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .contact-section .contact-info {
+                justify-content: center;
+            }
+
+            .contact-section .contact-btn {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .policy-hero {
+                padding: 24px 16px;
+            }
+
+            .policy-hero h1 {
+                font-size: 22px;
+            }
+
+            .policy-hero .hero-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+            }
+
+            .policy-card {
+                padding: 16px 18px;
+            }
+
+            .policy-card h3 {
+                font-size: 16px;
+            }
+
+            .ineligible-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ineligible-item {
+                padding: 6px 12px;
+            }
+
+            .contact-section .contact-info {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .contact-section .contact-info .contact-text {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         HEADER WILL BE INJECTED HERE
+         ============================================ -->
+
+    <!-- ============================================
+         RETURN POLICY CONTENT
+         ============================================ -->
+    <main class="policy-container">
+
+        <!-- Hero Section -->
+        <div class="policy-hero">
+            <div class="hero-icon">
+                <i class="fas fa-undo-alt"></i>
+            </div>
+            <h1>Return &amp; Refund Policy</h1>
+            <p>
+                We are committed to providing you with a satisfying shopping experience.
+                If you need to return an item, we have implemented a clear and fair return
+                policy to facilitate your experience.
+            </p>
+            <span class="hero-badge">
+                <i class="fas fa-check-circle"></i> Updated January 2025
+            </span>
+        </div>
+
+        <!-- Policy Cards -->
+        <div class="policy-grid">
+
+            <!-- Card 1: Change of Mind -->
+            <div class="policy-card">
+                <div class="card-number">1</div>
+                <div class="card-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <h3>Returns for Change of Mind or Size</h3>
+                <p class="card-sub">You can return most items, with some exceptions</p>
+                <div class="card-details">
+                    <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+                        <div style="display:flex;align-items:center;gap:10px;padding:4px 0;">
+                            <i class="fas fa-box" style="color:#EF4444;font-size:14px;"></i>
+                            <span style="font-size:13px;"><span class="highlight-red">Not eligible:</span> Opened sealed items (official brand seals or original packaging)</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;padding:4px 0;">
+                            <i class="fas fa-tshirt" style="color:#EF4444;font-size:14px;"></i>
+                            <span style="font-size:13px;"><span class="highlight-red">Not eligible:</span> Mattresses, underwear, swimwear</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;padding:4px 0;">
+                            <i class="fas fa-tv" style="color:#EF4444;font-size:14px;"></i>
+                            <span style="font-size:13px;"><span class="highlight-red">Not eligible:</span> TVs &amp; Large Appliances</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;padding:4px 0;">
+                            <i class="fas fa-couch" style="color:#EF4444;font-size:14px;"></i>
+                            <span style="font-size:13px;"><span class="highlight-red">Not eligible:</span> Large stapled items (sofas, furniture)</span>
+                        </div>
+                    </div>
+
+                    <div class="info-box" style="margin-top:12px;">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="info-text">
+                            <strong>Return Conditions:</strong> You must return the item with its invoice and packaging in excellent condition.
+                        </div>
+                    </div>
+
+                    <div class="info-box" style="margin-top:8px;background:#DBEAFE;">
+                        <i class="fas fa-clock" style="color:#3B82F6;"></i>
+                        <div class="info-text">
+                            <strong>Return Period:</strong> <span class="highlight">10 business days</span> from delivery date to initiate your return.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Defective Items -->
+            <div class="policy-card">
+                <div class="card-number">2</div>
+                <div class="card-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Returns for Defective Items</h3>
+                <p class="card-sub">Defective, broken, non-functional, or counterfeit items</p>
+                <div class="card-details">
+                    <p style="font-size:13px;color:#475569;margin-bottom:8px;">
+                        Returns are accepted for all types of items, <span class="highlight-red">except</span> for categories not eligible for return.
+                    </p>
+
+                    <div class="info-box" style="margin-top:8px;">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="info-text">
+                            <strong>Return Conditions:</strong> You must return the item with its invoice and packaging in excellent condition.
+                        </div>
+                    </div>
+
+                    <div class="info-box" style="margin-top:8px;background:#DBEAFE;">
+                        <i class="fas fa-clock" style="color:#3B82F6;"></i>
+                        <div class="info-text">
+                            <strong>Return Deadline:</strong> <span class="highlight">10 business days</span> from delivery date.
+                        </div>
+                    </div>
+
+                    <div class="info-box" style="margin-top:8px;background:#FEF3C7;">
+                        <i class="fas fa-phone" style="color:#D97706;"></i>
+                        <div class="info-text">
+                            <strong>Note:</strong> For categories not eligible for return, please contact our Customer Service.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ineligible Categories -->
+        <div class="ineligible-section">
+            <div class="section-header">
+                <i class="fas fa-ban"></i>
+                <h2>Categories Not Eligible for Return</h2>
+                <span class="badge-warning">⚠️ Important</span>
+            </div>
+            <div class="ineligible-grid">
+                <div class="ineligible-item">
+                    <i class="fas fa-bed"></i>
+                    <span>Mattresses</span>
+                </div>
+                <div class="ineligible-item">
+                    <i class="fas fa-print"></i>
+                    <span>Printers &amp; Software</span>
+                </div>
+                <div class="ineligible-item">
+                    <i class="fas fa-shopping-basket"></i>
+                    <span>Supermarkets &amp; Groceries</span>
+                </div>
+                <div class="ineligible-item">
+                    <i class="fas fa-swimmer"></i>
+                    <span>Underwear &amp; Swimwear</span>
+                </div>
+                <div class="ineligible-item">
+                    <i class="fas fa-paint-brush"></i>
+                    <span>Beauty &amp; Makeup</span>
+                </div>
+                <div class="ineligible-item">
+                    <i class="fas fa-spa"></i>
+                    <span>Perfumes &amp; Wellness</span>
+                </div>
+                <div class="ineligible-item">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Events &amp; Tickets</span>
+                </div>
+                <div class="ineligible-item">
+                    <i class="fas fa-undo-alt"></i>
+                    <span>"Second Chance" Items</span>
+                </div>
+            </div>
+            <div style="margin-top:16px;font-size:13px;color:#64748B;background:#f8fafc;padding:12px 16px;border-radius:10px;border:1px solid #f1f5f9;">
+                <i class="fas fa-info-circle" style="color:#6C3CE1;margin-right:8px;"></i>
+                <strong>Note:</strong> Second Chance products are not refundable for simple change of mind, damage to packaging, or minor cosmetic defects, if clearly stated in the product description.
+            </div>
+        </div>
+
+        <!-- Important Notes -->
+        <div class="notes-section">
+            <div class="notes-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h2>Important Information</h2>
+            </div>
+            <p>
+                <strong>⚠️ We recommend that you carefully check your items upon receipt to avoid any disputes.</strong>
+                Categories not eligible for return upon receipt. If you have any questions about a specific product's return eligibility, please contact our customer service team.
+            </p>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="contact-section">
+            <div class="contact-info">
+                <i class="fas fa-headset"></i>
+                <div class="contact-text">
+                    <strong>Need Help?</strong><br />
+                    Contact our customer service team
+                </div>
+            </div>
+            <a href="contact.html" class="contact-btn">
+                <i class="fas fa-envelope"></i> Contact Us
+            </a>
+            <a href="tel:+2372500000000" class="contact-btn" style="background:#10B981;">
+                <i class="fas fa-phone"></i> Call Us
+            </a>
+        </div>
+
+    </main>
+
+    <!-- ============================================
+         SCRIPTS
+         ============================================ -->
+    <script>
+        // ============================================================
+        //  RETURN POLICY PAGE
+        // ============================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 Return Policy page loaded');
+
+            // Add smooth scroll behavior
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Add animation on scroll for cards
+            const cards = document.querySelectorAll('.policy-card, .ineligible-section, .notes-section, .contact-section');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = `all 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.1}s`;
+                observer.observe(card);
+            });
+
+            // After a moment, trigger the animations
+            setTimeout(() => {
+                cards.forEach(card => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                });
+            }, 200);
+
+            console.log('✅ Return Policy page ready');
+        });
+    </script>
+</body>
+</html>

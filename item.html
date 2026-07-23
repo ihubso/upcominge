@@ -1517,7 +1517,7 @@
                     });
                 }
 
-                localStorage.setItem('st_cart', JSON.stringify(cart));
+              
 
                 const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
                 if (customerId && window.saveCartToDB) {
@@ -1575,7 +1575,7 @@
         }
 
         async function saveCart(cart) {
-            localStorage.setItem('st_cart', JSON.stringify(cart));
+            
 
             const customerId = window.getCurrentCustomerId?.();
             const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();

@@ -242,70 +242,87 @@
     // 6. ADD TO CART FROM DEALS
     // ============================================================
 
-    async function addToCartFromDeal(productId) {
-        try {
-            const client = getSupabaseClient();
-            let product = null;
 
-            if (client) {
-                const { data, error } = await client
-                    .from('products')
-                    .select('*')
-                    .eq('id', productId)
-                    .single();
+async function addToCartFromDeal(productId) {
+    try {
+        // Get product details
+        const client = getHotSupabaseClient();
+        let product = null;
 
-                if (!error && data) {
-                    product = data;
-                }
+        if (client) {
+            const { data, error } = await client
+                .from('products')
+                .select('*')
+                .eq('id', productId)
+                .single();
+
+            if (!error && data) {
+                product = data;
             }
-
-            if (!product) {
-                showDealsToast('❌ Product not found', 'error');
-                return;
-            }
-
-            let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-            const existing = cart.find(item => item.product_id === productId || item.id === productId);
-
-            if (existing) {
-                existing.qty = (existing.qty || 0) + 1;
-            } else {
-                const dealDiscount = product.dealDiscount || 0;
-                cart.push({
-                    product_id: productId,
-                    id: productId,
-                    name: product.name || 'Unknown',
-                    price: dealDiscount > 0 ? product.price * (1 - dealDiscount / 100) : product.price,
-                    qty: 1,
-                    image: product.image || 'https://placehold.co/400x400',
-                    variants: product.variants || {},
-                    isDeal: dealDiscount > 0,
-                    originalPrice: dealDiscount > 0 ? product.price : null,
-                    discount: dealDiscount > 0 ? dealDiscount : null,
-                    brand: product.brand || ''
-                });
-            }
-
-            localStorage.setItem('st_cart', JSON.stringify(cart));
-
-            const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
-            if (customerId && window.saveCartToDB) {
-                await window.saveCartToDB(customerId, cart);
-            }
-
-            if (window.STHeader) {
-                window.STHeader.AppState.cart = cart;
-                if (window.STHeader.updateCounts) {
-                    window.STHeader.updateCounts();
-                }
-            }
-
-            showDealsToast(`✅ ${product.name || 'Product'} added to cart!`);
-        } catch (err) {
-            console.error('❌ Add to cart error:', err);
-            showDealsToast('❌ Failed to add to cart', 'error');
         }
+
+
+        if (!product) {
+            const card = document.querySelector(`.hot-product-card[data-product-id="${productId}"]`);
+            if (card) {
+                const name = card.querySelector('.hot-product-name')?.textContent || 'Unknown Product';
+                const priceText = card.querySelector('.hot-current-price')?.textContent || '$0';
+                const price = parseFloat(priceText.replace('$', ''));
+                const image = card.querySelector('.hot-product-image img')?.src || 'https://placehold.co/400x400';
+                product = { id: productId, name, price, image };
+            }
+        }
+
+        if (!product) {
+            showToast('❌ Product not found', 'error');
+            return;
+        }
+
+        // Get current cart
+        let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
+
+        // Check if product already in cart
+        const existingIndex = cart.findIndex(item => item.product_id === productId || item.id === productId);
+
+        if (existingIndex !== -1) {
+            cart[existingIndex].qty = (cart[existingIndex].qty || 1) + 1;
+        } else {
+            cart.push({
+                product_id: productId,
+                id: productId,
+                name: product.name || 'Unknown Product',
+                price: product.price || 0,
+                qty: 1,
+                image: product.image || product.images?.[0] || 'https://placehold.co/400x400',
+                variants: product.variants || {},
+                isDeal: product.isDeal || false,
+                originalPrice: product.originalPrice || null,
+                discount: product.discount || null,
+                brand: product.brand || ''
+            });
+        }
+
+
+        const customerId = window.getCurrentCustomerId?.();
+        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+        const client2 = getHotSupabaseClient();
+        if (client2) {
+            await saveCartToDB(customerId || sessionId, cart, !!customerId);
+        }
+
+        // Update header
+        if (window.STHeader) {
+            window.STHeader.AppState.cart = cart;
+            window.STHeader.updateCounts();
+        }
+
+        showToast('✅ Added to cart!', 'success');
+
+    } catch (err) {
+        console.error('❌ Error adding to cart:', err);
+        showToast('❌ Failed to add to cart', 'error');
     }
+}
 
     // ============================================================
     // 7. TOAST NOTIFICATION
@@ -694,15 +711,7 @@
         console.log(`✅ Deals initialized: ${deals.length} deals - Slider Mode`);
     }
 
-    // ============================================================
-    // 10. EXPOSE GLOBALLY
-    // ============================================================
 
-    window.Deals = {
-        init: initDeals,
-        fetch: fetchDeals,
-        addToCart: addToCartFromDeal
-    };
 
     // ============================================================
     // 11. AUTO-INITIALIZE ON DOM READY

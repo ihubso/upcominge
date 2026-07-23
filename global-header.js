@@ -1594,6 +1594,206 @@ function getHeaderHTML() {
                     font-size: 9px;
                 }
             }
+                /* Enhanced "Official" Button Style for Nav Items */
+#stMobileNavList li, 
+#stMobileWishlistBtn, 
+#andstMyOrdersBtn, 
+#andstSettingsBtn {
+    margin: 6px 16px !important;
+    padding: 14px 18px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    background-color: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02) !important;
+    color: #1e293b !important;
+    font-weight: 500 !important;
+    width: calc(100% - 32px) !important;
+    transition: all 0.2s ease;
+}
+
+#stMobileNavList li:active, 
+#stMobileWishlistBtn:active {
+    background-color: #f8fafc !important;
+    transform: scale(0.98);
+}
+
+/* Neat Wishlist Number Badge */
+#stMobileWishlistCount {
+    background-color: #0f172a !important; /* Professional Dark Navy */
+    color: #ffffff !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    min-width: 22px !important;
+    height: 22px !important;
+    border-radius: 20px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 6px !important;
+    margin-left: auto !important;
+    line-height: 1 !important;
+}
+
+/* Drawer Structure */
+#stMobileDrawer {
+    border-right: 1px solid #cbd5e1 !important;
+    background-color: #fcfcfd !important;
+}
+/* Brand Primary & Premium Drawer Styling */
+:root {
+    --brand-primary: #6c3ce1;
+    --brand-soft: #f4f0ff;
+}
+
+/* Badge with Brand Color */
+#stMobileWishlistCount {
+    background-color: var(--brand-primary) !important;
+    box-shadow: 0 2px 8px rgba(108, 60, 225, 0.3) !important;
+}
+
+/* Icons styling */
+#stMobileDrawer i {
+    color: var(--brand-primary) !important;
+    font-size: 18px;
+    margin-right: 12px;
+}
+
+/* Premium Button Cards */
+#stMobileNavList li, 
+#stMobileWishlistBtn, 
+#andstMyOrdersBtn, 
+#andstSettingsBtn {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    margin: 8px 16px !important;
+    padding: 14px 16px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03) !important;
+}
+
+/* Highlight active state */
+#stMobileNavList li:hover,
+#stMobileNavList li:active {
+    border-color: var(--brand-primary) !important;
+    background: var(--brand-soft) !important;
+}
+#stMobileWishlistCount {
+  background-color: rgb(108, 60, 225);
+}
+
+#stMobileNavList li {
+  border: 1px solid rgb(226, 232, 240);
+  background: linear-gradient(rgb(255, 255, 255), rgb(248, 250, 252));
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 2px 4px;
+  margin-bottom: 10px;
+}
+
+#stMobileNavList li {
+  border: 1px solid rgb(226, 232, 240);
+  background: linear-gradient(rgb(255, 255, 255), rgb(248, 250, 252));
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 2px 4px;
+  margin-bottom: 10px;
+}
+
+#stMobileNavList li {
+  border: 1px solid rgb(226, 232, 240);
+  background: linear-gradient(rgb(255, 255, 255), rgb(248, 250, 252));
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 2px 4px;
+  margin-bottom: 10px;
+}
+
+#stMobileNavList li {
+  border: 1px solid rgb(226, 232, 240);
+  background: linear-gradient(rgb(255, 255, 255), rgb(248, 250, 252));
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 2px 4px;
+  margin-bottom: 10px;
+}
+
+#stMobileWishlistBtn {
+  border: 1px solid rgb(226, 232, 240);
+  background: linear-gradient(rgb(255, 255, 255), rgb(248, 250, 252));
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 2px 4px;
+  margin-bottom: 10px;
+}
+
+#andstMyOrdersBtn {
+  border: 1px solid rgb(226, 232, 240);
+  background: linear-gradient(rgb(255, 255, 255), rgb(248, 250, 252));
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 2px 4px;
+  margin-bottom: 10px;
+}
+
+#andstSettingsBtn {
+  border: 1px solid rgb(226, 232, 240);
+  background: linear-gradient(rgb(255, 255, 255), rgb(248, 250, 252));
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 2px 4px;
+  margin-bottom: 10px;
+}
+
+.st-mobile-nav-link i {
+  color: rgb(108, 60, 225);
+  opacity: 0.8;
+  margin-right: 4px;
+}
+
+.st-mobile-nav-link i {
+  color: rgb(108, 60, 225);
+  opacity: 0.8;
+  margin-right: 4px;
+}
+
+.st-mobile-nav-link i {
+  color: rgb(108, 60, 225);
+  opacity: 0.8;
+  margin-right: 4px;
+}
+
+.st-mobile-nav-link i {
+  color: rgb(108, 60, 225);
+  opacity: 0.8;
+  margin-right: 4px;
+}
+
+i.fas.fa-heart {
+  color: rgb(108, 60, 225);
+  opacity: 0.8;
+  margin-right: 4px;
+}
+
+.st-account-dropdown-item i {
+  color: rgb(108, 60, 225);
+  opacity: 0.8;
+  margin-right: 4px;
+}
+
+.st-mobile-nav-link i {
+  color: rgb(108, 60, 225);
+  opacity: 0.8;
+  margin-right: 4px;
+}
+
+.st-mobile-nav-link i {
+  color: rgb(108, 60, 225);
+  opacity: 0.8;
+  margin-right: 4px;
+}
+
+.st-account-dropdown-item i {
+  color: rgb(108, 60, 225);
+  opacity: 0.8;
+  margin-right: 4px;
+}
+
+.st-account-dropdown-item i {
+  color: rgb(108, 60, 225);
+  opacity: 0.8;
+  margin-right: 4px;
+}
+
+
         </style>
         
         <!-- ============================================
@@ -1726,12 +1926,11 @@ function getHeaderHTML() {
                     <span class="st-label">Home</span>
                 </a>
                 
-                <button class="st-nav-item" id="stMobileWishlistBtn">
+                <button class="st-nav-item" id="stForyouMobileWishlistBtn">
                     <span class="st-icon-wrap">
                         <i class="fas fa-heart"></i>
-                        <span class="st-badge" id="stMobileWishlistCount">0</span>
                     </span>
-                    <span class="st-label">Wishlist</span>
+                    <span class="st-label">for you</span>
                 </button>
                 
                 <button class="st-nav-item" id="stMobileCartBtn">
@@ -1772,6 +1971,14 @@ function getHeaderHTML() {
                     </li>
                 `).join('')}
             </ul>
+
+                 <button class="st-nav-item" id="stMobileWishlistBtn">
+                    <span class="st-icon-wrap">
+                        <i class="fas fa-heart"></i>
+                        <span class="st-badge" id="stMobileWishlistCount">0</span>
+                    </span>
+                    <span class="st-label">Wishlist</span>
+                </button>
              <button class="st-account-dropdown-item" id="andstMyOrdersBtn">
                 <i class="fas fa-shopping-bag"></i> My Orders
             </button>
@@ -1980,6 +2187,7 @@ async function initHeader() {
         wishlistCount: document.getElementById('stWishlistCount'),
         mobileCartBtn: document.getElementById('stMobileCartBtn'),
         mobileWishlistBtn: document.getElementById('stMobileWishlistBtn'),
+        foryoumobileWishlistBtn: document.getElementById('stForyouMobileWishlistBtn'),
         mobileCartCount: document.getElementById('stMobileCartCount'),
         mobileWishlistCount: document.getElementById('stMobileWishlistCount'),
         mobileAccountBtn: document.getElementById('stMobileAccountBtn'),
@@ -2085,6 +2293,7 @@ async function initHeader() {
     elements.mobileCartBtn.addEventListener('click', () => window.location.href = 'cart.html');
     elements.wishlistBtn.addEventListener('click', () => window.location.href = 'wishlist.html');
     elements.mobileWishlistBtn.addEventListener('click', () => window.location.href = 'wishlist.html');
+        elements.foryoumobileWishlistBtn.addEventListener('click', () => window.location.href = 'ForYou.html');
     
     // ----- Auth Modal -----
     function openAuthModal() {
@@ -3099,7 +3308,7 @@ console.log('✅ Search with real-time results initialized');
             }
             
             // Load cart and wishlist from DB using customer_id
-            await loadUserData(user.id);
+             await loadUserData(user.id, false);
             updateAuthUI();
             closeAuthModal();
             
@@ -3189,7 +3398,7 @@ console.log('✅ Search with real-time results initialized');
             sessionStorage.removeItem('st_customer');
             
             // Load cart and wishlist from DB using customer_id
-            await loadUserData(user.id);
+            await loadUserData(user.id, true);
             updateAuthUI();
             closeAuthModal();
             
@@ -3290,53 +3499,65 @@ elements.androidLogout.addEventListener('click', () => {
     // ============================================================
     // LOAD USER DATA FROM DB (using customer_id)
     // ============================================================
-    async function loadUserData(customerId) {
-        if (!customerId) {
-            console.warn('⚠️ loadUserData: No customer_id provided');
-            return;
-        }
-        
-        try {
-            // Load cart from Supabase using customer_id
-            const dbCart = await fetchCartFromDB(customerId);
-            if (dbCart && dbCart.length > 0) {
-                AppState.cart = dbCart;
-                localStorage.setItem('st_cart', JSON.stringify(dbCart));
-            } else {
-                // If no DB cart, try to migrate local cart to DB
-                const localCart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-                if (localCart.length > 0) {
-                    AppState.cart = localCart;
-                    await saveCartToDB(customerId, localCart);
-                    console.log('🔄 Migrated local cart to DB');
-                } else {
-                    AppState.cart = [];
-                }
-            }
-            
-            // Load wishlist from Supabase using customer_id
-            const dbWishlist = await fetchWishlistFromDB(customerId);
-            if (dbWishlist && dbWishlist.length > 0) {
-                AppState.wishlist = dbWishlist;
-                localStorage.setItem('st_wishlist', JSON.stringify(dbWishlist));
-            } else {
-                // If no DB wishlist, try to migrate local wishlist to DB
-                const localWishlist = JSON.parse(localStorage.getItem('st_wishlist') || '[]');
-                if (localWishlist.length > 0) {
-                    AppState.wishlist = localWishlist;
-                    await saveWishlistToDB(customerId, localWishlist);
-                    console.log('🔄 Migrated local wishlist to DB');
-                } else {
-                    AppState.wishlist = [];
-                }
-            }
-            
-            updateCounts();
-        } catch (err) {
-            console.warn('⚠️ Failed to load user data:', err.message);
-        }
+
+async function loadUserData(customerId, shouldMigrate = false) {
+    if (!customerId) {
+        console.warn('⚠️ loadUserData: No customer_id provided');
+        return;
     }
     
+    try {
+        // Load cart from Supabase using customer_id
+        const dbCart = await fetchCartFromDB(customerId);
+        
+        if (dbCart && dbCart.length > 0) {
+            // User has existing cart in DB - use it
+            AppState.cart = dbCart;
+            // Update local storage to match DB
+            localStorage.setItem('st_cart', JSON.stringify(dbCart));
+            console.log(`📦 Loaded ${dbCart.length} items from DB cart`);
+        } else if (shouldMigrate) {
+            // Only migrate local cart if this is a NEW account (signup)
+            const localCart = JSON.parse(localStorage.getItem('st_cart') || '[]');
+            if (localCart.length > 0) {
+                AppState.cart = localCart;
+                await saveCartToDB(customerId, localCart);
+                console.log(`🔄 Migrated ${localCart.length} items from local cart to DB (NEW ACCOUNT)`);
+            } else {
+                AppState.cart = [];
+            }
+        } else {
+            // Login - no DB cart and no migration
+            AppState.cart = [];
+            console.log('📦 No DB cart found for this user');
+        }
+        
+        // Load wishlist from Supabase using customer_id
+        const dbWishlist = await fetchWishlistFromDB(customerId);
+        if (dbWishlist && dbWishlist.length > 0) {
+            AppState.wishlist = dbWishlist;
+            localStorage.setItem('st_wishlist', JSON.stringify(dbWishlist));
+            console.log(`❤️ Loaded ${dbWishlist.length} items from DB wishlist`);
+        } else if (shouldMigrate) {
+            // Only migrate local wishlist on signup
+            const localWishlist = JSON.parse(localStorage.getItem('st_wishlist') || '[]');
+            if (localWishlist.length > 0) {
+                AppState.wishlist = localWishlist;
+                await saveWishlistToDB(customerId, localWishlist);
+                console.log(`🔄 Migrated ${localWishlist.length} items from local wishlist to DB (NEW ACCOUNT)`);
+            } else {
+                AppState.wishlist = [];
+            }
+        } else {
+            AppState.wishlist = [];
+            console.log('❤️ No DB wishlist found for this user');
+        }
+        
+        updateCounts();
+    } catch (err) {
+        console.warn('⚠️ Failed to load user data:', err.message);
+    }
+}
     // ----- Update UI based on auth state -----
     function updateAuthUI() {
         const user = AppState.user;
@@ -3430,8 +3651,8 @@ elements.androidLogout.addEventListener('click', () => {
             AppState.user = user;
             AppState.isLoggedIn = true;
             
-            // Load cart and wishlist from DB
-            await loadUserData(user.id);
+    
+              await loadUserData(user.id, false);
             updateAuthUI();
             
             console.log('✅ Auto-login successful');

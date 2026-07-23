@@ -874,7 +874,7 @@ function getCurrentUser() {
         //  UPDATE WHATSAPP LINK
         // ============================================================
 
-        function updateWhatsAppLink(phone = '0172934545') {
+        function updateWhatsAppLink(phone = '+225 0172934545') {
             const name = elements.customerName.value.trim() || 'Customer';
             const items = cartItems.map(item => 
                 `${item.name || 'Product'} (${item.qty || 1}x)`
@@ -1037,8 +1037,7 @@ async function placeOrder(e) {
         // ============================================================
         // 🗑️ CLEAN UP CART - LOCALSTORAGE
         // ============================================================
-        console.log('🗑️ Cleaning up cart from localStorage...');
-        localStorage.setItem('st_cart', JSON.stringify([]));
+        
         
         // Also clear any sessionStorage cart
         sessionStorage.removeItem('st_cart');

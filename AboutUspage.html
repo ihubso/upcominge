@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>About Us · Sucess Technology</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#6C3CE1',
+                        primaryHover: '#5A2FC4',
+                        dark: '#0F172A',
+                        'dark-secondary': '#1E293B'
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ============================================
+           ABOUT US PAGE - MODERN & PROFESSIONAL
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #0F172A;
+            padding-top: 80px;
+            padding-bottom: 40px;
+        }
+
+        .about-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ----- Hero Section ----- */
+        .about-hero {
+            background: linear-gradient(135deg, #0F172A 0%, #1a1a2e 50%, #16213e 100%);
+            border-radius: 24px;
+            padding: 60px 56px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(108, 60, 225, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .about-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .about-hero .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 600px;
+        }
+
+        .about-hero .hero-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background: rgba(108, 60, 225, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            margin-bottom: 16px;
+            font-size: 28px;
+            color: #8B6BE8;
+        }
+
+        .about-hero h1 {
+            font-size: 42px;
+            font-weight: 900;
+            color: white;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+        }
+
+        .about-hero h1 span {
+            background: linear-gradient(135deg, #8B6BE8, #6C3CE1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .about-hero p {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.7;
+            max-width: 480px;
+        }
+
+        .about-hero .hero-stats {
+            display: flex;
+            gap: 40px;
+            margin-top: 28px;
+        }
+
+        .about-hero .hero-stats .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .about-hero .hero-stats .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: white;
+        }
+
+        .about-hero .hero-stats .stat-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ----- Section Styles ----- */
+        .section-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: #6C3CE1;
+        }
+
+        .section-subtitle {
+            font-size: 16px;
+            color: #94A3B8;
+            margin-bottom: 24px;
+        }
+
+        /* ----- Mission & Vision ----- */
+        .mission-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .mission-card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px 28px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .mission-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            border-color: #6C3CE1;
+        }
+
+        .mission-card .card-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(108, 60, 225, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 28px;
+            color: #6C3CE1;
+        }
+
+        .mission-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0F172A;
+            margin-bottom: 8px;
+        }
+
+        .mission-card p {
+            font-size: 14px;
+            color: #64748B;
+            line-height: 1.7;
+        }
+
+        /* ----- About Content ----- */
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            background: white;
+            border-radius: 20px;
+            padding: 48px;
+            border: 1px solid #f0f0f0;
+            margin-bottom: 40px;
+        }
+
+        .about-content .about-text h2 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .about-content .about-text h2 i {
+            color: #6C3CE1;
+        }
+
+        .about-content .about-text p {
+            font-size: 15px;
+            color: #475569;
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .about-content .about-image {
+            border-radius: 16px;
+            overflow: hidden;
+            background: #f1f5f9;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+        }
+
+        .about-content .about-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .about-content .about-image .placeholder-icon {
+            font-size: 64px;
+            color: #94A3B8;
+        }
+
+        /* ----- Team Section ----- */
+        .team-section {
+            margin-bottom: 40px;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .team-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px 20px;
+            border: 1px solid #f0f0f0;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .team-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            border-color: #6C3CE1;
+        }
+
+        .team-card .team-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6C3CE1, #5A2FC4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            color: white;
+            font-weight: 800;
+            font-size: 28px;
+        }
+
+        .team-card .team-name {
+            font-weight: 700;
+            font-size: 16px;
+            color: #0F172A;
+        }
+
+        .team-card .team-role {
+            font-size: 13px;
+            color: #94A3B8;
+        }
+
+        .team-card .team-social {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .team-card .team-social a {
+            color: #94A3B8;
+            transition: color 0.2s ease;
+            font-size: 16px;
+        }
+
+        .team-card .team-social a:hover {
+            color: #6C3CE1;
+        }
+
+        /* ----- Values Section ----- */
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .value-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.2s ease;
+        }
+
+        .value-item:hover {
+            border-color: #6C3CE1;
+            background: #faf8ff;
+        }
+
+        .value-item .value-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(108, 60, 225, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6C3CE1;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .value-item .value-text {
+            font-weight: 600;
+            font-size: 14px;
+            color: #0F172A;
+        }
+
+        /* ----- Contact Info ----- */
+        .contact-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .contact-info-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #0F172A;
+        }
+
+        .contact-info-item:hover {
+            border-color: #6C3CE1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        .contact-info-item .ci-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(108, 60, 225, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6C3CE1;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .contact-info-item .ci-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contact-info-item .ci-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #94A3B8;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .contact-info-item .ci-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0F172A;
+        }
+
+        /* ----- Social Links ----- */
+        .social-section {
+            background: white;
+            border-radius: 20px;
+            padding: 32px 40px;
+            border: 1px solid #f0f0f0;
+            margin-top: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .social-section .social-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0F172A;
+        }
+
+        .social-section .social-text i {
+            color: #6C3CE1;
+            margin-right: 8px;
+        }
+
+        .social-section .social-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .social-section .social-links a {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            transition: all 0.3s ease;
+            font-size: 18px;
+            text-decoration: none;
+        }
+
+        .social-section .social-links a:hover {
+            background: #6C3CE1;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px rgba(108, 60, 225, 0.3);
+        }
+
+        /* ----- Loading ----- */
+        .about-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .about-loading .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #E2E8F0;
+            border-top-color: #6C3CE1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ----- Toast ----- */
+        .toast-msg {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 30000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+            text-align: center;
+            animation: toastUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        .toast-msg.success { background: #10B981; }
+        .toast-msg.error { background: #EF4444; }
+        .toast-msg.info { background: #3B82F6; }
+
+        @keyframes toastUp {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        /* ----- Responsive ----- */
+        @media (max-width: 1024px) {
+            .about-content {
+                grid-template-columns: 1fr;
+                padding: 32px;
+            }
+            .about-content .about-image {
+                min-height: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 68px;
+                padding-bottom: 80px;
+            }
+
+            .about-container {
+                padding: 0 16px;
+            }
+
+            .about-hero {
+                padding: 32px 24px;
+                border-radius: 16px;
+            }
+
+            .about-hero h1 {
+                font-size: 28px;
+            }
+
+            .about-hero p {
+                font-size: 15px;
+            }
+
+            .about-hero .hero-stats {
+                gap: 24px;
+                flex-wrap: wrap;
+            }
+
+            .about-hero .hero-stats .stat-number {
+                font-size: 24px;
+            }
+
+            .mission-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .mission-card {
+                padding: 24px 20px;
+            }
+
+            .about-content {
+                padding: 24px;
+            }
+
+            .about-content .about-text h2 {
+                font-size: 20px;
+            }
+
+            .team-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .values-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .contact-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .social-section {
+                flex-direction: column;
+                text-align: center;
+                padding: 24px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .about-hero {
+                padding: 24px 16px;
+            }
+
+            .about-hero h1 {
+                font-size: 22px;
+            }
+
+            .about-hero .hero-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+            }
+
+            .mission-card {
+                padding: 20px 16px;
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .team-card {
+                padding: 16px;
+            }
+
+            .team-card .team-avatar {
+                width: 56px;
+                height: 56px;
+                font-size: 20px;
+            }
+
+            .values-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .about-content {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         HEADER WILL BE INJECTED HERE
+         ============================================ -->
+
+    <!-- ============================================
+         ABOUT US CONTENT
+         ============================================ -->
+    <main class="about-container" id="aboutPage">
+
+        <!-- Loading State -->
+        <div id="aboutLoading" class="about-loading">
+            <div class="spinner"></div>
+            <span style="color:#94A3B8;font-weight:500;">Loading company information...</span>
+        </div>
+
+        <!-- Content (hidden initially) -->
+        <div id="aboutContent" style="display:none;">
+
+            <!-- Hero Section -->
+            <div class="about-hero">
+                <div class="hero-content">
+                    <div class="hero-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h1>About <span id="heroShopName">Sucess Technology</span></h1>
+                    <p id="heroDescription">
+                        Your trusted partner for premium technology products and exceptional service.
+                        We're committed to bringing you the best in tech innovation.
+                    </p>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="statYears">3+</span>
+                            <span class="stat-label">Years of Excellence</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="statProducts">500+</span>
+                            <span class="stat-label">Products Available</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="statCustomers">1000+</span>
+                            <span class="stat-label">Happy Customers</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mission, Vision, Values -->
+            <div class="mission-grid">
+                <div class="mission-card">
+                    <div class="card-icon"><i class="fas fa-bullseye"></i></div>
+                    <h3>Our Mission</h3>
+                    <p>To provide high-quality technology products and exceptional customer service that empowers individuals and businesses to achieve more.</p>
+                </div>
+                <div class="mission-card">
+                    <div class="card-icon"><i class="fas fa-eye"></i></div>
+                    <h3>Our Vision</h3>
+                    <p>To become the most trusted technology partner in Africa, connecting people with innovative solutions that enhance their lives.</p>
+                </div>
+                <div class="mission-card">
+                    <div class="card-icon"><i class="fas fa-heart"></i></div>
+                    <h3>Our Values</h3>
+                    <p>Integrity, innovation, and customer-centricity drive everything we do. We believe in building lasting relationships with our community.</p>
+                </div>
+            </div>
+
+            <!-- About Content -->
+            <div class="about-content">
+                <div class="about-text">
+                    <h2><i class="fas fa-info-circle"></i> Who We Are</h2>
+                    <p id="aboutDescription">
+                        <strong id="aboutShopName">Sucess Technology</strong> is a premier technology retailer dedicated to bringing the latest and most innovative products to our customers. With a passion for technology and a commitment to excellence, we curate a diverse selection of high-quality devices and accessories.
+                    </p>
+                    <p>
+                        Our team of technology enthusiasts is here to help you find the perfect product for your needs. Whether you're a professional looking for the latest laptop, a student seeking a reliable tablet, or a tech enthusiast exploring new gadgets, we've got you covered.
+                    </p>
+                    <p>
+                        We believe that technology should be accessible to everyone, which is why we offer competitive prices, flexible payment options, and exceptional customer support. Your satisfaction is our priority.
+                    </p>
+                    <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+                        <a href="contact.html" class="btn-primary" style="padding:12px 28px;background:#6C3CE1;color:white;border-radius:12px;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:8px;transition:all 0.3s ease;">
+                            <i class="fas fa-envelope"></i> Get in Touch
+                        </a>
+                        <a href="products.html" class="btn-secondary" style="padding:12px 28px;border:2px solid #E2E8F0;border-radius:12px;text-decoration:none;font-weight:600;color:#475569;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s ease;">
+                            <i class="fas fa-store"></i> Shop Now
+                        </a>
+                    </div>
+                </div>
+                <div class="about-image" id="aboutImage">
+                    <div class="placeholder-icon">
+                        <i class="fas fa-store-alt"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Values -->
+            <div class="section-title" style="margin-bottom:16px;">
+                <i class="fas fa-star"></i> Our Core Values
+            </div>
+            <div class="values-grid">
+                <div class="value-item">
+                    <div class="value-icon"><i class="fas fa-shield-alt"></i></div>
+                    <span class="value-text">Trust &amp; Integrity</span>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon"><i class="fas fa-lightbulb"></i></div>
+                    <span class="value-text">Innovation</span>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon"><i class="fas fa-users"></i></div>
+                    <span class="value-text">Customer First</span>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon"><i class="fas fa-gem"></i></div>
+                    <span class="value-text">Quality Excellence</span>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon"><i class="fas fa-handshake"></i></div>
+                    <span class="value-text">Community Focus</span>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon"><i class="fas fa-globe-africa"></i></div>
+                    <span class="value-text">African Innovation</span>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="section-title" style="margin-bottom:16px;">
+                <i class="fas fa-address-card"></i> Get in Touch
+            </div>
+            <div class="contact-info-grid" id="contactInfoGrid">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <!-- Social Links -->
+            <div class="social-section">
+                <div class="social-text">
+                    <i class="fas fa-share-alt"></i> Connect with us on social media
+                </div>
+                <div class="social-links" id="socialLinks">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ============================================
+         SCRIPTS
+         ============================================ -->
+    <script>
+        // ============================================================
+        //  ABOUT US PAGE - Fetches from Supabase business_info
+        // ============================================================
+
+        // --- Supabase Config ---
+        const SUPABASE_URL = 'https://bulprhgwuwatzobiojwz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHByaGd3dXdhdHpvYmlvand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDczNDksImV4cCI6MjA5MjA4MzM0OX0.2fcHrGX7iXw5G9nGRNkBy70W1Ex_om1C0v3qbryPmvw';
+
+        let supabaseClient = null;
+
+        function getSupabase() {
+            if (supabaseClient) return supabaseClient;
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                return supabaseClient;
+            }
+            return null;
+        }
+
+        // --- DOM Elements ---
+        const elements = {
+            loading: document.getElementById('aboutLoading'),
+            content: document.getElementById('aboutContent'),
+            heroShopName: document.getElementById('heroShopName'),
+            aboutShopName: document.getElementById('aboutShopName'),
+            heroDescription: document.getElementById('heroDescription'),
+            aboutDescription: document.getElementById('aboutDescription'),
+            contactGrid: document.getElementById('contactInfoGrid'),
+            socialLinks: document.getElementById('socialLinks'),
+            statYears: document.getElementById('statYears'),
+            statProducts: document.getElementById('statProducts'),
+            statCustomers: document.getElementById('statCustomers')
+        };
+
+        // ============================================================
+        //  FETCH BUSINESS INFO
+        // ============================================================
+
+        async function fetchBusinessInfo() {
+            const client = getSupabase();
+            if (!client) {
+                console.warn('⚠️ Supabase not available');
+                showFallbackData();
+                return;
+            }
+
+            try {
+                const { data, error } = await client
+                    .from('business_info')
+                    .select('*')
+                    .eq('id', 1)
+                    .single();
+
+                if (error) throw error;
+
+                if (data) {
+                    renderBusinessInfo(data);
+                } else {
+                    showFallbackData();
+                }
+
+            } catch (err) {
+                console.error('❌ Error fetching business info:', err.message);
+                showFallbackData();
+            }
+        }
+
+        // ============================================================
+        //  RENDER BUSINESS INFO
+        // ============================================================
+
+        function renderBusinessInfo(info) {
+            // Hide loading, show content
+            elements.loading.style.display = 'none';
+            elements.content.style.display = 'block';
+
+            // Shop name
+            const shopName = info.shop_name || 'Sucess Technology';
+            elements.heroShopName.textContent = shopName;
+            elements.aboutShopName.textContent = shopName;
+
+            // Description
+            const description = info.description || 'Your trusted partner for premium technology products and exceptional service.';
+            elements.heroDescription.textContent = description;
+            elements.aboutDescription.textContent = description;
+
+            // Contact Information
+            renderContactInfo(info);
+
+            // Social Links
+            renderSocialLinks(info);
+
+            // Stats (can be customized or from business info)
+            if (info.stats) {
+                try {
+                    const stats = JSON.parse(info.stats);
+                    if (stats.years) elements.statYears.textContent = stats.years;
+                    if (stats.products) elements.statProducts.textContent = stats.products;
+                    if (stats.customers) elements.statCustomers.textContent = stats.customers;
+                } catch (e) {
+                    // Use default stats
+                }
+            }
+
+            // Update page title
+            document.title = `About ${shopName} · Sucess Technology`;
+
+            console.log('✅ Business info loaded successfully');
+        }
+
+        // ============================================================
+        //  RENDER CONTACT INFO
+        // ============================================================
+
+        function renderContactInfo(info) {
+            const grid = elements.contactGrid;
+            const contactItems = [];
+
+            // Email
+            if (info.email) {
+                contactItems.push({
+                    icon: 'fa-envelope',
+                    label: 'Email',
+                    value: info.email,
+                    href: `mailto:${info.email}`
+                });
+            }
+
+            // Phone
+            if (info.phone) {
+                const phoneClean = info.phone.replace(/\s/g, '');
+                contactItems.push({
+                    icon: 'fa-phone',
+                    label: 'Phone',
+                    value: info.phone,
+                    href: `tel:${phoneClean}`
+                });
+            }
+
+            // Address
+            if (info.address) {
+                contactItems.push({
+                    icon: 'fa-map-marker-alt',
+                    label: 'Address',
+                    value: info.address,
+                    href: `https://maps.google.com/?q=${encodeURIComponent(info.address)}`
+                });
+            }
+
+            if (contactItems.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1;text-align:center;padding:20px;color:#94A3B8;">
+                        No contact information available
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = contactItems.map(item => `
+                <a href="${item.href}" target="${item.href.startsWith('mailto:') || item.href.startsWith('tel:') ? '_self' : '_blank'}" class="contact-info-item">
+                    <div class="ci-icon"><i class="fas ${item.icon}"></i></div>
+                    <div class="ci-text">
+                        <span class="ci-label">${item.label}</span>
+                        <span class="ci-value">${item.value}</span>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        // ============================================================
+        //  RENDER SOCIAL LINKS
+        // ============================================================
+
+        function renderSocialLinks(info) {
+            const container = elements.socialLinks;
+            const socialItems = [];
+
+            const socialConfig = [
+                { key: 'facebook', icon: 'fa-facebook', label: 'Facebook' },
+                { key: 'instagram', icon: 'fa-instagram', label: 'Instagram' },
+                { key: 'tiktok', icon: 'fa-tiktok', label: 'TikTok' },
+                { key: 'twitter', icon: 'fa-twitter', label: 'Twitter' },
+                { key: 'youtube', icon: 'fa-youtube', label: 'YouTube' },
+                { key: 'linkedin', icon: 'fa-linkedin', label: 'LinkedIn' }
+            ];
+
+            socialConfig.forEach(social => {
+                const url = info[social.key];
+                if (url && url.trim()) {
+                    socialItems.push({
+                        icon: social.icon,
+                        label: social.label,
+                        url: url
+                    });
+                }
+            });
+
+            if (socialItems.length === 0) {
+                container.innerHTML = `
+                    <span style="color:#94A3B8;font-size:14px;">No social links available</span>
+                `;
+                return;
+            }
+
+            container.innerHTML = socialItems.map(item => `
+                <a href="${item.url}" target="_blank" rel="noopener noreferrer" title="${item.label}">
+                    <i class="fab ${item.icon}"></i>
+                </a>
+            `).join('');
+        }
+
+        // ============================================================
+        //  FALLBACK DATA
+        // ============================================================
+
+        function showFallbackData() {
+            const fallbackInfo = {
+                shop_name: 'Sucess Technology',
+                email: 'info@sucesstechnology.com',
+                phone: '+237 6XX XXX XXX',
+                address: 'Douala, Cameroon',
+                description: 'Your trusted partner for premium technology products and exceptional service. We\'re committed to bringing you the best in tech innovation.',
+                facebook: '#',
+                instagram: '#',
+                tiktok: '#'
+            };
+
+            renderBusinessInfo(fallbackInfo);
+            console.log('ℹ️ Using fallback business data');
+        }
+
+        // ============================================================
+        //  TOAST
+        // ============================================================
+
+        function showToast(message, type = 'success') {
+            const existing = document.querySelector('.toast-msg');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `toast-msg ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(-20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ============================================================
+        //  INITIALIZE
+        // ============================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 About Us page loading...');
+
+            // Fetch business info
+            fetchBusinessInfo();
+
+            // Add smooth scroll
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            console.log('✅ About Us page ready');
+        });
+    </script>
+</body>
+</html>
