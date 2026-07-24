@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/item/:productId",
+      "destination": "/api/item?product=:productId"
+    }
+  ]
+}

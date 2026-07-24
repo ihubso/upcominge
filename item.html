@@ -1778,7 +1778,7 @@
 
         // --- Share ---
         async function handleShare(product) {
-            const url = `${window.location.origin}/item.php?product=${product.id}`;
+            const url = `${window.location.origin}${window.location.pathname}?product=${product.id}`;
             if (navigator.share) {
                 try {
                     await navigator.share({ title: product.name, url: url });
