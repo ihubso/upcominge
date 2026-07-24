@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>Contact & Locate Us · Sucess Technology</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../global-header.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#6C3CE1',
+                        primaryHover: '#5A2FC4',
+                        dark: '#0F172A',
+                        'dark-secondary': '#1E293B'
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ============================================
+           CONTACT PAGE - MODERN & PROFESSIONAL
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #0F172A;
+            padding-top: 80px;
+            padding-bottom: 40px;
+        }
+
+        .contact-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ----- Hero Section ----- */
+        .contact-hero {
+            background: linear-gradient(135deg, #0F172A 0%, #1a1a2e 50%, #16213e 100%);
+            border-radius: 24px;
+            padding: 0;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 350px;
+        }
+
+        .contact-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(108, 60, 225, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .contact-hero .hero-left {
+            padding: 50px 56px;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .contact-hero .hero-right {
+            position: relative;
+            overflow: hidden;
+            min-height: 250px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .contact-hero .hero-right img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .contact-hero .hero-right .shop-photo-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.3);
+            font-size: 64px;
+            gap: 12px;
+        }
+
+        .contact-hero .hero-right .shop-photo-placeholder span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .contact-hero .hero-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background: rgba(108, 60, 225, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            margin-bottom: 16px;
+            font-size: 28px;
+            color: #8B6BE8;
+        }
+
+        .contact-hero h1 {
+            font-size: 42px;
+            font-weight: 900;
+            color: white;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+        }
+
+        .contact-hero h1 span {
+            background: linear-gradient(135deg, #8B6BE8, #6C3CE1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .contact-hero .hero-description {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.7;
+            max-width: 480px;
+        }
+
+        .contact-hero .hero-location {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-top: 12px;
+        }
+
+        .contact-hero .hero-location i {
+            color: #6C3CE1;
+            font-size: 16px;
+        }
+
+        .contact-hero .hero-hours {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-top: 12px;
+            width: fit-content;
+        }
+
+        .contact-hero .hero-hours i {
+            color: #10B981;
+            font-size: 14px;
+        }
+
+        /* ----- Section Styles ----- */
+        .section-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: #6C3CE1;
+        }
+
+        .section-subtitle {
+            font-size: 16px;
+            color: #94A3B8;
+            margin-bottom: 24px;
+        }
+
+        /* ----- Contact Grid ----- */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+
+        /* ----- Info Cards ----- */
+        .info-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 24px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .info-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            border-color: #6C3CE1;
+        }
+
+        .info-card .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(108, 60, 225, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #6C3CE1;
+            flex-shrink: 0;
+        }
+
+        .info-card .card-content {
+            flex: 1;
+        }
+
+        .info-card .card-content .card-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #94A3B8;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .info-card .card-content .card-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0F172A;
+        }
+
+        .info-card .card-content .card-value a {
+            color: #0F172A;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .info-card .card-content .card-value a:hover {
+            color: #6C3CE1;
+        }
+
+        .info-card .card-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .info-card .card-badge.open {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .info-card .card-badge.closed {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        /* ----- Map Card ----- */
+        .map-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #f0f0f0;
+            overflow: hidden;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .map-card:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            border-color: #6C3CE1;
+        }
+
+        .map-card .map-placeholder {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .map-card .map-placeholder .map-icon {
+            font-size: 64px;
+            color: #6C3CE1;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .map-card .map-placeholder .map-address {
+            font-size: 14px;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+
+        .map-card .map-placeholder .map-coords {
+            font-size: 12px;
+            color: #94A3B8;
+            margin-bottom: 16px;
+        }
+
+        .map-card .map-placeholder .map-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            background: #6C3CE1;
+            color: white;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .map-card .map-placeholder .map-btn:hover {
+            background: #5A2FC4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(108, 60, 225, 0.3);
+        }
+
+        /* ----- Description Card ----- */
+        .description-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px 28px;
+            border: 1px solid #f0f0f0;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .description-card:hover {
+            border-color: #6C3CE1;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        .description-card .desc-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(108, 60, 225, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6C3CE1;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .description-card .desc-content p {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        /* ----- Quick Actions ----- */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .quick-action {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #f0f0f0;
+            text-align: center;
+            text-decoration: none;
+            color: #0F172A;
+            transition: all 0.3s ease;
+        }
+
+        .quick-action:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            border-color: #6C3CE1;
+        }
+
+        .quick-action .qa-icon {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .quick-action .qa-label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* ----- Social Section ----- */
+        .social-section {
+            background: white;
+            border-radius: 20px;
+            padding: 32px 40px;
+            border: 1px solid #f0f0f0;
+            margin-top: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .social-section .social-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0F172A;
+        }
+
+        .social-section .social-text i {
+            color: #6C3CE1;
+            margin-right: 8px;
+        }
+
+        .social-section .social-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .social-section .social-links a {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            transition: all 0.3s ease;
+            font-size: 18px;
+            text-decoration: none;
+        }
+
+        .social-section .social-links a:hover {
+            background: #6C3CE1;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px rgba(108, 60, 225, 0.3);
+        }
+
+        /* ----- CTA Section ----- */
+        .cta-section {
+            background: linear-gradient(135deg, #0F172A 0%, #1a1a2e 50%, #16213e 100%);
+            border-radius: 20px;
+            padding: 48px 56px;
+            margin-top: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(108, 60, 225, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .cta-section h2 {
+            font-size: 32px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-section p {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-section .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-section .cta-buttons a {
+            padding: 12px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cta-section .cta-buttons .btn-primary-cta {
+            background: #6C3CE1;
+            color: white;
+        }
+
+        .cta-section .cta-buttons .btn-primary-cta:hover {
+            background: #5A2FC4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(108, 60, 225, 0.3);
+        }
+
+        .cta-section .cta-buttons .btn-secondary-cta {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .cta-section .cta-buttons .btn-secondary-cta:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        /* ----- Loading ----- */
+        .contact-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .contact-loading .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #E2E8F0;
+            border-top-color: #6C3CE1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ----- Toast ----- */
+        .toast-msg {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 30000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+            text-align: center;
+            animation: toastUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        .toast-msg.success { background: #10B981; }
+        .toast-msg.error { background: #EF4444; }
+        .toast-msg.info { background: #3B82F6; }
+
+        @keyframes toastUp {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        /* ----- Hidden ----- */
+        .hidden {
+            display: none !important;
+        }
+
+        /* ----- Responsive ----- */
+        @media (max-width: 1024px) {
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+            .map-card {
+                min-height: 300px;
+            }
+            .contact-hero {
+                grid-template-columns: 1fr;
+            }
+            .contact-hero .hero-right {
+                min-height: 180px;
+            }
+            .contact-hero .hero-right img {
+                position: relative;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 68px;
+                padding-bottom: 80px;
+            }
+
+            .contact-container {
+                padding: 0 16px;
+            }
+
+            .contact-hero {
+                border-radius: 16px;
+            }
+
+            .contact-hero .hero-left {
+                padding: 32px 24px;
+            }
+
+            .contact-hero .hero-right {
+                min-height: 160px;
+            }
+
+            .contact-hero h1 {
+                font-size: 28px;
+            }
+
+            .contact-hero .hero-description {
+                font-size: 15px;
+            }
+
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .social-section {
+                flex-direction: column;
+                text-align: center;
+                padding: 24px 20px;
+            }
+
+            .cta-section {
+                padding: 32px 24px;
+            }
+
+            .cta-section h2 {
+                font-size: 24px;
+            }
+
+            .section-title {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .contact-hero .hero-left {
+                padding: 24px 16px;
+            }
+
+            .contact-hero .hero-right {
+                min-height: 140px;
+            }
+
+            .contact-hero h1 {
+                font-size: 22px;
+            }
+
+            .contact-hero .hero-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+            }
+
+            .info-card {
+                padding: 16px 18px;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .info-card .card-badge {
+                margin-top: 4px;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .quick-action {
+                padding: 12px;
+            }
+
+            .cta-section .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .cta-section .cta-buttons a {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .description-card {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+  .info-cards {
+    display: flex;
+    flex-direction: row; /* Aligns cards horizontally */
+    flex-wrap: wrap;     /* Allows cards to wrap to the next line if space is tight */
+    gap: 10px;           /* Adds space between the cards */
+  }
+
+  .info-cards .info-card {
+    flex: 1 1 calc(50% - 10px); /* Makes cards take up roughly half the width */
+    width: auto;                /* Overrides any fixed widths */
+    min-width: 150px;           /* Ensures cards don't get too small */
+  }
+}
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         HEADER WILL BE INJECTED HERE
+         ============================================ -->
+
+    <!-- ============================================
+         CONTACT US CONTENT
+         ============================================ -->
+    <main class="contact-container" id="contactPage">
+
+        <!-- Loading State -->
+        <div id="contactLoading" class="contact-loading">
+            <div class="spinner"></div>
+            <span style="color:#94A3B8;font-weight:500;">Loading contact information...</span>
+        </div>
+
+        <!-- Content (hidden initially) -->
+        <div id="contactContent" style="display:none;">
+
+            <!-- Hero Section -->
+            <div class="contact-hero">
+                <div class="hero-left">
+                    <div class="hero-icon">
+                        <i class="fas fa-map-pin"></i>
+                    </div>
+                    <h1>Contact <span id="heroShopName">Sucess Technology</span></h1>
+                    <p class="hero-description" id="heroDescription">
+                        We're here to help you with any questions or concerns. Reach out to us through any of the channels below.
+                    </p>
+                    <div class="hero-location" id="heroLocation">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="heroLocationText">Loading address...</span>
+                    </div>
+                    <div class="hero-hours" id="heroHours">
+                        <i class="fas fa-clock"></i>
+                        <span id="heroHoursText">Loading hours...</span>
+                    </div>
+                </div>
+                <div class="hero-right" id="heroImageContainer">
+                    <div class="shop-photo-placeholder" id="shopPhotoPlaceholder">
+                        <i class="fas fa-store"></i>
+                        <span>Shop Photo</span>
+                    </div>
+                    <img id="heroShopImage" style="display:none;" alt="Shop Photo" />
+                </div>
+            </div>
+
+            <!-- Contact Grid -->
+            <div class="contact-grid">
+                <!-- Left: Info Cards -->
+                <div class="info-cards">
+                    <!-- Location Card -->
+                    <div class="info-card">
+                        <div class="card-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div class="card-content">
+                            <div class="card-label">Location</div>
+                            <div class="card-value" id="contactAddress">Loading address...</div>
+                        </div>
+                        <a href="#" id="mapLinkBtn" target="_blank" class="card-badge open" style="background:#6C3CE1;color:white;padding:6px 14px;border-radius:20px;font-size:12px;text-decoration:none;">
+                            <i class="fas fa-external-link-alt"></i> Map
+                        </a>
+                    </div>
+
+                    <!-- Phone Card -->
+                    <div class="info-card">
+                        <div class="card-icon"><i class="fas fa-phone"></i></div>
+                        <div class="card-content">
+                            <div class="card-label">Phone</div>
+                            <div class="card-value">
+                                <a href="#" id="contactPhoneLink">Loading...</a>
+                            </div>
+                        </div>
+                        <a href="#" id="whatsappBtn" target="_blank" class="card-badge" style="background:#25D366;color:white;padding:6px 14px;border-radius:20px;font-size:12px;text-decoration:none;">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </a>
+                    </div>
+
+                    <!-- Email Card -->
+                    <div class="info-card">
+                        <div class="card-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="card-content">
+                            <div class="card-label">Email</div>
+                            <div class="card-value">
+                                <a href="#" id="contactEmailLink">Loading...</a>
+                            </div>
+                        </div>
+                        <a href="#" id="emailBtn" class="card-badge" style="background:#3B82F6;color:white;padding:6px 14px;border-radius:20px;font-size:12px;text-decoration:none;">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </a>
+                    </div>
+
+                    <!-- Hours Card -->
+                    <div class="info-card">
+                        <div class="card-icon"><i class="fas fa-clock"></i></div>
+                        <div class="card-content">
+                            <div class="card-label">Business Hours</div>
+                            <div class="card-value" id="contactHours">Loading...</div>
+                        </div>
+                        <span class="card-badge open" id="openBadge">🟢 Open Now</span>
+                    </div>
+
+                    <!-- Store Name Card -->
+                    <div class="info-card">
+                        <div class="card-icon"><i class="fas fa-store"></i></div>
+                        <div class="card-content">
+                            <div class="card-label">Store</div>
+                            <div class="card-value" id="contactShopName" style="font-size:18px;font-weight:800;color:#6C3CE1;">Sucess Technology</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Map -->
+                <div class="map-card">
+                    <div class="map-placeholder">
+                        <span class="map-icon"><i class="fas fa-map-marked-alt"></i></span>
+                        <h3 style="font-size:18px;font-weight:700;color:#0F172A;margin-bottom:4px;">Find Us Here</h3>
+                        <p class="map-address" id="mapAddress">Loading address...</p>
+                        <p class="map-coords" id="mapCoords">📍 Loading coordinates...</p>
+                        <a href="#" id="mapDirectionsBtn" target="_blank" class="map-btn">
+                            <i class="fas fa-directions"></i> Open in Google Maps
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description Card -->
+            <div id="descriptionCard" class="description-card hidden">
+                <div class="desc-icon"><i class="fas fa-info-circle"></i></div>
+                <div class="desc-content">
+                    <p id="contactDescription">Additional information about the store.</p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <a href="#" id="directionsAction" target="_blank" class="quick-action">
+                    <span class="qa-icon">🧭</span>
+                    <span class="qa-label">Get Directions</span>
+                </a>
+                <a href="#" id="callAction" class="quick-action">
+                    <span class="qa-icon">📞</span>
+                    <span class="qa-label">Call Store</span>
+                </a>
+                <button onclick="shareLocation()" class="quick-action" style="background:white;border:1px solid #f0f0f0;cursor:pointer;">
+                    <span class="qa-icon">📤</span>
+                    <span class="qa-label">Share Location</span>
+                </button>
+                <a href="products.html" class="quick-action">
+                    <span class="qa-icon">🛍️</span>
+                    <span class="qa-label">Browse Products</span>
+                </a>
+            </div>
+
+            <!-- Social Links -->
+            <div class="social-section">
+                <div class="social-text">
+                    <i class="fas fa-share-alt"></i> Connect with us on social media
+                </div>
+                <div class="social-links" id="socialLinks">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="cta-section">
+                <h2>Ready to Visit Us?</h2>
+                <p>Come experience our products in person. We're excited to serve you!</p>
+                <div class="cta-buttons">
+                    <a href="#" id="ctaDirectionsBtn" target="_blank" class="btn-primary-cta">
+                        <i class="fas fa-directions"></i> Get Directions
+                    </a>
+                    <a href="#" id="ctaCallBtn" class="btn-secondary-cta">
+                        <i class="fas fa-phone"></i> Call Us Now
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ============================================
+         SCRIPTS - FULLY FIXED
+         ============================================ -->
+    <script>
+        // ============================================================
+        //  SAFETY OVERRIDES - Prevents querySelector errors
+        // ============================================================
+        
+        // Safe wrapper for querySelector to prevent errors
+        (function() {
+            const originalQuerySelector = Document.prototype.querySelector;
+            const originalQuerySelectorAll = Document.prototype.querySelectorAll;
+            
+            Document.prototype.querySelector = function(selector) {
+                try {
+                    return originalQuerySelector.call(this, selector);
+                } catch(e) {
+                    console.warn('⚠️ querySelector prevented error for:', selector);
+                    return null;
+                }
+            };
+            
+            Document.prototype.querySelectorAll = function(selector) {
+                try {
+                    return originalQuerySelectorAll.call(this, selector);
+                } catch(e) {
+                    console.warn('⚠️ querySelectorAll prevented error for:', selector);
+                    return [];
+                }
+            };
+            
+            Element.prototype.querySelector = function(selector) {
+                try {
+                    return originalQuerySelector.call(this, selector);
+                } catch(e) {
+                    console.warn('⚠️ Element.querySelector prevented error for:', selector);
+                    return null;
+                }
+            };
+            
+            Element.prototype.querySelectorAll = function(selector) {
+                try {
+                    return originalQuerySelectorAll.call(this, selector);
+                } catch(e) {
+                    console.warn('⚠️ Element.querySelectorAll prevented error for:', selector);
+                    return [];
+                }
+            };
+        })();
+
+        // ============================================================
+        //  CONTACT PAGE - Fetches from Supabase business_info & contact_info
+        // ============================================================
+
+        // --- DOM Elements ---
+        const elements = {
+            loading: document.getElementById('contactLoading'),
+            content: document.getElementById('contactContent'),
+            heroShopName: document.getElementById('heroShopName'),
+            heroDescription: document.getElementById('heroDescription'),
+            heroLocationText: document.getElementById('heroLocationText'),
+            heroHoursText: document.getElementById('heroHoursText'),
+            heroShopImage: document.getElementById('heroShopImage'),
+            shopPhotoPlaceholder: document.getElementById('shopPhotoPlaceholder'),
+            contactAddress: document.getElementById('contactAddress'),
+            contactPhoneLink: document.getElementById('contactPhoneLink'),
+            contactEmailLink: document.getElementById('contactEmailLink'),
+            contactHours: document.getElementById('contactHours'),
+            contactShopName: document.getElementById('contactShopName'),
+            contactDescription: document.getElementById('contactDescription'),
+            descriptionCard: document.getElementById('descriptionCard'),
+            mapAddress: document.getElementById('mapAddress'),
+            mapCoords: document.getElementById('mapCoords'),
+            mapDirectionsBtn: document.getElementById('mapDirectionsBtn'),
+            mapLinkBtn: document.getElementById('mapLinkBtn'),
+            directionsAction: document.getElementById('directionsAction'),
+            ctaDirectionsBtn: document.getElementById('ctaDirectionsBtn'),
+            callAction: document.getElementById('callAction'),
+            ctaCallBtn: document.getElementById('ctaCallBtn'),
+            whatsappBtn: document.getElementById('whatsappBtn'),
+            emailBtn: document.getElementById('emailBtn'),
+            openBadge: document.getElementById('openBadge'),
+            socialLinks: document.getElementById('socialLinks')
+        };
+
+        // ============================================================
+        //  FETCH BUSINESS INFO
+        // ============================================================
+
+        async function fetchBusinessInfo() {
+            const client = getSupabaseClient();
+            if (!client) {
+                console.warn('⚠️ Supabase not available');
+                showFallbackData();
+                return;
+            }
+
+            try {
+                // Fetch from business_info
+                const { data: businessData, error: businessError } = await client
+                    .from('business_info')
+                    .select('*')
+                    .eq('id', 1)
+                    .single();
+
+                if (businessError) throw businessError;
+
+                // Fetch from contact_info
+                const { data: contactData, error: contactError } = await client
+                    .from('contact_info')
+                    .select('id, latitude, longitude, hours, description, shop_photo, created_at')
+                    .eq('id', 1)
+                    .single();
+
+                if (contactError) {
+                    console.warn('⚠️ Could not fetch contact_info:', contactError.message);
+                }
+
+                // Combine data
+                const combinedData = {
+                    ...businessData,
+                    ...contactData
+                };
+
+                if (combinedData) {
+                    renderContactInfo(combinedData);
+                } else {
+                    showFallbackData();
+                }
+
+            } catch (err) {
+                console.error('❌ Error fetching data:', err.message);
+                showFallbackData();
+            }
+        }
+
+        // ============================================================
+        //  RENDER CONTACT INFO
+        // ============================================================
+
+        function renderContactInfo(info) {
+            // Hide loading, show content
+            elements.loading.style.display = 'none';
+            elements.content.style.display = 'block';
+
+            // Shop name
+            const shopName = info.shop_name || 'Sucess Technology';
+            elements.heroShopName.textContent = shopName;
+            elements.contactShopName.textContent = shopName;
+
+            // Description
+            const description = info.description || 'Your trusted partner for premium technology products and exceptional service.';
+            elements.heroDescription.textContent = description;
+            elements.contactDescription.textContent = description;
+
+            // Show description card if custom description exists
+            if (info.description && info.description.trim() && info.description !== 'Your trusted partner for premium technology products and exceptional service.') {
+                elements.descriptionCard.classList.remove('hidden');
+            }
+
+            // Address
+            const address = info.address || 'Douala, Cameroon';
+            elements.contactAddress.textContent = address;
+            elements.heroLocationText.textContent = address;
+            elements.mapAddress.textContent = address;
+
+            // Phone
+            const phone = info.phone || ' ';
+            const phoneClean = phone.replace(/\s/g, '');
+            const phoneDigits = phone.replace(/\D/g, '');
+            
+            elements.contactPhoneLink.textContent = phone;
+            elements.contactPhoneLink.href = `tel:${phoneClean}`;
+            elements.callAction.href = `tel:${phoneClean}`;
+            elements.ctaCallBtn.href = `tel:${phoneClean}`;
+
+            // WhatsApp - use digits only
+            if (phoneDigits && phoneDigits.length > 0) {
+                elements.whatsappBtn.href = `https://wa.me/${phoneDigits}`;
+            } else {
+                elements.whatsappBtn.href = '#';
+            }
+
+            // Email
+            const email = info.email || 'info@sucesstechnology.com';
+            elements.contactEmailLink.textContent = email;
+            elements.contactEmailLink.href = `mailto:${email}`;
+            elements.emailBtn.href = `mailto:${email}`;
+
+            // Hours
+            const hoursText = info.hours || 'Mon - Fri: 7:00 AM - 8:00 PM\nSun: Closed';
+            const hoursDisplay = hoursText.replace(/\\n/g, '\n');
+            elements.contactHours.textContent = hoursDisplay;
+            elements.heroHoursText.textContent = hoursDisplay;
+
+            // Open/Closed badge
+            const isOpen = checkIfOpen(hoursText);
+            const badge = elements.openBadge;
+            if (isOpen) {
+                badge.textContent = '🟢 Open Now';
+                badge.className = 'card-badge open';
+            } else {
+                badge.textContent = '🔴 Closed';
+                badge.className = 'card-badge closed';
+            }
+
+            // Coordinates
+            let lat = info.latitude || '4.051056';
+            let lng = info.longitude || '9.767869';
+            // Handle if they're strings
+            if (typeof lat === 'string') lat = parseFloat(lat);
+            if (typeof lng === 'string') lng = parseFloat(lng);
+            
+            const coordsText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            elements.mapCoords.textContent = `📍 ${coordsText}`;
+
+            // Map links
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+            elements.mapDirectionsBtn.href = mapsUrl;
+            elements.mapLinkBtn.href = mapsUrl;
+            elements.directionsAction.href = mapsUrl;
+            elements.ctaDirectionsBtn.href = mapsUrl;
+
+            // Shop Photo
+            if (info.shop_photo && info.shop_photo.trim()) {
+                elements.heroShopImage.src = info.shop_photo;
+                elements.heroShopImage.style.display = 'block';
+                elements.shopPhotoPlaceholder.style.display = 'none';
+            } else {
+                elements.heroShopImage.style.display = 'none';
+                elements.shopPhotoPlaceholder.style.display = 'flex';
+            }
+
+            // Social Links
+            renderSocialLinks(info);
+
+            // Update page title
+            document.title = `Contact & Locate Us · ${shopName}`;
+
+            console.log('✅ Contact info loaded successfully');
+        }
+
+        // ============================================================
+        //  CHECK IF OPEN
+        // ============================================================
+
+        function checkIfOpen(hoursText) {
+            const now = new Date();
+            const day = now.getDay(); // 0 = Sunday
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            const currentTime = hour * 60 + minute;
+
+            // Parse hours text
+            const lines = hoursText.toLowerCase().split('\n');
+
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed) continue;
+
+                // Check if closed
+                if (trimmed.includes('closed')) {
+                    const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+                    for (let i = 0; i < days.length; i++) {
+                        if (trimmed.includes(days[i]) && day === i) {
+                            return false;
+                        }
+                    }
+                }
+
+                // Parse time ranges like "Mon - Fri: 7:00 AM - 8:00 PM"
+                const timeMatch = trimmed.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*[-–to]+\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+
+                if (timeMatch) {
+                    let startHour = parseInt(timeMatch[1]);
+                    const startMin = parseInt(timeMatch[2] || '0');
+                    const startPeriod = timeMatch[3]?.toLowerCase();
+                    let endHour = parseInt(timeMatch[4]);
+                    const endMin = parseInt(timeMatch[5] || '0');
+                    const endPeriod = timeMatch[6]?.toLowerCase();
+
+                    // Convert to 24-hour
+                    if (startPeriod === 'pm' && startHour !== 12) startHour += 12;
+                    if (startPeriod === 'am' && startHour === 12) startHour = 0;
+                    if (endPeriod === 'pm' && endHour !== 12) endHour += 12;
+                    if (endPeriod === 'am' && endHour === 12) endHour = 0;
+
+                    const startTime = startHour * 60 + startMin;
+                    const endTime = endHour * 60 + endMin;
+
+                    // Check if current day matches
+                    const dayMatch = 
+                        (day === 0 && trimmed.includes('sun')) ||
+                        (day === 1 && trimmed.includes('mon')) ||
+                        (day === 2 && trimmed.includes('tue')) ||
+                        (day === 3 && trimmed.includes('wed')) ||
+                        (day === 4 && trimmed.includes('thu')) ||
+                        (day === 5 && trimmed.includes('fri')) ||
+                        (day === 6 && trimmed.includes('sat')) ||
+                        (day >= 1 && day <= 5 && trimmed.includes('mon') && trimmed.includes('fri'));
+
+                    if (dayMatch && currentTime >= startTime && currentTime <= endTime) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        // ============================================================
+        //  RENDER SOCIAL LINKS
+        // ============================================================
+
+        function renderSocialLinks(info) {
+            const container = elements.socialLinks;
+            const socialItems = [];
+
+            const socialConfig = [
+                { key: 'facebook', icon: 'fa-facebook', label: 'Facebook' },
+                { key: 'instagram', icon: 'fa-instagram', label: 'Instagram' },
+                { key: 'tiktok', icon: 'fa-tiktok', label: 'TikTok' },
+                { key: 'twitter', icon: 'fa-twitter', label: 'Twitter' },
+                { key: 'youtube', icon: 'fa-youtube', label: 'YouTube' },
+                { key: 'linkedin', icon: 'fa-linkedin', label: 'LinkedIn' }
+            ];
+
+            socialConfig.forEach(social => {
+                const url = info[social.key];
+                if (url && url.trim() && url !== '#') {
+                    socialItems.push({
+                        icon: social.icon,
+                        label: social.label,
+                        url: url
+                    });
+                }
+            });
+
+            if (socialItems.length === 0) {
+                container.innerHTML = `
+                    <span style="color:#94A3B8;font-size:14px;">No social links available</span>
+                `;
+                return;
+            }
+
+            container.innerHTML = socialItems.map(item => `
+                <a href="${item.url}" target="_blank" rel="noopener noreferrer" title="${item.label}">
+                    <i class="fab ${item.icon}"></i>
+                </a>
+            `).join('');
+        }
+
+        // ============================================================
+        //  SHARE LOCATION
+        // ============================================================
+
+        function shareLocation() {
+            const address = elements.contactAddress?.textContent || 'Our Store';
+            const mapsUrl = elements.mapDirectionsBtn?.href || window.location.href;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Visit Our Store',
+                    text: `Find us at: ${address}`,
+                    url: mapsUrl
+                }).catch(() => {
+                    navigator.clipboard.writeText(mapsUrl);
+                    showToast('📍 Location link copied!');
+                });
+            } else {
+                navigator.clipboard.writeText(mapsUrl);
+                showToast('📍 Location link copied!');
+            }
+        }
+
+        // ============================================================
+        //  FALLBACK DATA
+        // ============================================================
+
+        function showFallbackData() {
+            const fallbackInfo = {
+                shop_name: 'Sucess Technology',
+                email: 'info@sucesstechnology.com',
+                phone: '+237 6XX XXX XXX',
+                address: 'Douala, Cameroon',
+                description: 'Your trusted partner for premium technology products and exceptional service.',
+                hours: 'Mon - Fri: 7:00 AM - 8:00 PM\nSun: Closed',
+                latitude: '4.051056',
+                longitude: '9.767869',
+                facebook: '#',
+                instagram: '#',
+                tiktok: '#'
+            };
+
+            renderContactInfo(fallbackInfo);
+            console.log('ℹ️ Using fallback contact data');
+        }
+
+        // ============================================================
+        //  TOAST
+        // ============================================================
+
+        function showToast(message, type = 'success') {
+            const existing = document.querySelector('.toast-msg');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `toast-msg ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(-20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ============================================================
+        //  SAFE ANCHOR CLICK HANDLING
+        // ============================================================
+
+        function setupSafeAnchorHandlers() {
+            // Only handle internal anchor links (#)
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                const href = anchor.getAttribute('href');
+                // Only process if it's a valid internal ID (starts with # and has more than just #)
+                if (href && href !== '#' && href.length > 1) {
+                    anchor.addEventListener('click', function(e) {
+                        const targetId = this.getAttribute('href');
+                        if (targetId && targetId !== '#') {
+                            try {
+                                const target = document.querySelector(targetId);
+                                if (target) {
+                                    e.preventDefault();
+                                    target.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'start'
+                                    });
+                                }
+                            } catch(e) {
+                                // Silently fail - not a valid selector
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        // ============================================================
+        //  INITIALIZE
+        // ============================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 Contact page loading...');
+
+            // Fetch business info
+            fetchBusinessInfo();
+
+            // Setup safe anchor handlers
+            setupSafeAnchorHandlers();
+
+            console.log('✅ Contact page ready');
+        });
+    </script>
+
+</body>
+</html>
