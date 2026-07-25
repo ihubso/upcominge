@@ -304,6 +304,7 @@ async function signUpCustomer(email, password, name, phone = '', address = '') {
             p_email: email,
             p_phone: phone || '',
             p_address: address || '',
+            p_country: country || '',  // ✅ NEW field
             p_password: password // Database function will hash this
         });
     
@@ -1833,7 +1834,39 @@ function getHeaderHTML() {
     margin-left: auto !important;
     line-height: 1 !important;
 }
+/* Country code dropdown styling */
+#stRegisterCountryCode {
+    appearance: auto;
+    cursor: pointer;
+    background-color: white;
+    border: 2px solid #E2E8F0;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #0F172A;
+    transition: all 0.2s ease;
+}
 
+#stRegisterCountryCode:focus {
+    border-color: #6C3CE1;
+    box-shadow: 0 0 0 4px rgba(108, 60, 225, 0.1);
+}
+
+#stRegisterCountryCode option {
+    padding: 8px;
+}
+
+/* Country dropdown */
+#stRegisterCountry {
+    appearance: auto;
+    cursor: pointer;
+}
+
+/* Better checkbox styling */
+#stRegisterTerms {
+    accent-color: #6C3CE1;
+    cursor: pointer;
+}
 /* Drawer Structure */
 #stMobileDrawer {
     border-right: 1px solid #cbd5e1 !important;
@@ -2255,28 +2288,348 @@ i.fas.fa-heart {
                     <h2 class="st-modal-title">Create Account</h2>
                     <p class="st-modal-subtitle">Join Success Technology</p>
                     
+                    <!-- Full Name -->
                     <div class="st-form-group">
-                        <label class="st-form-label">Full Name</label>
+                        <label class="st-form-label">Full Name <span style="color:#EF4444;">*</span></label>
                         <input type="text" class="st-form-input" id="stRegisterName" 
-                               placeholder="John Doe">
+                            placeholder="John Doe" required>
                         <div class="st-form-error" id="stRegisterNameError">Name is required</div>
                     </div>
                     
+                    <!-- Email Address -->
                     <div class="st-form-group">
-                        <label class="st-form-label">Email Address</label>
+                        <label class="st-form-label">Email Address <span style="color:#EF4444;">*</span></label>
                         <input type="email" class="st-form-input" id="stRegisterEmail" 
-                               placeholder="you@example.com">
+                            placeholder="you@example.com" required>
                         <div class="st-form-error" id="stRegisterEmailError">Please enter a valid email</div>
                     </div>
                     
+                    <!-- Password -->
                     <div class="st-form-group">
-                        <label class="st-form-label">Password</label>
+                        <label class="st-form-label">Password <span style="color:#EF4444;">*</span></label>
                         <input type="password" class="st-form-input" id="stRegisterPassword" 
-                               placeholder="Min 6 characters">
+                            placeholder="Min 6 characters" required>
+                        <div class="st-form-help" style="font-size:12px;color:#94A3B8;margin-top:4px;">
+                            <i class="fas fa-info-circle"></i> Password must be at least 6 characters
+                        </div>
                         <div class="st-form-error" id="stRegisterPasswordError">Password must be at least 6 characters</div>
                     </div>
+
+                    <!-- ============================================
+                        NEW FIELDS: Phone, Address, Country
+                        ============================================ -->
                     
-                    <button class="st-btn-primary" id="stRegisterSubmit">Create Account</button>
+                    <!-- Phone Number -->
+                    <div class="st-form-group">
+                        <label class="st-form-label">Phone Number</label>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <select class="st-form-input" id="stRegisterCountryCode" 
+                                    style="width:100px;flex-shrink:0;padding:12px 8px;">
+                                <option value="+237">🇨🇲 +237</option>
+                                <option value="+225">🇨🇮 +225</option>
+                                <option value="+234">🇳🇬 +234</option>
+                                <option value="+233">🇬🇭 +233</option>
+                                <option value="+221">🇸🇳 +221</option>
+                                <option value="+254">🇰🇪 +254</option>
+                                <option value="+256">🇺🇬 +256</option>
+                                <option value="+255">🇹🇿 +255</option>
+                                <option value="+27">🇿🇦 +27</option>
+                                <option value="+1">🇺🇸 +1</option>
+                                <option value="+44">🇬🇧 +44</option>
+                                <option value="+91">🇮🇳 +91</option>
+                                <option value="+86">🇨🇳 +86</option>
+                                <option value="+81">🇯🇵 +81</option>
+                                <option value="+49">🇩🇪 +49</option>
+                                <option value="+33">🇫🇷 +33</option>
+                                <option value="+34">🇪🇸 +34</option>
+                                <option value="+39">🇮🇹 +39</option>
+                                <option value="+55">🇧🇷 +55</option>
+                                <option value="+61">🇦🇺 +61</option>
+                                <option value="+64">🇳🇿 +64</option>
+                                <option value="+52">🇲🇽 +52</option>
+                                <option value="+57">🇨🇴 +57</option>
+                                <option value="+54">🇦🇷 +54</option>
+                                <option value="+56">🇨🇱 +56</option>
+                                <option value="+51">🇵🇪 +51</option>
+                                <option value="+62">🇮🇩 +62</option>
+                                <option value="+63">🇵🇭 +63</option>
+                                <option value="+66">🇹🇭 +66</option>
+                                <option value="+60">🇲🇾 +60</option>
+                                <option value="+84">🇻🇳 +84</option>
+                                <option value="+90">🇹🇷 +90</option>
+                                <option value="+20">🇪🇬 +20</option>
+                                <option value="+212">🇲🇦 +212</option>
+                                <option value="+216">🇹🇳 +216</option>
+                                <option value="+213">🇩🇿 +213</option>
+                                <option value="+218">🇱🇾 +218</option>
+                                <option value="+230">🇲🇺 +230</option>
+                                <option value="+222">🇲🇷 +222</option>
+                                <option value="+223">🇲🇱 +223</option>
+                                <option value="+226">🇧🇫 +226</option>
+                                <option value="+228">🇹🇬 +228</option>
+                                <option value="+229">🇧🇯 +229</option>
+                                <option value="+231">🇱🇷 +231</option>
+                                <option value="+232">🇸🇱 +232</option>
+                                <option value="+234">🇳🇬 +234</option>
+                                <option value="+235">🇹🇩 +235</option>
+                                <option value="+236">🇨🇫 +236</option>
+                                <option value="+237">🇨🇲 +237</option>
+                                <option value="+238">🇨🇻 +238</option>
+                                <option value="+239">🇸🇹 +239</option>
+                                <option value="+240">🇬🇶 +240</option>
+                                <option value="+241">🇬🇦 +241</option>
+                                <option value="+242">🇨🇬 +242</option>
+                                <option value="+243">🇨🇩 +243</option>
+                                <option value="+244">🇦🇴 +244</option>
+                                <option value="+245">🇬🇼 +245</option>
+                                <option value="+246">🇮🇴 +246</option>
+                                <option value="+247">🇦🇨 +247</option>
+                                <option value="+248">🇸🇨 +248</option>
+                                <option value="+249">🇸🇩 +249</option>
+                                <option value="+250">🇷🇼 +250</option>
+                                <option value="+251">🇪🇹 +251</option>
+                                <option value="+252">🇸🇴 +252</option>
+                                <option value="+253">🇩🇯 +253</option>
+                                <option value="+255">🇹🇿 +255</option>
+                                <option value="+256">🇺🇬 +256</option>
+                                <option value="+257">🇧🇮 +257</option>
+                                <option value="+258">🇲🇿 +258</option>
+                                <option value="+260">🇿🇲 +260</option>
+                                <option value="+261">🇲🇬 +261</option>
+                                <option value="+262">🇷🇪 +262</option>
+                                <option value="+263">🇿🇼 +263</option>
+                                <option value="+264">🇳🇦 +264</option>
+                                <option value="+265">🇲🇼 +265</option>
+                                <option value="+266">🇱🇸 +266</option>
+                                <option value="+267">🇧🇼 +267</option>
+                                <option value="+268">🇸🇿 +268</option>
+                                <option value="+269">🇰🇲 +269</option>
+                                <option value="+290">🇸🇭 +290</option>
+                                <option value="+291">🇪🇷 +291</option>
+                                <option value="+297">🇦🇼 +297</option>
+                                <option value="+298">🇫🇴 +298</option>
+                                <option value="+299">🇬🇱 +299</option>
+                                <option value="+350">🇬🇮 +350</option>
+                                <option value="+351">🇵🇹 +351</option>
+                                <option value="+352">🇱🇺 +352</option>
+                                <option value="+353">🇮🇪 +353</option>
+                                <option value="+354">🇮🇸 +354</option>
+                                <option value="+355">🇦🇱 +355</option>
+                                <option value="+356">🇲🇹 +356</option>
+                                <option value="+357">🇨🇾 +357</option>
+                                <option value="+358">🇫🇮 +358</option>
+                                <option value="+359">🇧🇬 +359</option>
+                                <option value="+370">🇱🇹 +370</option>
+                                <option value="+371">🇱🇻 +371</option>
+                                <option value="+372">🇪🇪 +372</option>
+                                <option value="+373">🇲🇩 +373</option>
+                                <option value="+374">🇦🇲 +374</option>
+                                <option value="+375">🇧🇾 +375</option>
+                                <option value="+376">🇦🇩 +376</option>
+                                <option value="+377">🇲🇨 +377</option>
+                                <option value="+378">🇸🇲 +378</option>
+                                <option value="+379">🇻🇦 +379</option>
+                                <option value="+380">🇺🇦 +380</option>
+                                <option value="+381">🇷🇸 +381</option>
+                                <option value="+382">🇲🇪 +382</option>
+                                <option value="+383">🇽🇰 +383</option>
+                                <option value="+385">🇭🇷 +385</option>
+                                <option value="+386">🇸🇮 +386</option>
+                                <option value="+387">🇧🇦 +387</option>
+                                <option value="+389">🇲🇰 +389</option>
+                                <option value="+420">🇨🇿 +420</option>
+                                <option value="+421">🇸🇰 +421</option>
+                                <option value="+423">🇱🇮 +423</option>
+                                <option value="+500">🇫🇰 +500</option>
+                                <option value="+501">🇧🇿 +501</option>
+                                <option value="+502">🇬🇹 +502</option>
+                                <option value="+503">🇸🇻 +503</option>
+                                <option value="+504">🇭🇳 +504</option>
+                                <option value="+505">🇳🇮 +505</option>
+                                <option value="+506">🇨🇷 +506</option>
+                                <option value="+507">🇵🇦 +507</option>
+                                <option value="+508">🇵🇲 +508</option>
+                                <option value="+509">🇭🇹 +509</option>
+                                <option value="+590">🇬🇵 +590</option>
+                                <option value="+591">🇧🇴 +591</option>
+                                <option value="+592">🇬🇾 +592</option>
+                                <option value="+593">🇪🇨 +593</option>
+                                <option value="+594">🇬🇫 +594</option>
+                                <option value="+595">🇵🇾 +595</option>
+                                <option value="+596">🇲🇶 +596</option>
+                                <option value="+597">🇸🇷 +597</option>
+                                <option value="+598">🇺🇾 +598</option>
+                                <option value="+599">🇧🇶 +599</option>
+                                <option value="+670">🇹🇱 +670</option>
+                                <option value="+672">🇦🇶 +672</option>
+                                <option value="+673">🇧🇳 +673</option>
+                                <option value="+674">🇳🇷 +674</option>
+                                <option value="+675">🇵🇬 +675</option>
+                                <option value="+676">🇹🇴 +676</option>
+                                <option value="+677">🇸🇧 +677</option>
+                                <option value="+678">🇻🇺 +678</option>
+                                <option value="+679">🇫🇯 +679</option>
+                                <option value="+680">🇵🇼 +680</option>
+                                <option value="+681">🇼🇫 +681</option>
+                                <option value="+682">🇨🇰 +682</option>
+                                <option value="+683">🇳🇺 +683</option>
+                                <option value="+685">🇼🇸 +685</option>
+                                <option value="+686">🇰🇮 +686</option>
+                                <option value="+687">🇳🇨 +687</option>
+                                <option value="+688">🇹🇻 +688</option>
+                                <option value="+689">🇵🇫 +689</option>
+                                <option value="+690">🇹🇰 +690</option>
+                                <option value="+691">🇫🇲 +691</option>
+                                <option value="+692">🇲🇭 +692</option>
+                                <option value="+850">🇰🇵 +850</option>
+                                <option value="+852">🇭🇰 +852</option>
+                                <option value="+853">🇲🇴 +853</option>
+                                <option value="+855">🇰🇭 +855</option>
+                                <option value="+856">🇱🇦 +856</option>
+                                <option value="+880">🇧🇩 +880</option>
+                                <option value="+886">🇹🇼 +886</option>
+                                <option value="+960">🇲🇻 +960</option>
+                                <option value="+961">🇱🇧 +961</option>
+                                <option value="+962">🇯🇴 +962</option>
+                                <option value="+963">🇸🇾 +963</option>
+                                <option value="+964">🇮🇶 +964</option>
+                                <option value="+965">🇰🇼 +965</option>
+                                <option value="+966">🇸🇦 +966</option>
+                                <option value="+967">🇾🇪 +967</option>
+                                <option value="+968">🇴🇲 +968</option>
+                                <option value="+970">🇵🇸 +970</option>
+                                <option value="+971">🇦🇪 +971</option>
+                                <option value="+972">🇮🇱 +972</option>
+                                <option value="+973">🇧🇭 +973</option>
+                                <option value="+974">🇶🇦 +974</option>
+                                <option value="+975">🇧🇹 +975</option>
+                                <option value="+976">🇲🇳 +976</option>
+                                <option value="+977">🇳🇵 +977</option>
+                                <option value="+992">🇹🇯 +992</option>
+                                <option value="+993">🇹🇲 +993</option>
+                                <option value="+994">🇦🇿 +994</option>
+                                <option value="+995">🇬🇪 +995</option>
+                                <option value="+996">🇰🇬 +996</option>
+                                <option value="+998">🇺🇿 +998</option>
+                            </select>
+                            <input type="tel" class="st-form-input" id="stRegisterPhone" 
+                                placeholder="6XX XXX XXX" style="flex:1;">
+                        </div>
+                        <div class="st-form-help" style="font-size:12px;color:#94A3B8;margin-top:4px;">
+                            <i class="fas fa-info-circle"></i> We'll use this to contact you about your orders
+                        </div>
+                        <div class="st-form-error" id="stRegisterPhoneError">Please enter a valid phone number</div>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="st-form-group">
+                        <label class="st-form-label">Delivery Address</label>
+                        <input type="text" class="st-form-input" id="stRegisterAddress" 
+                            placeholder="123 Main St, City, Country">
+                        <div class="st-form-help" style="font-size:12px;color:#94A3B8;margin-top:4px;">
+                            <i class="fas fa-info-circle"></i> Your default delivery address
+                        </div>
+                        <div class="st-form-error" id="stRegisterAddressError">Please enter your address</div>
+                    </div>
+
+                    <!-- Country / Region (Optional - can be auto-detected) -->
+                    <div class="st-form-group">
+                        <label class="st-form-label">Country / Region</label>
+                        <select class="st-form-input" id="stRegisterCountry">
+                            <option value="">Select your country</option>
+                            <option value="Cameroon">🇨🇲 Cameroon</option>
+                            <option value="Côte d'Ivoire">🇨🇮 Côte d'Ivoire</option>
+                            <option value="Nigeria">🇳🇬 Nigeria</option>
+                            <option value="Ghana">🇬🇭 Ghana</option>
+                            <option value="Senegal">🇸🇳 Senegal</option>
+                            <option value="Kenya">🇰🇪 Kenya</option>
+                            <option value="Uganda">🇺🇬 Uganda</option>
+                            <option value="Tanzania">🇹🇿 Tanzania</option>
+                            <option value="South Africa">🇿🇦 South Africa</option>
+                            <option value="United States">🇺🇸 United States</option>
+                            <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                            <option value="India">🇮🇳 India</option>
+                            <option value="China">🇨🇳 China</option>
+                            <option value="Japan">🇯🇵 Japan</option>
+                            <option value="Germany">🇩🇪 Germany</option>
+                            <option value="France">🇫🇷 France</option>
+                            <option value="Spain">🇪🇸 Spain</option>
+                            <option value="Italy">🇮🇹 Italy</option>
+                            <option value="Brazil">🇧🇷 Brazil</option>
+                            <option value="Australia">🇦🇺 Australia</option>
+                            <option value="New Zealand">🇳🇿 New Zealand</option>
+                            <option value="Mexico">🇲🇽 Mexico</option>
+                            <option value="Colombia">🇨🇴 Colombia</option>
+                            <option value="Argentina">🇦🇷 Argentina</option>
+                            <option value="Chile">🇨🇱 Chile</option>
+                            <option value="Peru">🇵🇪 Peru</option>
+                            <option value="Indonesia">🇮🇩 Indonesia</option>
+                            <option value="Philippines">🇵🇭 Philippines</option>
+                            <option value="Thailand">🇹🇭 Thailand</option>
+                            <option value="Malaysia">🇲🇾 Malaysia</option>
+                            <option value="Vietnam">🇻🇳 Vietnam</option>
+                            <option value="Turkey">🇹🇷 Turkey</option>
+                            <option value="Egypt">🇪🇬 Egypt</option>
+                            <option value="Morocco">🇲🇦 Morocco</option>
+                            <option value="Tunisia">🇹🇳 Tunisia</option>
+                            <option value="Algeria">🇩🇿 Algeria</option>
+                            <option value="Libya">🇱🇾 Libya</option>
+                            <option value="Mauritius">🇲🇺 Mauritius</option>
+                            <option value="Mauritania">🇲🇷 Mauritania</option>
+                            <option value="Mali">🇲🇱 Mali</option>
+                            <option value="Burkina Faso">🇧🇫 Burkina Faso</option>
+                            <option value="Togo">🇹🇬 Togo</option>
+                            <option value="Benin">🇧🇯 Benin</option>
+                            <option value="Liberia">🇱🇷 Liberia</option>
+                            <option value="Sierra Leone">🇸🇱 Sierra Leone</option>
+                            <option value="Chad">🇹🇩 Chad</option>
+                            <option value="Central African Republic">🇨🇫 Central African Republic</option>
+                            <option value="Cape Verde">🇨🇻 Cape Verde</option>
+                            <option value="São Tomé and Príncipe">🇸🇹 São Tomé and Príncipe</option>
+                            <option value="Equatorial Guinea">🇬🇶 Equatorial Guinea</option>
+                            <option value="Gabon">🇬🇦 Gabon</option>
+                            <option value="Congo">🇨🇬 Congo</option>
+                            <option value="DR Congo">🇨🇩 DR Congo</option>
+                            <option value="Angola">🇦🇴 Angola</option>
+                            <option value="Guinea-Bissau">🇬🇼 Guinea-Bissau</option>
+                            <option value="Seychelles">🇸🇨 Seychelles</option>
+                            <option value="Sudan">🇸🇩 Sudan</option>
+                            <option value="Rwanda">🇷🇼 Rwanda</option>
+                            <option value="Ethiopia">🇪🇹 Ethiopia</option>
+                            <option value="Somalia">🇸🇴 Somalia</option>
+                            <option value="Djibouti">🇩🇯 Djibouti</option>
+                            <option value="Burundi">🇧🇮 Burundi</option>
+                            <option value="Mozambique">🇲🇿 Mozambique</option>
+                            <option value="Zambia">🇿🇲 Zambia</option>
+                            <option value="Madagascar">🇲🇬 Madagascar</option>
+                            <option value="Zimbabwe">🇿🇼 Zimbabwe</option>
+                            <option value="Namibia">🇳🇦 Namibia</option>
+                            <option value="Malawi">🇲🇼 Malawi</option>
+                            <option value="Lesotho">🇱🇸 Lesotho</option>
+                            <option value="Botswana">🇧🇼 Botswana</option>
+                            <option value="Eswatini">🇸🇿 Eswatini</option>
+                            <option value="Comoros">🇰🇲 Comoros</option>
+                            <option value="Eritrea">🇪🇷 Eritrea</option>
+                        </select>
+                        <div class="st-form-help" style="font-size:12px;color:#94A3B8;margin-top:4px;">
+                            <i class="fas fa-info-circle"></i> Select your country for shipping and currency
+                        </div>
+                        <div class="st-form-error" id="stRegisterCountryError">Please select your country</div>
+                    </div>
+                    
+                    <!-- Terms & Conditions -->
+                    <div class="st-form-group" style="margin-top:8px;">
+                        <label style="display:flex;align-items:flex-start;gap:10px;font-weight:500;font-size:14px;color:#1E293B;cursor:pointer;">
+                            <input type="checkbox" id="stRegisterTerms" required style="margin-top:3px;width:18px;height:18px;accent-color:#6C3CE1;">
+                            <span>I agree to the <a href="#" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Terms of Service</a> and <a href="#" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Privacy Policy</a>.</span>
+                        </label>
+                        <div class="st-form-error" id="stRegisterTermsError">You must agree to the terms to create an account</div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button class="st-btn-primary" id="stRegisterSubmit">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
                     
                     <div class="st-modal-footer">
                         Already have an account? <button class="st-link" id="stSwitchToLogin">Login</button>
@@ -3607,97 +3960,147 @@ console.log('✅ Search with real-time results initialized');
     // ============================================================
     // REGISTER HANDLER (Custom customer_accounts)
     // ============================================================
-    elements.registerSubmit.addEventListener('click', async () => {
-        const name = elements.registerName.value.trim();
-        const email = elements.registerEmail.value.trim();
-        const password = elements.registerPassword.value;
-        let isValid = true;
-        
-        // Validate name
-        if (!name || name.length < 2) {
-            elements.registerName.classList.add('error');
-            if (elements.registerNameError) elements.registerNameError.classList.add('visible');
-            isValid = false;
-        } else {
-            elements.registerName.classList.remove('error');
-            if (elements.registerNameError) elements.registerNameError.classList.remove('visible');
-        }
-        
-        // Validate email
-        const emailValidation = validateEmail(email);
-        if (!emailValidation.valid) {
-            elements.registerEmail.classList.add('error');
-            if (elements.registerEmailError) {
-                elements.registerEmailError.textContent = emailValidation.message;
-                elements.registerEmailError.classList.add('visible');
-            }
-            isValid = false;
-        } else {
-            elements.registerEmail.classList.remove('error');
-            if (elements.registerEmailError) elements.registerEmailError.classList.remove('visible');
-        }
-        
-        // Validate password
-        if (!password || password.length < 6) {
-            elements.registerPassword.classList.add('error');
-            if (elements.registerPasswordError) elements.registerPasswordError.classList.add('visible');
-            isValid = false;
-        } else {
-            elements.registerPassword.classList.remove('error');
-            if (elements.registerPasswordError) elements.registerPasswordError.classList.remove('visible');
-        }
-        
-        if (!isValid) return;
-        
-        // Rate limit check
-        const rateLimit = checkRateLimit();
-        if (!rateLimit.allowed) {
-            showNotification(rateLimit.message, 'warning');
-            return;
-        }
-        
-        if (AppState.isAuthLoading) return;
-        AppState.isAuthLoading = true;
-        AppState.authAttempts++;
-        AppState.lastAuthAttempt = Date.now();
-        elements.registerSubmit.disabled = true;
-        elements.registerSubmit.textContent = 'Creating account...';
-        
-        try {
-            console.log('🔐 Attempting signup for:', email);
-            
-            const user = await signUpCustomer(email, password, name);
-            
-            console.log('✅ Signup successful for:', user.email);
-            AppState.authAttempts = 0;
-            
-            // Save user session - register always uses localStorage (persistent)
-            AppState.user = user;
-            AppState.isLoggedIn = true;
-            localStorage.setItem('st_customer', JSON.stringify(user));
-            sessionStorage.removeItem('st_customer');
-            
-            // Load cart and wishlist from DB using customer_id
-            await loadUserData(user.id, true);
-             updateUrlWithUserInfo(); 
-            updateAuthUI();
-            closeAuthModal();
-            
-            showNotification(`✅ Account created successfully! Welcome ${user.name}!`);
-            setTimeout(() => {
-                window.location.reload();
-            }, 5000); // 5000 milliseconds = 5 seconds
+// ============================================================
+// REGISTER HANDLER - UPDATED with new fields
+// ============================================================
 
-            
-        } catch (err) {
-            console.error('❌ Signup error:', err);
-            showNotification(err.message || '❌ Registration failed. Please try again.', 'error');
-        } finally {
-            AppState.isAuthLoading = false;
-            elements.registerSubmit.disabled = false;
-            elements.registerSubmit.textContent = 'Create Account';
+elements.registerSubmit.addEventListener('click', async () => {
+    const name = elements.registerName.value.trim();
+    const email = elements.registerEmail.value.trim();
+    const password = elements.registerPassword.value;
+    
+    // ✅ NEW: Get phone with country code
+    const countryCode = elements.registerCountryCode.value || '+237';
+    const phoneNumber = elements.registerPhone.value.trim();
+    const fullPhone = phoneNumber ? countryCode + phoneNumber.replace(/^0+/, '') : '';
+    
+    // ✅ NEW: Get address and country
+    const address = elements.registerAddress.value.trim();
+    const country = elements.registerCountry.value;
+    
+    let isValid = true;
+    
+    // Validate name
+    if (!name || name.length < 2) {
+        elements.registerName.classList.add('error');
+        elements.registerNameError.classList.add('visible');
+        isValid = false;
+    } else {
+        elements.registerName.classList.remove('error');
+        elements.registerNameError.classList.remove('visible');
+    }
+    
+    // Validate email
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+        elements.registerEmail.classList.add('error');
+        if (elements.registerEmailError) {
+            elements.registerEmailError.textContent = emailValidation.message;
+            elements.registerEmailError.classList.add('visible');
         }
-    });
+        isValid = false;
+    } else {
+        elements.registerEmail.classList.remove('error');
+        if (elements.registerEmailError) elements.registerEmailError.classList.remove('visible');
+    }
+    
+    // Validate password
+    if (!password || password.length < 6) {
+        elements.registerPassword.classList.add('error');
+        if (elements.registerPasswordError) elements.registerPasswordError.classList.add('visible');
+        isValid = false;
+    } else {
+        elements.registerPassword.classList.remove('error');
+        if (elements.registerPasswordError) elements.registerPasswordError.classList.remove('visible');
+    }
+    
+    // ✅ NEW: Validate phone (optional but recommended)
+    if (phoneNumber && phoneNumber.length < 4) {
+        elements.registerPhone.classList.add('error');
+        if (elements.registerPhoneError) elements.registerPhoneError.classList.add('visible');
+        isValid = false;
+    } else {
+        elements.registerPhone.classList.remove('error');
+        if (elements.registerPhoneError) elements.registerPhoneError.classList.remove('visible');
+    }
+    
+    // ✅ NEW: Validate address (optional)
+    if (address && address.length < 3) {
+        elements.registerAddress.classList.add('error');
+        if (elements.registerAddressError) elements.registerAddressError.classList.add('visible');
+        isValid = false;
+    } else {
+        elements.registerAddress.classList.remove('error');
+        if (elements.registerAddressError) elements.registerAddressError.classList.remove('visible');
+    }
+    
+    // ✅ NEW: Validate terms
+    if (!elements.registerTerms.checked) {
+        elements.registerTermsError.classList.add('visible');
+        isValid = false;
+    } else {
+        elements.registerTermsError.classList.remove('visible');
+    }
+    
+    if (!isValid) return;
+    
+    // Rate limit check
+    const rateLimit = checkRateLimit();
+    if (!rateLimit.allowed) {
+        showNotification(rateLimit.message, 'warning');
+        return;
+    }
+    
+    if (AppState.isAuthLoading) return;
+    AppState.isAuthLoading = true;
+    AppState.authAttempts++;
+    AppState.lastAuthAttempt = Date.now();
+    elements.registerSubmit.disabled = true;
+    elements.registerSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+    
+    try {
+        console.log('🔐 Attempting signup for:', email);
+        
+        // ✅ NEW: Pass all fields to signup
+        const user = await signUpCustomer(
+            email, 
+            password, 
+            name, 
+            fullPhone,      // phone with country code
+            address,        // full address
+            country         // country
+        );
+        
+        console.log('✅ Signup successful for:', user.email);
+        AppState.authAttempts = 0;
+        
+        // Save user session
+        AppState.user = user;
+        AppState.isLoggedIn = true;
+        localStorage.setItem('st_customer', JSON.stringify(user));
+        sessionStorage.removeItem('st_customer');
+        
+        // Load cart and wishlist from DB
+        await loadUserData(user.id, true);
+        updateUrlWithUserInfo();
+        updateAuthUI();
+        closeAuthModal();
+        
+        showNotification(`✅ Account created successfully! Welcome ${user.name}!`);
+        
+        setTimeout(() => {
+            window.location.reload();
+        }, 5000);
+        
+    } catch (err) {
+        console.error('❌ Signup error:', err);
+        showNotification(err.message || '❌ Registration failed. Please try again.', 'error');
+    } finally {
+        AppState.isAuthLoading = false;
+        elements.registerSubmit.disabled = false;
+        elements.registerSubmit.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+    }
+});
     
     // ============================================================
     // LOGOUT HANDLER
