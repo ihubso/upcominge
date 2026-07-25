@@ -177,7 +177,7 @@ function renderHeroBanner(products, containerId = 'heroBanner') {
                             ` : ''}
                         </div>
                         <div class="hero-description">${product.description || ''}</div>
-                        <a href="item.html?id=${product.id}" class="hero-btn">
+                        <a href="/item/?id=${product.id}" class="hero-btn">
                             <i class="fas fa-eye"></i> View Details
                         </a>
                     </div>

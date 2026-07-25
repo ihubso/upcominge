@@ -1,26 +1,12 @@
 // api/item.js
 const { createClient } = require('@supabase/supabase-js');
 
-// Log environment variables (will show in Vercel logs)
-console.log('SUPABASE_URL exists:', !!process.env.SUPABASE_URL);
-console.log('SUPABASE_ANON_KEY exists:', !!process.env.SUPABASE_ANON_KEY);
-
-// Supabase configuration with fallback for testing
-const supabaseUrl = process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL_HERE';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY_HERE';
-
-// Only create client if we have valid credentials
-let supabase;
-try {
-  supabase = createClient(supabaseUrl, supabaseKey);
-  console.log('✅ Supabase client created successfully');
-} catch (err) {
-  console.error('❌ Failed to create Supabase client:', err.message);
-}
+// Supabase configuration
+const supabaseUrl = process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 module.exports = async (req, res) => {
-  console.log('🚀 Function called with query:', req.query);
-  
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   
@@ -28,7 +14,6 @@ module.exports = async (req, res) => {
   const { product } = req.query;
   
   if (!product) {
-    console.log('❌ No product ID provided');
     return res.status(400).send(`
       <!DOCTYPE html>
       <html>
@@ -36,20 +21,12 @@ module.exports = async (req, res) => {
         <body style="font-family:sans-serif;padding:40px;text-align:center;">
           <h1>❌ Product ID Required</h1>
           <p>Please provide a product ID: <code>?product=YOUR_ID</code></p>
-          <p>Example: <code>/?product=1780000000511-id511</code></p>
         </body>
       </html>
     `);
   }
 
   try {
-    // Check if Supabase client exists
-    if (!supabase) {
-      throw new Error('Supabase client not initialized. Check your environment variables.');
-    }
-
-    console.log('🔍 Fetching product:', product);
-    
     // Fetch product from Supabase
     const { data: productData, error } = await supabase
       .from('products')
@@ -57,38 +34,20 @@ module.exports = async (req, res) => {
       .eq('id', product)
       .single();
 
-    if (error) {
-      console.error('❌ Supabase error:', error.message);
+    if (error || !productData) {
+      console.error('Product fetch error:', error);
       return res.status(404).send(`
         <!DOCTYPE html>
         <html>
           <head><title>Product Not Found</title></head>
           <body style="font-family:sans-serif;padding:40px;text-align:center;">
             <h1>🔍 Product Not Found</h1>
-            <p>Error: ${error.message}</p>
-            <p>Product ID: ${product}</p>
+            <p>We couldn't find the product you're looking for.</p>
             <a href="/" style="color:#e60012;text-decoration:none;font-weight:bold;">← Back to Store</a>
           </body>
         </html>
       `);
     }
-
-    if (!productData) {
-      console.log('❌ No product found for ID:', product);
-      return res.status(404).send(`
-        <!DOCTYPE html>
-        <html>
-          <head><title>Product Not Found</title></head>
-          <body style="font-family:sans-serif;padding:40px;text-align:center;">
-            <h1>🔍 Product Not Found</h1>
-            <p>No product found with ID: ${product}</p>
-            <a href="/" style="color:#e60012;text-decoration:none;font-weight:bold;">← Back to Store</a>
-          </body>
-        </html>
-      `);
-    }
-
-    console.log('✅ Product found:', productData.name);
 
     // Check for deal
     let dealDiscount = 0;
@@ -100,8 +59,7 @@ module.exports = async (req, res) => {
         .single();
       if (deal) dealDiscount = deal.discount;
     } catch (e) {
-      // No deal found - this is fine
-      console.log('ℹ️ No deal found for product');
+      // No deal found
     }
 
     // Prepare product data
@@ -139,7 +97,7 @@ module.exports = async (req, res) => {
     <meta property="og:title" content="${productName}" />
     <meta property="og:description" content="${productDescription}" />
     <meta property="og:image" content="${imageUrl}" />
-    <meta property="og:url" content="https://upcominge.vercel.app/api/item?product=${product}" />
+    <meta property="og:url" content="https://upcominge.vercel.app/item?product=${product}" />
     <meta property="og:site_name" content="Sucess Technology" />
     <meta property="og:price:amount" content="${discountedPrice.toFixed(2)}" />
     <meta property="og:price:currency" content="${currency}" />
@@ -157,7 +115,7 @@ module.exports = async (req, res) => {
     <!-- ===== STANDARD META ===== -->
     <meta name="description" content="${productDescription}" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://upcominge.vercel.app/api/item?product=${product}" />
+    <link rel="canonical" href="https://upcominge.vercel.app/item?product=${product}" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     
     <style>
@@ -405,7 +363,7 @@ module.exports = async (req, res) => {
         </div>
         
         <div class="redirect-banner">
-            👉 <a href="/item.html?product=${product}">View full product page</a> with cart & reviews
+            👉 <a href="//item/?product=${product}">View full product page</a> with cart & reviews
         </div>
     </div>
 </body>
@@ -417,20 +375,14 @@ module.exports = async (req, res) => {
     res.status(200).send(html);
 
   } catch (error) {
-    console.error('❌ Server error:', error.message);
-    console.error('Stack trace:', error.stack);
-    
+    console.error('Server error:', error);
     res.status(500).send(`
       <!DOCTYPE html>
       <html>
         <head><title>Error</title></head>
         <body style="font-family:sans-serif;padding:40px;text-align:center;">
           <h1>⚠️ Something went wrong</h1>
-          <p style="color:#666;">Error: ${error.message}</p>
-          <p style="font-size:14px;color:#999;margin-top:20px;">
-            Check Vercel logs for more details.
-          </p>
-          <a href="/" style="color:#e60012;text-decoration:none;font-weight:bold;">← Back to Store</a>
+          <p>Please try again later.</p>
         </body>
       </html>
     `);

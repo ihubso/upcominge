@@ -124,7 +124,8 @@ function renderProductCards(products, container) {
         const isInWishlist = window.STHeader?.AppState?.wishlist?.includes(product.id) || false;
 
         html += `
-            <div class="rp-card" data-product-id="${product.id}">
+            <div class="rp-card" data-product-id="${product.id}" >
+           <dive onclick="window.location.href='/item/?product=${product.id}'">
                 <div class="rp-card-image">
                     <img src="${image}" alt="${product.name || 'Product'}" loading="lazy" 
                          onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'">
@@ -137,7 +138,7 @@ function renderProductCards(products, container) {
                         <i class="fas fa-heart"></i>
                     </button>
                 </div>
-                <div class="rp-card-body" onclick="window.location.href='item.html?product=${product.id}'">
+                <div class="rp-card-body" onclick="window.location.href='/item/?product=${product.id}'">
                     <h4 class="rp-card-title">${product.name || 'Unknown Product'}</h4>
                     ${product.brand ? `<p class="rp-card-brand">${product.brand}</p>` : ''}
                     <div class="rp-card-price">
@@ -152,11 +153,12 @@ function renderProductCards(products, container) {
                             <span class="rp-reviews">(${reviewCount || 0})</span>
                         </div>
                     ` : ''}
+                    </div>
                     <div class="rp-card-actions">
                         <button class="rp-btn-cart" onclick="event.stopPropagation(); addRandomToCart('${product.id}')">
                             <i class="fas fa-shopping-bag"></i> Add to Cart
                         </button>
-                        <a href="item.html?product=${product.id}" class="rp-btn-view" onclick="event.stopPropagation();">
+                        <a href="/item/?product=${product.id}" class="rp-btn-view" onclick="event.stopPropagation();">
                             <i class="fas fa-eye"></i>
                         </a>
                     </div>

@@ -126,7 +126,7 @@ function renderHotSkeletonLoader(containerId = 'hotProducts') {
     container.innerHTML = `
         <div class="hot-products-header">
             <h2><i class="fas fa-fire"></i> Hot Products</h2>
-            <a href="Search.html?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
+            <a href="/product/?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
         </div>
         <div class="hot-products-grid skeleton-grid">
             ${skeletonCards}
@@ -181,7 +181,7 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
         container.innerHTML = `
             <div class="hot-products-header">
                 <h2><i class="fas fa-fire"></i> Hot Products</h2>
-                <a href="Search.html?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
+                <a href="/product/?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
             </div>
             <div style="text-align:center;padding:40px 20px;background:#f8fafc;border-radius:16px;">
                 <p style="color:#94A3B8;font-size:16px;">No hot products available</p>
@@ -198,7 +198,7 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
     let html = `
         <div class="hot-products-header">
             <h2><i class="fas fa-fire"></i> Hot Products</h2>
-            <a href="Search.html?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
+            <a href="/product/?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
         </div>
         <div class="hot-products-grid">
     `;
@@ -227,6 +227,7 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
 
         html += `
             <div class="hot-product-card" data-product-id="${product.id}">
+             <div onclick="window.location.href='/item/?id=${product.id}'">
                 <div class="hot-product-image">
                     <img src="${image}" alt="${product.name || 'Product'}" loading="lazy" onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'">
                     ${discountPercent > 0 ? `<span class="hot-product-discount">-${discountPercent}%</span>` : ''}
@@ -234,8 +235,8 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
                         <i class="fas fa-heart"></i>
                     </button>
                 </div>
-                <div class="hot-product-info" a href="item.html?id=${product.id}" >
-                    <a href="item.html?id=${product.id}" class="hot-product-name">
+                <div class="hot-product-info" a href="/item/?id=${product.id}" >
+                    <a href="/item/?id=${product.id}" class="hot-product-name">
                         ${product.name || 'Unknown Product'}
                     </a>
                     ${product.brand ? `<span class="hot-product-brand">${product.brand}</span>` : ''}
@@ -251,11 +252,12 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
                             <span class="hot-reviews">(${reviewCount || 0})</span>
                         </div>
                     ` : ''}
+                    </div>
                     <div class="hot-product-actions">
                         <button class="hot-btn-cart" onclick="addToCart('${product.id}')">
                             <i class="fas fa-shopping-bag"></i> Add to Cart
                         </button>
-                        <a href="item.html?id=${product.id}" class="hot-btn-view">
+                        <a href="/item/?id=${product.id}" class="hot-btn-view">
                             <i class="fas fa-eye"></i>
                         </a>
                     </div>

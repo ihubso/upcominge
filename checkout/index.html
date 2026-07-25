@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout · Sucess Technology</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../global-header.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#6C3CE1',
+                        primaryHover: '#5A2FC4',
+                        dark: '#0F172A',
+                        'dark-secondary': '#1E293B'
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ============================================
+           CHECKOUT STYLES
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #0F172A;
+            padding-top: 80px;
+            padding-bottom: 40px;
+        }
+
+        .st-checkout-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ----- Page Header ----- */
+        .st-checkout-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 0 20px;
+            border-bottom: 2px solid #E2E8F0;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .st-checkout-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .st-checkout-header h1 i {
+            color: #6C3CE1;
+        }
+
+        .st-checkout-header .st-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border: 2px solid #E2E8F0;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #475569;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .st-checkout-header .st-back-btn:hover {
+            background: #f8fafc;
+            border-color: #94A3B8;
+        }
+
+        /* ----- Checkout Grid ----- */
+        .st-checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 32px;
+        }
+
+        /* ----- Checkout Form ----- */
+        .st-checkout-form {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .st-checkout-form .st-section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .st-checkout-form .st-section-title i {
+            color: #6C3CE1;
+        }
+
+        .st-form-group {
+            margin-bottom: 16px;
+        }
+
+        .st-form-group .st-form-label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            color: #1E293B;
+            margin-bottom: 4px;
+        }
+
+        .st-form-group .st-form-label .st-required {
+            color: #EF4444;
+        }
+
+        .st-form-group .st-form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            outline: none;
+            font-family: inherit;
+            background: white;
+            color: #0F172A;
+        }
+
+        .st-form-group .st-form-input:focus {
+            border-color: #6C3CE1;
+            box-shadow: 0 0 0 4px rgba(108, 60, 225, 0.1);
+        }
+
+        .st-form-group .st-form-input.error {
+            border-color: #EF4444;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+        }
+
+        .st-form-group .st-form-error {
+            color: #EF4444;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .st-form-group .st-form-error.visible {
+            display: block;
+        }
+
+        .st-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* ----- Order Summary (Sidebar) ----- */
+        .st-order-summary {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .st-order-summary h2 {
+            font-size: 18px;
+            font-weight: 700;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #E2E8F0;
+            margin-bottom: 16px;
+        }
+
+        .st-order-summary .st-cart-item {
+            display: flex;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .st-order-summary .st-cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .st-order-summary .st-cart-item .st-item-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #f1f5f9;
+        }
+
+        .st-order-summary .st-cart-item .st-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .st-order-summary .st-cart-item .st-item-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .st-order-summary .st-cart-item .st-item-name {
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .st-order-summary .st-cart-item .st-item-meta {
+            font-size: 12px;
+            color: #94A3B8;
+        }
+
+        .st-order-summary .st-cart-item .st-item-price {
+            font-weight: 700;
+            font-size: 14px;
+            color: #0F172A;
+        }
+
+        .st-order-summary .st-summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .st-order-summary .st-summary-row.st-total {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0F172A;
+            padding-top: 12px;
+            border-top: 2px solid #E2E8F0;
+            margin-top: 8px;
+        }
+
+        .st-order-summary .st-summary-row.st-total .st-value {
+            color: #6C3CE1;
+            font-size: 20px;
+        }
+
+        .st-order-summary .st-empty-cart {
+            text-align: center;
+            padding: 20px 0;
+            color: #94A3B8;
+        }
+
+        .st-order-summary .st-empty-cart .st-empty-icon {
+            font-size: 40px;
+            color: #E2E8F0;
+            margin-bottom: 8px;
+        }
+
+        /* ----- WhatsApp Button ----- */
+        .st-whatsapp-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px;
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            text-decoration: none;
+            margin-top: 12px;
+        }
+
+        .st-whatsapp-btn:hover {
+            background: #1DA851;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+        }
+
+        .st-whatsapp-btn i {
+            font-size: 20px;
+        }
+
+        /* ----- Submit Button ----- */
+        .st-btn-checkout {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6C3CE1, #5A2FC4);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            box-shadow: 0 4px 12px rgba(108, 60, 225, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .st-btn-checkout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(108, 60, 225, 0.4);
+        }
+
+        .st-btn-checkout:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ----- Success State ----- */
+        .st-success-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .st-success-state .st-success-icon {
+            font-size: 64px;
+            color: #10B981;
+            margin-bottom: 16px;
+        }
+
+        .st-success-state h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .st-success-state p {
+            color: #64748B;
+            margin-bottom: 8px;
+        }
+
+        .st-success-state .st-order-id {
+            display: inline-block;
+            padding: 4px 16px;
+            background: #f1f5f9;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #0F172A;
+            margin-bottom: 16px;
+        }
+
+        .st-success-state .st-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .st-success-state .st-actions a {
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .st-success-state .st-actions .st-btn-continue {
+            background: #6C3CE1;
+            color: white;
+        }
+
+        .st-success-state .st-actions .st-btn-continue:hover {
+            background: #5A2FC4;
+        }
+
+        .st-success-state .st-actions .st-btn-orders {
+            border: 2px solid #E2E8F0;
+            color: #475569;
+        }
+
+        .st-success-state .st-actions .st-btn-orders:hover {
+            background: #f8fafc;
+            border-color: #94A3B8;
+        }
+
+        /* ----- Loading ----- */
+        .st-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .st-loading .st-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #E2E8F0;
+            border-top-color: #6C3CE1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ----- Toast ----- */
+        .st-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 30000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+            text-align: center;
+            animation: toastSlideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .st-toast.success { background: #10B981; }
+        .st-toast.error { background: #EF4444; }
+        .st-toast.info { background: #3B82F6; }
+        .st-toast.warning { background: #F59E0B; }
+
+        @keyframes toastSlideUp {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        /* ----- Responsive ----- */
+        @media (max-width: 1024px) {
+            .st-checkout-grid {
+                grid-template-columns: 1fr 320px;
+                gap: 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 68px;
+                padding-bottom: 80px;
+            }
+
+            .st-checkout-container {
+                padding: 0 16px;
+            }
+
+            .st-checkout-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .st-checkout-form {
+                padding: 20px;
+            }
+
+            .st-checkout-header h1 {
+                font-size: 22px;
+            }
+
+            .st-form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .st-order-summary {
+                position: static;
+            }
+
+            .st-checkout-header .st-back-btn {
+                font-size: 12px;
+                padding: 8px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .st-checkout-form {
+                padding: 16px;
+            }
+
+            .st-checkout-header h1 {
+                font-size: 18px;
+            }
+
+            .st-btn-checkout,
+            .st-whatsapp-btn {
+                font-size: 14px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         HEADER WILL BE INJECTED HERE
+         ============================================ -->
+
+    <!-- ============================================
+         CHECKOUT CONTENT
+         ============================================ -->
+    <main class="st-checkout-container" id="stCheckoutPage">
+        <!-- Page Header -->
+        <div class="st-checkout-header">
+            <h1><i class="fas fa-credit-card"></i> Checkout</h1>
+            <a href="/Cart" class="st-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Cart
+            </a>
+        </div>
+
+        <!-- Checkout Grid -->
+        <div class="st-checkout-grid">
+            <!-- Checkout Form -->
+            <div class="st-checkout-form" id="stCheckoutForm">
+                <!-- Success State (hidden initially) -->
+                <div id="stSuccessState" style="display:none;">
+                    <div class="st-success-state">
+                        <div class="st-success-icon"><i class="fas fa-check-circle"></i></div>
+                        <h2>Order Placed! 🎉</h2>
+                        <p>Thank you for your order. We'll confirm it shortly.</p>
+                        <div class="st-order-id" id="stOrderIdDisplay">Order #ORD-XXXXX</div>
+                        <p style="font-size:14px;color:#94A3B8;">
+                            A confirmation has been sent to your email.
+                        </p>
+                        <div class="st-actions" style="margin-top:16px;">
+                            <a href="/product/" class="st-btn-continue">
+                                <i class="fas fa-home"></i> Continue Shopping
+                            </a>
+                            <a href="/orders/" class="st-btn-orders">
+                                <i class="fas fa-shopping-bag"></i> View Orders
+                            </a>
+                        </div>
+                        <!-- WhatsApp Contact Button -->
+                        <a href="#" id="stWhatsAppSuccess" class="st-whatsapp-btn" style="margin-top:16px;max-width:300px;margin-left:auto;margin-right:auto;">
+                            <i class="fab fa-whatsapp"></i> Contact Seller on WhatsApp
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Checkout Form (visible by default) -->
+                <div id="stCheckoutFormContent">
+                    <div class="st-section-title">
+                        <i class="fas fa-user"></i> Shipping Information
+                    </div>
+
+                    <form id="stCheckoutFormSubmit" autocomplete="off">
+                        <div class="st-form-group">
+                            <label class="st-form-label">
+                                Full Name <span class="st-required">*</span>
+                            </label>
+                            <input type="text" class="st-form-input" id="stCustomerName" 
+                                   placeholder="John Doe" required />
+                            <div class="st-form-error" id="stCustomerNameError">Please enter your full name</div>
+                        </div>
+
+                        <div class="st-form-group">
+                            <label class="st-form-label">
+                                Email Address <span class="st-required">*</span>
+                            </label>
+                            <input type="email" class="st-form-input" id="stCustomerEmail" 
+                                   placeholder="you@example.com" required />
+                            <div class="st-form-error" id="stCustomerEmailError">Please enter a valid email</div>
+                        </div>
+
+                        <div class="st-form-group">
+                            <label class="st-form-label">
+                                Phone Number <span class="st-required">*</span>
+                            </label>
+                            <input type="tel" class="st-form-input" id="stCustomerPhone" 
+                                   placeholder="+237 6XX XXX XXX" required />
+                            <div class="st-form-error" id="stCustomerPhoneError">Please enter your phone number</div>
+                            <div class="st-form-help" style="font-size:12px;color:#94A3B8;margin-top:4px;">
+                                We'll use this to contact you about your order
+                            </div>
+                        </div>
+
+                        <div class="st-form-group">
+                            <label class="st-form-label">
+                                Delivery Address <span class="st-required">*</span>
+                            </label>
+                            <input type="text" class="st-form-input" id="stCustomerAddress" 
+                                   placeholder="123 Main St, City, Country" required />
+                            <div class="st-form-error" id="stCustomerAddressError">Please enter your delivery address</div>
+                        </div>
+
+                        <!-- ============================================
+                             ADDED: PAYMENT METHOD SELECTION
+                             ============================================ -->
+                        <div class="st-form-group">
+                            <label class="st-form-label">
+                                Payment Method <span class="st-required">*</span>
+                            </label>
+                            <select class="st-form-input" id="stPaymentMethod" required>
+                                <option value="">Select a payment method</option>
+                                <option value="mobile_money">Mobile Money (MTN, Orange, Moov)</option>
+                                <option value="cash_on_delivery">Cash on Delivery</option>
+                                <option value="credit_card">Credit Card (Stripe)</option>
+                                <option value="paypal">PayPal</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                            </select>
+                            <div class="st-form-error" id="stPaymentMethodError">Please select a payment method</div>
+                        </div>
+
+                        <!-- ============================================
+                             ADDED: TERMS & CONDITIONS CHECKBOX
+                             ============================================ -->
+                        <div class="st-form-group" style="margin-top:8px;">
+                            <label style="display:flex;align-items:flex-start;gap:10px;font-weight:500;font-size:14px;color:#1E293B;cursor:pointer;">
+                                <input type="checkbox" id="stTermsCheckbox" required style="margin-top:3px;width:18px;height:18px;accent-color:#6C3CE1;" />
+                                <span>I agree to the <a href="#" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Terms of Service</a> and <a href="#" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Privacy Policy</a>.</span>
+                            </label>
+                            <div class="st-form-error" id="stTermsError">You must agree to the terms to place an order</div>
+                        </div>
+
+                        <div class="st-form-group">
+                            <label class="st-form-label">Order Notes (Optional)</label>
+                            <textarea class="st-form-input" id="stOrderNotes" 
+                                      rows="3" placeholder="Special instructions for delivery..."></textarea>
+                        </div>
+
+                        <div style="margin-top:8px;">
+                            <button type="submit" class="st-btn-checkout" id="stPlaceOrderBtn">
+                                <i class="fas fa-check"></i> Place Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="st-order-summary" id="stOrderSummary">
+                <h2><i class="fas fa-shopping-bag"></i> Order Summary</h2>
+                <div id="stOrderItems">
+                    <!-- Will be populated by JavaScript -->
+                    <div class="st-loading" id="stSummaryLoading">
+                        <div class="st-spinner"></div>
+                        <span style="color:#94A3B8;font-size:14px;">Loading cart...</span>
+                    </div>
+                    <div id="stOrderItemsList"></div>
+                </div>
+                <div id="stOrderTotals" style="display:none;">
+                    <div class="st-summary-row">
+                        <span>Subtotal</span>
+                        <span id="stSubtotal">FCFA 0.00</span>
+                    </div>
+                    <div class="st-summary-row">
+                        <span>Delivery Fee</span>
+                        <span id="stDeliveryFee">FCFA 0.00</span>
+                    </div>
+                    <div class="st-summary-row st-total">
+                        <span>Total</span>
+                        <span class="st-value" id="stTotal">FCFA 0.00</span>
+                    </div>
+
+                    <!-- WhatsApp Contact Button -->
+                    <a href="#" id="stWhatsAppBtn" class="st-whatsapp-btn">
+                        <i class="fab fa-whatsapp"></i> Contact Seller on WhatsApp
+                    </a>
+                </div>
+                <div id="stEmptyCart" style="display:none;">
+                    <div class="st-empty-cart">
+                        <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
+                        <p>Your cart is empty</p>
+                        <a href="/product/" style="display:inline-block;margin-top:12px;padding:10px 20px;background:#6C3CE1;color:white;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">
+                            Browse Products
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ============================================
+         SCRIPTS
+         ============================================ -->
+    <script>
+        // ============================================================
+        //  CHECKOUT - Standalone Page
+        // ============================================================
+
+        // --- State ---
+        let cartItems = [];
+        let orderTotal = 0;
+        let isSubmitting = false;
+        let currentOrderId = null;
+        let businessInfo = null;
+
+        const elements = {
+            customerName: document.getElementById('stCustomerName'),
+            customerEmail: document.getElementById('stCustomerEmail'),
+            customerPhone: document.getElementById('stCustomerPhone'),
+            customerAddress: document.getElementById('stCustomerAddress'),
+            orderNotes: document.getElementById('stOrderNotes'),
+            paymentMethod: document.getElementById('stPaymentMethod'),
+            termsCheckbox: document.getElementById('stTermsCheckbox'),
+            placeOrderBtn: document.getElementById('stPlaceOrderBtn'),
+            checkoutForm: document.getElementById('stCheckoutFormSubmit'),
+            checkoutFormContent: document.getElementById('stCheckoutFormContent'),
+            successState: document.getElementById('stSuccessState'),
+            orderIdDisplay: document.getElementById('stOrderIdDisplay'),
+            orderItemsList: document.getElementById('stOrderItemsList'),
+            orderTotals: document.getElementById('stOrderTotals'),
+            emptyCart: document.getElementById('stEmptyCart'),
+            summaryLoading: document.getElementById('stSummaryLoading'),
+            subtotal: document.getElementById('stSubtotal'),
+            deliveryFee: document.getElementById('stDeliveryFee'),
+            total: document.getElementById('stTotal'),
+            whatsappBtn: document.getElementById('stWhatsAppBtn'),
+            whatsappSuccess: document.getElementById('stWhatsAppSuccess'),
+            customerNameError: document.getElementById('stCustomerNameError'),
+            customerEmailError: document.getElementById('stCustomerEmailError'),
+            customerPhoneError: document.getElementById('stCustomerPhoneError'),
+            customerAddressError: document.getElementById('stCustomerAddressError'),
+            paymentMethodError: document.getElementById('stPaymentMethodError'),
+            termsError: document.getElementById('stTermsError')
+        };
+
+        // ============================================================
+        //  HELPERS
+        // ============================================================
+
+        function showToast(message, type = 'success') {
+            const existing = document.querySelector('.st-toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `st-toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(-20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+ 
+
+        function formatPhoneNumber(phone) {
+            let cleaned = phone.replace(/\D/g, '');
+            if (cleaned.startsWith('0')) cleaned = cleaned.substring(1);
+            if (!cleaned.startsWith('237') && cleaned.length > 0) cleaned = '237' + cleaned;
+            return cleaned;
+        }
+
+async function getBusinessInfo() {
+    if (businessInfo) return businessInfo;
+    
+    try {
+        const client = getSupabaseClient();
+        if (!client) {
+            console.warn('⚠️ Supabase client not available, using fallback');
+            return getFallbackBusinessInfo();
+        }
+
+        const { data, error } = await client
+            .from('business_info')
+            .select('*')
+            .limit(1)
+            .maybeSingle();
+
+        if (error) {
+            console.error('❌ Error fetching business info:', error);
+            return getFallbackBusinessInfo();
+        }
+
+        if (data) {
+            businessInfo = data;
+            console.log('✅ Business info loaded:', businessInfo.shop_name);
+            return businessInfo;
+        }
+
+        return getFallbackBusinessInfo();
+    } catch (err) {
+        console.error('❌ Error fetching business info:', err);
+        return getFallbackBusinessInfo();
+    }
+}
+
+function getFallbackBusinessInfo() {
+    return {
+        shop_name: 'Success Technology',
+        email: 'austinlebechi02@gmail.com',
+        phone: '+2250172934545',
+        address: 'Angre djibi terminus 82/81',
+        facebook: '',
+        instagram: '',
+        tiktok: ''
+    };
+}
+
+        // ============================================================
+        //  LOAD CART
+        // ============================================================
+
+        function loadCart() {
+            try {
+                const cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
+                cartItems = cart;
+                renderOrderSummary();
+            } catch (e) {
+                cartItems = [];
+                renderOrderSummary();
+            }
+        }
+
+        // ============================================================
+        //  RENDER ORDER SUMMARY
+        // ============================================================
+
+        function renderOrderSummary() {
+            const loading = elements.summaryLoading;
+            const list = elements.orderItemsList;
+            const totals = elements.orderTotals;
+            const empty = elements.emptyCart;
+
+            loading.style.display = 'none';
+
+            if (!cartItems || cartItems.length === 0) {
+                list.innerHTML = '';
+                totals.style.display = 'none';
+                empty.style.display = 'block';
+                elements.whatsappBtn.style.display = 'none';
+                return;
+            }
+
+            empty.style.display = 'none';
+            totals.style.display = 'block';
+
+            list.innerHTML = cartItems.map(item => {
+                const price = item.price || 0;
+                const qty = item.qty || 1;
+                const total = price * qty;
+                const image = item.image || 'https://placehold.co/50x50/6C3CE1/FFFFFF?text=Product';
+                const variantText = item.variants && Object.keys(item.variants).length > 0 ?
+                    Object.entries(item.variants).map(([k, v]) => `${k}: ${v}`).join(', ') :
+                    '';
+
+                return `
+                    <div class="st-cart-item">
+                        <div class="st-item-image">
+                            <img src="${image}" alt="${item.name}" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#f1f5f9;color:#94A3B8;font-size:16px;\\'><i class=\\'fas fa-box\\'></i></div>'">
+                        </div>
+                        <div class="st-item-details">
+                            <div class="st-item-name">${item.name || 'Unknown Product'}</div>
+                            ${variantText ? `<div class="st-item-meta">${variantText}</div>` : ''}
+                            <div class="st-item-meta">Qty: ${qty}</div>
+                        </div>
+                        <div class="st-item-price">FCFA ${total.toFixed(2)}</div>
+                    </div>
+                `;
+            }).join('');
+
+            const subtotal = cartItems.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 1), 0);
+            const deliveryFee = subtotal >= 50000 ? 0 : 2000;
+            const total = subtotal + deliveryFee;
+            orderTotal = total;
+
+            elements.subtotal.textContent = `FCFA ${subtotal.toFixed(2)}`;
+            elements.deliveryFee.textContent = deliveryFee === 0 ? 'Free' : `FCFA ${deliveryFee.toFixed(2)}`;
+            elements.total.textContent = `FCFA ${total.toFixed(2)}`;
+
+            elements.whatsappBtn.style.display = 'flex';
+            updateWhatsAppLink();
+        }
+
+        // ============================================================
+        //  UPDATE WHATSAPP LINK
+        // ============================================================
+
+async function updateWhatsAppLink() {
+    const business = await getBusinessInfo();
+    const phone = business?.phone || '+2250172934545';
+    const shopName = business?.shop_name || 'Success Technology';
+    
+    const name = elements.customerName.value.trim() || 'Customer';
+    const items = cartItems.map(item => 
+        `${item.name || 'Product'} (${item.qty || 1}x)`
+    ).join('\n• ');
+    const total = orderTotal || 0;
+    
+    const message = `🛒 *New Order from ${shopName}*%0A%0A` +
+        `👤 *Customer:* ${name}%0A` +
+        `📧 *Email:* ${elements.customerEmail.value.trim() || 'N/A'}%0A` +
+        `📱 *Phone:* ${elements.customerPhone.value.trim() || 'N/A'}%0A` +
+        `📍 *Address:* ${elements.customerAddress.value.trim() || 'N/A'}%0A` +
+        `💳 *Payment:* ${elements.paymentMethod.options[elements.paymentMethod.selectedIndex]?.text || 'N/A'}%0A` +
+        `📝 *Notes:* ${elements.orderNotes.value.trim() || 'None'}%0A%0A` +
+        `📦 *Items:*%0A• ${items}%0A%0A` +
+        `💰 *Total:* FCFA ${total.toFixed(2)}`;
+
+    // Clean phone number for WhatsApp
+    const cleanPhone = phone.replace(/\D/g, '');
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    
+    elements.whatsappBtn.href = url;
+    elements.whatsappSuccess.href = url;
+}
+
+        // ============================================================
+        //  PLACE ORDER
+        // ============================================================
+
+async function placeOrder(e) {
+    e.preventDefault();
+
+    if (isSubmitting) return;
+    if (!cartItems || cartItems.length === 0) {
+        showToast('❌ Your cart is empty', 'error');
+        return;
+    }
+
+    let isValid = true;
+
+    // Validate name
+    const name = elements.customerName.value.trim();
+    if (!name) {
+        elements.customerName.classList.add('error');
+        elements.customerNameError.classList.add('visible');
+        isValid = false;
+    } else {
+        elements.customerName.classList.remove('error');
+        elements.customerNameError.classList.remove('visible');
+    }
+
+    // Validate email
+    const email = elements.customerEmail.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+        elements.customerEmail.classList.add('error');
+        elements.customerEmailError.classList.add('visible');
+        isValid = false;
+    } else {
+        elements.customerEmail.classList.remove('error');
+        elements.customerEmailError.classList.remove('visible');
+    }
+
+    // Validate phone
+    const phoneRaw = elements.customerPhone.value.trim();
+    if (!phoneRaw || phoneRaw.length < 6) {
+        elements.customerPhone.classList.add('error');
+        elements.customerPhoneError.classList.add('visible');
+        isValid = false;
+    } else {
+        elements.customerPhone.classList.remove('error');
+        elements.customerPhoneError.classList.remove('visible');
+    }
+
+    // Validate address
+    const address = elements.customerAddress.value.trim();
+    if (!address) {
+        elements.customerAddress.classList.add('error');
+        elements.customerAddressError.classList.add('visible');
+        isValid = false;
+    } else {
+        elements.customerAddress.classList.remove('error');
+        elements.customerAddressError.classList.remove('visible');
+    }
+
+    // Validate payment method
+    const paymentMethod = elements.paymentMethod.value;
+    if (!paymentMethod) {
+        elements.paymentMethod.classList.add('error');
+        elements.paymentMethodError.classList.add('visible');
+        isValid = false;
+    } else {
+        elements.paymentMethod.classList.remove('error');
+        elements.paymentMethodError.classList.remove('visible');
+    }
+
+    // Validate terms
+    if (!elements.termsCheckbox.checked) {
+        elements.termsError.classList.add('visible');
+        isValid = false;
+    } else {
+        elements.termsError.classList.remove('visible');
+    }
+
+    if (!isValid) return;
+
+    const formattedPhone = formatPhoneNumber(phoneRaw);
+    
+    // ✅ FIXED: Remove duplicate await
+    const user = await getCurrentUser();
+    const customerId = user?.id || window.getCurrentCustomerId?.() || null;
+
+    if (!customerId) {
+        showToast('⚠️ Please login to place an order', 'warning');
+        if (window.STHeader && window.STHeader.openLoginModal) {
+            window.STHeader.openLoginModal();
+        }
+        return;
+    }
+
+    const orderId = 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+
+    const orderItems = cartItems.map(item => ({
+        id: item.product_id || item.id || 'unknown',
+        name: item.name || 'Unknown Product',
+        price: parseFloat(item.price) || 0,
+        qty: parseInt(item.qty) || 1,
+        variants: item.variants || {}
+    }));
+
+    const orderData = {
+        id: orderId,
+        customer_name: name,
+        phone: formattedPhone || phoneRaw,
+        address: address,
+        email: email || 'no-email@provided.com',
+        items: orderItems,
+        total: parseFloat(orderTotal) || 0,
+        status: 'pending',
+        payment_method: paymentMethod,
+        notes: elements.orderNotes.value.trim() || '',
+        customer_id: customerId,
+        created_at: new Date().toISOString()
+    };
+
+    console.log('📦 Order data being sent:', JSON.stringify(orderData, null, 2));
+
+    isSubmitting = true;
+    elements.placeOrderBtn.disabled = true;
+    elements.placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing Order...';
+
+    try {
+        const client = getSupabaseClient();
+        if (!client) throw new Error('Supabase client not available');
+
+        const { data, error } = await client
+            .from('orders')
+            .insert([orderData])
+            .select();
+
+        if (error) {
+            console.error('❌ Supabase error details:', error);
+            if (error.message && error.message.includes('email')) {
+                console.log('🔄 Retrying with default email...');
+                orderData.email = 'customer@example.com';
+                const { data: retryData, error: retryError } = await client
+                    .from('orders')
+                    .insert([orderData])
+                    .select();
+                if (retryError) throw retryError;
+            } else {
+                throw error;
+            }
+        }
+
+        console.log('✅ Order saved to Supabase:', orderId);
+
+        // Clear cart
+        localStorage.removeItem('st_cart');
+        sessionStorage.removeItem('st_cart');
+        if (window.STHeader && window.STHeader.AppState) {
+            window.STHeader.AppState.cart = [];
+            if (window.STHeader.updateCounts) window.STHeader.updateCounts();
+        }
+
+        try {
+            const { error: deleteError } = await client
+                .from('cart')
+                .delete()
+                .eq('customer_id', customerId);
+            if (deleteError) console.error('❌ Error clearing Supabase cart:', deleteError);
+            else console.log('✅ Supabase cart cleared successfully.');
+        } catch (cartErr) {
+            console.warn('⚠️ Could not clear Supabase cart:', cartErr.message);
+        }
+
+        try {
+            const localOrders = JSON.parse(localStorage.getItem('shop_orders_v1') || '[]');
+            localOrders.unshift(orderData);
+            localStorage.setItem('shop_orders_v1', JSON.stringify(localOrders));
+        } catch (localErr) {
+            console.warn('Could not save to localStorage:', localErr);
+        }
+
+        // ✅ FIXED: Get business info for WhatsApp
+        const business = await getBusinessInfo();
+        const shopPhone = business?.phone || '+2250172934545';
+        const shopName = business?.shop_name || 'Success Technology';
+
+        elements.checkoutFormContent.style.display = 'none';
+        elements.successState.style.display = 'block';
+        elements.orderIdDisplay.textContent = `Order #${orderId}`;
+
+        // ✅ FIXED: Use business info in WhatsApp message
+        const orderMessage = `🛒 *Order #${orderId} from ${shopName}*%0A%0A` +
+            `👤 *Customer:* ${name}%0A` +
+            `📧 *Email:* ${email}%0A` +
+            `📱 *Phone:* ${formattedPhone || phoneRaw}%0A` +
+            `📍 *Address:* ${address}%0A` +
+            `💳 *Payment:* ${elements.paymentMethod.options[elements.paymentMethod.selectedIndex]?.text || 'N/A'}%0A` +
+            `📝 *Notes:* ${elements.orderNotes.value.trim() || 'None'}%0A%0A` +
+            `📦 *Items:*%0A• ${cartItems.map(item => 
+                `${item.name || 'Product'} (${item.qty || 1}x) - FCFA ${((item.price || 0) * (item.qty || 1)).toFixed(2)}`
+            ).join('%0A• ')}%0A%0A` +
+            `💰 *Total:* FCFA ${orderTotal.toFixed(2)}`;
+
+        // ✅ FIXED: Use business phone for WhatsApp
+        const cleanPhone = shopPhone.replace(/\D/g, '');
+        const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(orderMessage)}`;
+        elements.whatsappSuccess.href = waUrl;
+
+        cartItems = [];
+        orderTotal = 0;
+
+        showToast('✅ Order placed successfully! 🎉');
+
+    } catch (err) {
+        console.error('❌ Error placing order:', err);
+        let errorMessage = 'Failed to place order. Please try again.';
+        if (err.message) errorMessage = err.message;
+        showToast('❌ ' + errorMessage, 'error');
+        
+        isSubmitting = false;
+        elements.placeOrderBtn.disabled = false;
+        elements.placeOrderBtn.innerHTML = '<i class="fas fa-check"></i> Place Order';
+    }
+}
+// ============================================================
+//  AUTO-FILL USER DATA (Improved)
+// ============================================================
+
+async function autofillUserData() {
+    try {
+        // Wait a bit for the header to initialize
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Get user from the header system
+        let user = null;
+        
+        // Try to get user from STHeader first
+        if (window.STHeader?.AppState?.isLoggedIn && window.STHeader?.AppState?.user) {
+            user = window.STHeader.AppState.user;
+        } 
+        
+        // If not found, try the await getCurrentUser function
+        if (!user || !user.id) {
+            user = await await getCurrentUser();
+        }
+        
+        // If still not found, check localStorage directly
+        if (!user || !user.id) {
+            const stored = localStorage.getItem('st_customer') || sessionStorage.getItem('st_customer');
+            if (stored) {
+                try {
+                    user = JSON.parse(stored);
+                } catch (e) {
+                    console.warn('Could not parse stored user data');
+                }
+            }
+        }
+
+        if (user) {
+            console.log('✅ Autofill: User data found', user);
+            
+            // Populate form fields
+            if (user.name) {
+                elements.customerName.value = user.name;
+                console.log('📝 Filled name:', user.name);
+            }
+            
+            if (user.email) {
+                elements.customerEmail.value = user.email;
+                console.log('📝 Filled email:', user.email);
+            }
+            
+            if (user.phone) {
+                elements.customerPhone.value = user.phone;
+                console.log('📝 Filled phone:', user.phone);
+            }
+            
+            if (user.address) {
+                elements.customerAddress.value = user.address;
+                console.log('📝 Filled address:', user.address);
+            }
+        } else {
+            console.log('ℹ️ No user data available for autofill');
+        }
+    } catch (err) {
+        console.warn('⚠️ Autofill error:', err.message);
+    }
+}
+
+        // ============================================================
+        //  INITIALIZE
+        // ============================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCart();
+            autofillUserData();
+
+            setTimeout(() => {
+                autofillUserData();
+            }, 900);
+
+            // Update WhatsApp link on form changes
+            elements.customerName.addEventListener('input', updateWhatsAppLink);
+            elements.customerEmail.addEventListener('input', updateWhatsAppLink);
+            elements.customerPhone.addEventListener('input', updateWhatsAppLink);
+            elements.customerAddress.addEventListener('input', updateWhatsAppLink);
+            elements.paymentMethod.addEventListener('change', updateWhatsAppLink);
+            elements.orderNotes.addEventListener('input', updateWhatsAppLink);
+
+            elements.checkoutForm.addEventListener('submit', placeOrder);
+
+            // Real-time validation clearing
+            elements.customerName.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.classList.remove('error');
+                    elements.customerNameError.classList.remove('visible');
+                }
+            });
+
+            elements.customerEmail.addEventListener('input', function() {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (emailRegex.test(this.value.trim())) {
+                    this.classList.remove('error');
+                    elements.customerEmailError.classList.remove('visible');
+                }
+            });
+
+            elements.customerPhone.addEventListener('input', function() {
+                if (this.value.trim().length >= 6) {
+                    this.classList.remove('error');
+                    elements.customerPhoneError.classList.remove('visible');
+                }
+            });
+
+            elements.customerAddress.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.classList.remove('error');
+                    elements.customerAddressError.classList.remove('visible');
+                }
+            });
+
+            elements.paymentMethod.addEventListener('change', function() {
+                if (this.value) {
+                    this.classList.remove('error');
+                    elements.paymentMethodError.classList.remove('visible');
+                }
+            });
+
+            elements.termsCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    elements.termsError.classList.remove('visible');
+                } else {
+                    elements.termsError.classList.add('visible');
+                }
+            });
+        });
+
+        // ============================================================
+        //  EXPOSE GLOBALLY
+        // ============================================================
+
+        window.checkout = {
+            loadCart,
+            renderOrderSummary,
+            placeOrder,
+            updateWhatsAppLink,
+        };
+
+        console.log('📄 Checkout page loaded');
+    </script>
+</body>
+</html>

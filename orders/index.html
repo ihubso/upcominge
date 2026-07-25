@@ -945,224 +945,277 @@
     <!-- ============================================
          SCRIPTS
          ============================================ -->
-    <script>
+<script>
+    // ============================================================
+    //  ORDERS PAGE - COMPLETE FIX
+    // ============================================================
 
-        // --- State ---
-        let allOrders = [];
-        let filteredOrders = [];
-        let currentStatus = 'all';
-        let selectedOrder = null;
-        let routeOrderId = null;
+    // --- State ---
+    let allOrders = [];
+    let filteredOrders = [];
+    let currentStatus = 'all';
+    let selectedOrder = null;
+    let routeOrderId = null;
+    let isInitialized = false;
 
-        // --- DOM Elements ---
-        const elements = {
-            ordersContainer: document.getElementById('stOrdersContainer'),
-            ordersLoading: document.getElementById('stOrdersLoading'),
-            orderCount: document.getElementById('stOrderCount'),
-            detailOverlay: document.getElementById('stDetailOverlay'),
-            detailSheet: document.getElementById('stDetailSheet'),
-            detailClose: document.getElementById('stDetailClose'),
-            detailBody: document.getElementById('stDetailBody'),
-            detailLoading: document.getElementById('stDetailLoading'),
-            tabs: document.querySelectorAll('.st-tab-btn'),
-            countAll: document.getElementById('stCountAll'),
-            countPending: document.getElementById('stCountPending'),
-            countConfirmed: document.getElementById('stCountConfirmed'),
-            countProcessing: document.getElementById('stCountProcessing'),
-            countShipped: document.getElementById('stCountShipped'),
-            countDelivered: document.getElementById('stCountDelivered'),
-            countCancelled: document.getElementById('stCountCancelled')
-        };
+    // --- DOM Elements ---
+    const elements = {
+        ordersContainer: document.getElementById('stOrdersContainer'),
+        ordersLoading: document.getElementById('stOrdersLoading'),
+        orderCount: document.getElementById('stOrderCount'),
+        detailOverlay: document.getElementById('stDetailOverlay'),
+        detailSheet: document.getElementById('stDetailSheet'),
+        detailClose: document.getElementById('stDetailClose'),
+        detailBody: document.getElementById('stDetailBody'),
+        detailLoading: document.getElementById('stDetailLoading'),
+        tabs: document.querySelectorAll('.st-tab-btn'),
+        countAll: document.getElementById('stCountAll'),
+        countPending: document.getElementById('stCountPending'),
+        countConfirmed: document.getElementById('stCountConfirmed'),
+        countProcessing: document.getElementById('stCountProcessing'),
+        countShipped: document.getElementById('stCountShipped'),
+        countDelivered: document.getElementById('stCountDelivered'),
+        countCancelled: document.getElementById('stCountCancelled')
+    };
 
-        // ============================================================
-        //  HELPERS
-        // ============================================================
+    // ============================================================
+    //  GET USER - MULTIPLE METHODS
+    // ============================================================
 
-        function showToast(message, type = 'success') {
-            const existing = document.querySelector('.st-toast');
-            if (existing) existing.remove();
-
-            const toast = document.createElement('div');
-            toast.className = `st-toast ${type}`;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(-50%) translateY(-20px)';
-                toast.style.transition = 'all 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+    async function getUserData() {
+        // Method 1: STHeader AppState
+        if (window.STHeader?.AppState?.isLoggedIn && window.STHeader?.AppState?.user) {
+            return window.STHeader.AppState.user;
         }
 
-        function getCurrentUser() {
-            if (window.STHeader && window.STHeader.AppState) {
-                const user = window.STHeader.AppState.user;
-                if (user) {
-                    return {
-                        id: user.id,
-                        email: user.email,
-                        name: user.user_metadata?.full_name || user.email?.split('@')[0] || ''
-                    };
-                }
-            }
+        // Method 2: getCurrentUser function
+        if (typeof getCurrentUser === 'function') {
             try {
-                const stored = JSON.parse(localStorage.getItem('st_customer') || 'null');
-                if (stored) return stored;
-            } catch (e) {}
-            try {
-                const stored = JSON.parse(sessionStorage.getItem('st_customer') || 'null');
-                if (stored) return stored;
-            } catch (e) {}
-            return null;
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return 'N/A';
-            try {
-                const date = new Date(dateStr);
-                const options = {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                };
-                return date.toLocaleDateString('en-US', options);
+                const user = await getCurrentUser();
+                if (user?.id) return user;
             } catch (e) {
-                return dateStr;
+                console.log('getCurrentUser() not available yet');
             }
         }
 
-        function getStatusIcon(status) {
-            const icons = {
-                pending: '⏳',
-                confirmed: '✅',
-                processing: '⚙️',
-                shipped: '🚚',
-                delivered: '📦',
-                cancelled: '❌'
-            };
-            return icons[status] || '📋';
-        }
-
-        function getStatusColor(status) {
-            const colors = {
-                pending: 'pending',
-                confirmed: 'confirmed',
-                processing: 'processing',
-                shipped: 'shipped',
-                delivered: 'delivered',
-                cancelled: 'cancelled'
-            };
-            return colors[status] || 'pending';
-        }
-
-        function getStatusSteps(status) {
-            const steps = ['Placed', 'Confirmed', 'Processing', 'Done'];
-            const statusMap = {
-                pending: 0,
-                confirmed: 1,
-                processing: 2,
-                shipped: 3,
-                delivered: 3,
-                cancelled: -1
-            };
-            const currentIndex = statusMap[status] !== undefined ? statusMap[status] : 0;
-            return steps.map((label, index) => ({
-                label: label,
-                completed: index <= currentIndex && status !== 'cancelled',
-                active: index === currentIndex && status !== 'cancelled',
-                cancelled: status === 'cancelled'
-            }));
-        }
-
-        function orderBelongsToUser(order, user) {
-            if (!order || !user) return false;
-            if (order.customer_id && user.id && order.customer_id === user.id) return true;
-            if (order.email && user.email && order.email === user.email) return true;
-            if (order.customer_name && user.name && order.customer_name === user.name) return true;
-            return false;
-        }
-
-        function getOrderIdFromUrl() {
-            const params = new URLSearchParams(window.location.search);
-            const candidates = ['order', 'orderId', 'id', 'order_id'];
-
-            for (const key of candidates) {
-                const value = params.get(key);
-                if (value) return decodeURIComponent(value);
-            }
-
-            const rawSearch = window.location.search.replace(/^\?/, '').trim();
-            if (rawSearch && !rawSearch.includes('=')) {
-                return decodeURIComponent(rawSearch);
-            }
-
-            return null;
-        }
-
-        function clearOrderRoute() {
-            const url = new URL(window.location.href);
-            ['order', 'orderId', 'id', 'order_id'].forEach(key => url.searchParams.delete(key));
-            const nextUrl = `${url.pathname}${url.search}${url.hash}`;
-            window.history.replaceState({ type: 'orders' }, '', nextUrl);
-            routeOrderId = null;
-        }
-
-        function handlePendingOrderRoute(orderId) {
-            if (!orderId) return;
-
-            const user = getCurrentUser();
-            if (!user || !user.id) {
-                showToast('Please log in to view this order.', 'info');
-                clearOrderRoute();
-                return;
-            }
-
-            const order = allOrders.find(o => o.id === orderId);
-            if (!order) {
-                showToast('Order not found', 'error');
-                clearOrderRoute();
-                return;
-            }
-
-            if (!orderBelongsToUser(order, user)) {
-                showToast('This order does not belong to your account.', 'error');
-                clearOrderRoute();
-                return;
-            }
-
-            routeOrderId = orderId;
-            openOrderDetail(order.id, { updateHistory: false });
-        }
-
-        // ============================================================
-        //  LOAD ORDERS
-        // ============================================================
-
-        async function loadOrders() {
-            const container = elements.ordersContainer;
-            const loading = elements.ordersLoading;
-
-            container.innerHTML = '';
-            loading.style.display = 'flex';
-
+        // Method 3: localStorage / sessionStorage
+        const stored = localStorage.getItem('st_customer') || sessionStorage.getItem('st_customer');
+        if (stored) {
             try {
-                const user = getCurrentUser();
-                if (!user || !user.id) {
-                    loading.style.display = 'none';
-                    showEmptyState('Please Login', 'Login to view your orders.', 'login');
-                    return;
-                }
+                const user = JSON.parse(stored);
+                if (user?.id) return user;
+            } catch (e) {}
+        }
 
-                // Try Supabase first
-                const client = getSupabaseClient();
-                let orders = [];
+        // Method 4: URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user_id');
+        if (userId) {
+            return {
+                id: userId,
+                email: urlParams.get('user_email') ? decodeURIComponent(urlParams.get('user_email')) : '',
+                name: urlParams.get('user_name') ? decodeURIComponent(urlParams.get('user_name')) : ''
+            };
+        }
 
-                if (client) {
+        return null;
+    }
+
+    // ============================================================
+    //  HELPERS
+    // ============================================================
+
+    function showToast(message, type = 'success') {
+        const existing = document.querySelector('.st-toast');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.className = `st-toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(-20px)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    function getSupabaseClient() {
+        if (window.STHeader && window.STHeader.getSupabaseClient) {
+            return window.STHeader.getSupabaseClient();
+        }
+        if (window.supabaseClient) {
+            return window.supabaseClient;
+        }
+        try {
+            if (typeof supabase !== 'undefined' && supabase.createClient) {
+                return supabase.createClient(
+                    'https://bulprhgwuwatzobiojwz.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHByaGd3dXdhdHpvYmlvand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDczNDksImV4cCI6MjA5MjA4MzM0OX0.2fcHrGX7iXw5G9nGRNkBy70W1Ex_om1C0v3qbryPmvw'
+                );
+            }
+        } catch (e) {
+            console.warn('⚠️ Could not create Supabase client:', e.message);
+        }
+        return null;
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return 'N/A';
+        try {
+            const date = new Date(dateStr);
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            };
+            return date.toLocaleDateString('en-US', options);
+        } catch (e) {
+            return dateStr;
+        }
+    }
+
+    function getStatusIcon(status) {
+        const icons = {
+            pending: '⏳',
+            confirmed: '✅',
+            processing: '⚙️',
+            shipped: '🚚',
+            delivered: '📦',
+            cancelled: '❌'
+        };
+        return icons[status] || '📋';
+    }
+
+    function getStatusColor(status) {
+        const colors = {
+            pending: 'pending',
+            confirmed: 'confirmed',
+            processing: 'processing',
+            shipped: 'shipped',
+            delivered: 'delivered',
+            cancelled: 'cancelled'
+        };
+        return colors[status] || 'pending';
+    }
+
+    function getStatusSteps(status) {
+        const steps = ['Placed', 'Confirmed', 'Processing', 'Done'];
+        const statusMap = {
+            pending: 0,
+            confirmed: 1,
+            processing: 2,
+            shipped: 3,
+            delivered: 3,
+            cancelled: -1
+        };
+        const currentIndex = statusMap[status] !== undefined ? statusMap[status] : 0;
+        return steps.map((label, index) => ({
+            label: label,
+            completed: index <= currentIndex && status !== 'cancelled',
+            active: index === currentIndex && status !== 'cancelled',
+            cancelled: status === 'cancelled'
+        }));
+    }
+
+    function orderBelongsToUser(order, user) {
+        if (!order || !user) return false;
+        if (order.customer_id && user.id && order.customer_id === user.id) return true;
+        if (order.email && user.email && order.email === user.email) return true;
+        if (order.customer_name && user.name && order.customer_name === user.name) return true;
+        return false;
+    }
+
+    function getOrderIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const candidates = ['order', 'orderId', 'id', 'order_id'];
+
+        for (const key of candidates) {
+            const value = params.get(key);
+            if (value) return decodeURIComponent(value);
+        }
+
+        const rawSearch = window.location.search.replace(/^\?/, '').trim();
+        if (rawSearch && !rawSearch.includes('=')) {
+            return decodeURIComponent(rawSearch);
+        }
+
+        return null;
+    }
+
+    function clearOrderRoute() {
+        const url = new URL(window.location.href);
+        ['order', 'orderId', 'id', 'order_id'].forEach(key => url.searchParams.delete(key));
+        const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+        window.history.replaceState({ type: 'orders' }, '', nextUrl);
+        routeOrderId = null;
+    }
+
+    // ============================================================
+    //  HANDLE PENDING ORDER ROUTE - FIXED with await
+    // ============================================================
+
+    async function handlePendingOrderRoute(orderId) {
+        if (!orderId) return;
+
+        // ✅ AWAIT the user
+        const user = await getUserData();
+        if (!user || !user.id) {
+            showToast('Please log in to view this order.', 'info');
+            clearOrderRoute();
+            return;
+        }
+
+        const order = allOrders.find(o => o.id === orderId);
+        if (!order) {
+            showToast('Order not found', 'error');
+            clearOrderRoute();
+            return;
+        }
+
+        if (!orderBelongsToUser(order, user)) {
+            showToast('This order does not belong to your account.', 'error');
+            clearOrderRoute();
+            return;
+        }
+
+        routeOrderId = orderId;
+        openOrderDetail(order.id, { updateHistory: false });
+    }
+
+    // ============================================================
+    //  LOAD ORDERS - FIXED with await
+    // ============================================================
+
+    async function loadOrders() {
+        const container = elements.ordersContainer;
+        const loading = elements.ordersLoading;
+
+        container.innerHTML = '';
+        loading.style.display = 'flex';
+
+        try {
+            // ✅ AWAIT the user
+            const user = await getUserData();
+            
+            if (!user || !user.id) {
+                loading.style.display = 'none';
+                showEmptyState('Please Login', 'Login to view your orders.', 'login');
+                return;
+            }
+
+            // Try Supabase first
+            const client = getSupabaseClient();
+            let orders = [];
+
+            if (client) {
+                try {
                     const { data, error } = await client
                         .from('orders')
                         .select('*')
@@ -1172,494 +1225,541 @@
                     if (!error && data && data.length > 0) {
                         orders = data;
                     }
+                } catch (e) {
+                    console.warn('⚠️ Supabase fetch error:', e);
                 }
-
-                // If no orders from Supabase, check localStorage
-                if (orders.length === 0) {
-                    const localOrders = JSON.parse(localStorage.getItem('shop_orders_v1') || '[]');
-                    const userOrders = localOrders.filter(o =>
-                        o.customer_id === user.id ||
-                        o.email === user.email ||
-                        o.customer_name === user.name
-                    );
-                    orders = userOrders;
-                }
-
-                allOrders = orders;
-                loading.style.display = 'none';
-
-                if (orders.length === 0) {
-                    const pendingRouteOrderId = getOrderIdFromUrl();
-                    if (pendingRouteOrderId) {
-                        showToast('This order is not available right now.', 'error');
-                        clearOrderRoute();
-                    }
-                    showEmptyState('No Orders Yet', 'Start shopping to see your orders here.', 'shop');
-                    return;
-                }
-
-                updateCounts(orders);
-                filterOrders(currentStatus);
-
-                const pendingRouteOrderId = getOrderIdFromUrl();
-                if (pendingRouteOrderId) {
-                    handlePendingOrderRoute(pendingRouteOrderId);
-                }
-
-            } catch (err) {
-                console.error('❌ Error loading orders:', err);
-                loading.style.display = 'none';
-                showEmptyState('Failed to Load Orders', 'Please try again later.', 'retry');
-            }
-        }
-
-        // ============================================================
-        //  UPDATE COUNTS
-        // ============================================================
-
-        function updateCounts(orders) {
-            const counts = {
-                all: orders.length,
-                pending: orders.filter(o => o.status === 'pending').length,
-                confirmed: orders.filter(o => o.status === 'confirmed').length,
-                processing: orders.filter(o => o.status === 'processing').length,
-                shipped: orders.filter(o => o.status === 'shipped').length,
-                delivered: orders.filter(o => o.status === 'delivered').length,
-                cancelled: orders.filter(o => o.status === 'cancelled').length
-            };
-
-            elements.countAll.textContent = counts.all;
-            elements.countPending.textContent = counts.pending;
-            elements.countConfirmed.textContent = counts.confirmed;
-            elements.countProcessing.textContent = counts.processing;
-            elements.countShipped.textContent = counts.shipped;
-            elements.countDelivered.textContent = counts.delivered;
-            elements.countCancelled.textContent = counts.cancelled;
-            elements.orderCount.textContent = `${counts.all} order${counts.all !== 1 ? 's' : ''}`;
-        }
-
-        // ============================================================
-        //  FILTER ORDERS
-        // ============================================================
-
-        function filterOrders(status) {
-            currentStatus = status;
-
-            if (status === 'all') {
-                filteredOrders = [...allOrders];
-            } else {
-                filteredOrders = allOrders.filter(o => o.status === status);
             }
 
-            renderOrders(filteredOrders);
-        }
-
-        // ============================================================
-        //  RENDER ORDERS
-        // ============================================================
-
-        function renderOrders(orders) {
-            const container = elements.ordersContainer;
-
-            if (!orders || orders.length === 0) {
-                container.innerHTML = `
-                    <div class="st-empty-orders" style="padding:40px 20px;">
-                        <div class="st-empty-icon"><i class="fas fa-inbox"></i></div>
-                        <p style="font-weight:600;color:#0F172A;">No orders with status "${currentStatus}"</p>
-                        <p style="font-size:14px;color:#94A3B8;">Try a different filter.</p>
-                    </div>
-                `;
-                return;
+            // If no orders from Supabase, check localStorage
+            if (orders.length === 0) {
+                const localOrders = JSON.parse(localStorage.getItem('shop_orders_v1') || '[]');
+                const userOrders = localOrders.filter(o =>
+                    o.customer_id === user.id ||
+                    o.email === user.email ||
+                    o.customer_name === user.name
+                );
+                orders = userOrders;
             }
 
-            container.innerHTML = orders.map(order => {
-                const statusClass = getStatusColor(order.status);
-                const statusLabel = order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending';
-                const totalItems = order.items?.reduce((sum, item) => sum + (item.qty || 1), 0) || 0;
-                const itemNames = order.items?.map(item => item.name).slice(0, 3).join(', ') || 'No items';
-                const moreItems = order.items?.length > 3 ? ` +${order.items.length - 3} more` : '';
-
-                return `
-                    <div class="st-order-card" onclick="openOrderDetail('${order.id}')" data-order-id="${order.id}">
-                        <div class="st-order-top">
-                            <span class="st-order-id">${order.id || 'N/A'}</span>
-                            <span class="st-order-status ${statusClass}">
-                                <span class="st-status-dot"></span>
-                                ${statusLabel}
-                            </span>
-                        </div>
-                        <div class="st-order-meta">
-                            <span><i class="fas fa-calendar-alt"></i> ${formatDate(order.created_at || order.date)}</span>
-                            <span><i class="fas fa-box"></i> ${totalItems} item${totalItems !== 1 ? 's' : ''}</span>
-                            ${order.customer_name ? `<span><i class="fas fa-user"></i> ${order.customer_name}</span>` : ''}
-                        </div>
-                        <div class="st-order-bottom">
-                            <div>
-                                <div class="st-order-items-preview">${itemNames}${moreItems}</div>
-                            </div>
-                            <div style="display:flex;align-items:center;gap:12px;">
-                                <span class="st-order-total">FCFA ${(order.total || 0).toFixed(2)}</span>
-                                <span class="st-order-arrow"><i class="fas fa-chevron-right"></i></span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // ============================================================
-        //  EMPTY STATE
-        // ============================================================
-
-        function showEmptyState(title, message, type) {
-            const container = elements.ordersContainer;
-
-            let actionHtml = '';
-            if (type === 'shop') {
-                actionHtml = `<a href="Search.html" class="st-btn-shop"><i class="fas fa-store"></i> Browse Products</a>`;
-            } else if (type === 'login') {
-                actionHtml = `
-                    <button onclick="window.location.href='/account-settings'" class="st-btn-shop">
-                        <i class="fas fa-sign-in-alt"></i> Go to Login
-                    </button>
-                `;
-            } else if (type === 'retry') {
-                actionHtml = `
-                    <button onclick="loadOrders()" class="st-btn-shop">
-                        <i class="fas fa-sync"></i> Retry
-                    </button>
-                `;
-            }
-
-            container.innerHTML = `
-                <div class="st-empty-orders">
-                    <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
-                    <h2>${title}</h2>
-                    <p>${message}</p>
-                    ${actionHtml}
-                </div>
-            `;
-        }
-
-        // ============================================================
-        //  OPEN ORDER DETAIL (Bottom Sheet)
-        // ============================================================
-
-        function openOrderDetail(orderId, options = {}) {
-            const order = allOrders.find(o => o.id === orderId);
-            if (!order) {
-                showToast('Order not found', 'error');
-                return;
-            }
-
-            const user = getCurrentUser();
-            if (user && !orderBelongsToUser(order, user)) {
-                showToast('This order does not belong to your account.', 'error');
-                clearOrderRoute();
-                return;
-            }
-
-            selectedOrder = order;
-            renderOrderDetail(order);
-            elements.detailOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-
-            // Track which order is open for back button
-            window._currentOpenOrder = orderId;
-            routeOrderId = orderId;
-
-            if (options.updateHistory !== false) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('order', orderId);
-                const nextUrl = `${url.pathname}${url.search}${url.hash}`;
-                window.history.pushState({ type: 'order-detail', orderId }, '', nextUrl);
-            }
-        }
-
-        // ============================================================
-        //  CLOSE ORDER DETAIL
-        // ============================================================
-
-        function closeOrderDetail(options = {}) {
-            if (!elements.detailOverlay.classList.contains('active')) {
-                return;
-            }
-
-            elements.detailOverlay.classList.remove('active');
-            document.body.style.overflow = '';
-            window._currentOpenOrder = null;
-
-            if (options.skipHistory) {
-                clearOrderRoute();
-                return;
-            }
-
-            if (window.history.state?.type === 'order-detail' && window.history.length > 1) {
-                window.history.back();
-            } else {
-                clearOrderRoute();
-            }
-        }
-
-        // ============================================================
-        //  RENDER ORDER DETAIL
-        // ============================================================
-
-        function renderOrderDetail(order) {
-            const body = elements.detailBody;
-            const loading = elements.detailLoading;
-
+            allOrders = orders;
             loading.style.display = 'none';
 
+            if (orders.length === 0) {
+                const pendingRouteOrderId = getOrderIdFromUrl();
+                if (pendingRouteOrderId) {
+                    showToast('This order is not available right now.', 'error');
+                    clearOrderRoute();
+                }
+                showEmptyState('No Orders Yet', 'Start shopping to see your orders here.', 'shop');
+                return;
+            }
+
+            updateCounts(orders);
+            filterOrders(currentStatus);
+
+            // Check for order in URL
+            const pendingRouteOrderId = getOrderIdFromUrl();
+            if (pendingRouteOrderId) {
+                await handlePendingOrderRoute(pendingRouteOrderId);
+            }
+
+        } catch (err) {
+            console.error('❌ Error loading orders:', err);
+            loading.style.display = 'none';
+            showEmptyState('Failed to Load Orders', 'Please try again later.', 'retry');
+        }
+    }
+
+    // ============================================================
+    //  UPDATE COUNTS
+    // ============================================================
+
+    function updateCounts(orders) {
+        const counts = {
+            all: orders.length,
+            pending: orders.filter(o => o.status === 'pending').length,
+            confirmed: orders.filter(o => o.status === 'confirmed').length,
+            processing: orders.filter(o => o.status === 'processing').length,
+            shipped: orders.filter(o => o.status === 'shipped').length,
+            delivered: orders.filter(o => o.status === 'delivered').length,
+            cancelled: orders.filter(o => o.status === 'cancelled').length
+        };
+
+        elements.countAll.textContent = counts.all;
+        elements.countPending.textContent = counts.pending;
+        elements.countConfirmed.textContent = counts.confirmed;
+        elements.countProcessing.textContent = counts.processing;
+        elements.countShipped.textContent = counts.shipped;
+        elements.countDelivered.textContent = counts.delivered;
+        elements.countCancelled.textContent = counts.cancelled;
+        elements.orderCount.textContent = `${counts.all} order${counts.all !== 1 ? 's' : ''}`;
+    }
+
+    // ============================================================
+    //  FILTER ORDERS
+    // ============================================================
+
+    function filterOrders(status) {
+        currentStatus = status;
+
+        if (status === 'all') {
+            filteredOrders = [...allOrders];
+        } else {
+            filteredOrders = allOrders.filter(o => o.status === status);
+        }
+
+        renderOrders(filteredOrders);
+    }
+
+    // ============================================================
+    //  RENDER ORDERS
+    // ============================================================
+
+    function renderOrders(orders) {
+        const container = elements.ordersContainer;
+
+        if (!orders || orders.length === 0) {
+            container.innerHTML = `
+                <div class="st-empty-orders" style="padding:40px 20px;text-align:center;">
+                    <div class="st-empty-icon" style="font-size:48px;color:#E2E8F0;margin-bottom:12px;">
+                        <i class="fas fa-inbox"></i>
+                    </div>
+                    <p style="font-weight:600;color:#0F172A;">No orders with status "${currentStatus}"</p>
+                    <p style="font-size:14px;color:#94A3B8;">Try a different filter.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = orders.map(order => {
             const statusClass = getStatusColor(order.status);
             const statusLabel = order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending';
-            const steps = getStatusSteps(order.status);
             const totalItems = order.items?.reduce((sum, item) => sum + (item.qty || 1), 0) || 0;
+            const itemNames = order.items?.map(item => item.name).slice(0, 3).join(', ') || 'No items';
+            const moreItems = order.items?.length > 3 ? ` +${order.items.length - 3} more` : '';
 
-            // Build items HTML
-            let itemsHtml = '';
-            if (order.items && order.items.length > 0) {
-                itemsHtml = order.items.map(item => `
-                    <div class="st-order-item-detail">
-                        <div class="st-item-info">
-                            <span class="st-item-name">${item.name || 'Unknown Product'}</span>
-                            <span class="st-item-meta">${item.qty || 1}x ${item.variants && Object.keys(item.variants).length > 0 ? '· ' + Object.entries(item.variants).map(([k, v]) => `${k}: ${v}`).join(', ') : ''}</span>
-                        </div>
-                        <span class="st-item-price">FCFA ${((item.price || 0) * (item.qty || 1)).toFixed(2)}</span>
-                    </div>
-                `).join('');
-            }
-
-            // Build status timeline HTML
-            let timelineHtml = '';
-            if (order.status === 'cancelled') {
-                timelineHtml = `
-                    <div style="text-align:center;padding:12px 0;color:#DC2626;font-weight:600;">
-                        <i class="fas fa-times-circle"></i> Order Cancelled
-                    </div>
-                `;
-            } else {
-                timelineHtml = steps.map((step, index) => `
-                    <div class="st-status-step ${step.completed ? 'completed' : ''} ${step.active ? 'active' : ''}">
-                        <div class="st-step-circle">
-                            ${step.completed ? '<i class="fas fa-check"></i>' : (step.active ? '<i class="fas fa-circle"></i>' : index + 1)}
-                        </div>
-                        <span class="st-step-label">${step.label}</span>
-                    </div>
-                `).join('');
-            }
-
-            // Build WhatsApp message
-            const waMessage = `🛒 *Order #${order.id}*%0A%0A` +
-                `👤 *Customer:* ${order.customer_name || 'N/A'}%0A` +
-                `📧 *Email:* ${order.email || 'N/A'}%0A` +
-                `📱 *Phone:* ${order.phone || 'N/A'}%0A` +
-                `📍 *Address:* ${order.address || 'N/A'}%0A` +
-                `📦 *Status:* ${statusLabel}%0A` +
-                `📅 *Date:* ${formatDate(order.created_at || order.date)}%0A%0A` +
-                `📦 *Items:*%0A${order.items?.map(item => 
-                    `• ${item.name} (${item.qty || 1}x) - FCFA ${((item.price || 0) * (item.qty || 1)).toFixed(2)}`
-                ).join('%0A') || 'No items'}%0A%0A` +
-                `💰 *Total:* FCFA ${(order.total || 0).toFixed(2)}`;
-
-            const phone = order.phone ? order.phone.replace(/\D/g, '') : '0172934545';
-            const waUrl = `https://wa.me/${phone}?text=${waMessage}`;
-
-            body.innerHTML = `
-                <div class="st-sheet-header">
-                    <div class="st-order-id">
-                        ${order.id || 'N/A'}
-                        <button class="st-copy-btn" onclick="copyOrderId('${order.id}')" title="Copy order ID">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                    </div>
-                    <div class="st-order-date">
-                        <i class="fas fa-calendar-alt"></i> ${formatDate(order.created_at || order.date)}
-                    </div>
-                    <div style="margin-top:8px;">
+            return `
+                <div class="st-order-card" onclick="openOrderDetail('${order.id}')" data-order-id="${order.id}">
+                    <div class="st-order-top">
+                        <span class="st-order-id">${order.id || 'N/A'}</span>
                         <span class="st-order-status ${statusClass}">
                             <span class="st-status-dot"></span>
-                            ${getStatusIcon(order.status)} ${statusLabel}
+                            ${statusLabel}
                         </span>
                     </div>
-                </div>
-
-                <!-- Status Timeline -->
-                <div class="st-status-timeline">
-                    ${timelineHtml}
-                </div>
-
-                <!-- Customer Info -->
-                <div class="st-detail-section">
-                    <div class="st-section-label"><i class="fas fa-user"></i> Customer</div>
-                    <div class="st-section-value">
-                        ${order.customer_name || 'N/A'}<br>
-                        ${order.phone ? `<a href="tel:${order.phone}" class="st-phone-link">${order.phone}</a>` : ''}
-                        ${order.address ? `<br>${order.address}` : ''}
+                    <div class="st-order-meta">
+                        <span><i class="fas fa-calendar-alt"></i> ${formatDate(order.created_at || order.date)}</span>
+                        <span><i class="fas fa-box"></i> ${totalItems} item${totalItems !== 1 ? 's' : ''}</span>
+                        ${order.customer_name ? `<span><i class="fas fa-user"></i> ${order.customer_name}</span>` : ''}
+                    </div>
+                    <div class="st-order-bottom">
+                        <div>
+                            <div class="st-order-items-preview">${itemNames}${moreItems}</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <span class="st-order-total">FCFA ${(order.total || 0).toFixed(2)}</span>
+                            <span class="st-order-arrow"><i class="fas fa-chevron-right"></i></span>
+                        </div>
                     </div>
                 </div>
+            `;
+        }).join('');
+    }
 
-                <!-- Order Total -->
-                <div class="st-detail-section">
-                    <div class="st-section-label"><i class="fas fa-money-bill-wave"></i> Order Total</div>
-                    <div class="st-section-value" style="font-size:24px;font-weight:800;color:#6C3CE1;">
-                        FCFA ${(order.total || 0).toFixed(2)}
-                    </div>
-                </div>
+    // ============================================================
+    //  EMPTY STATE
+    // ============================================================
 
-                <!-- Order Items -->
-                <div class="st-detail-section">
-                    <div class="st-section-label"><i class="fas fa-boxes"></i> Order Items (${totalItems})</div>
-                    ${itemsHtml}
-                </div>
+    function showEmptyState(title, message, type) {
+        const container = elements.ordersContainer;
 
-                <!-- Notes -->
-                ${order.notes ? `
-                    <div class="st-detail-section">
-                        <div class="st-section-label"><i class="fas fa-sticky-note"></i> Notes</div>
-                        <div class="st-section-value" style="font-size:14px;color:#64748B;">${order.notes}</div>
-                    </div>
-                ` : ''}
-
-                <!-- Actions -->
-                <div class="st-sheet-actions">
-                    <a href="index.html" class="st-btn-primary">
-                        <i class="fas fa-shopping-bag"></i> Continue Shopping
-                    </a>
-                    <a href="${waUrl}" target="_blank" class="st-btn-whatsapp">
-                        <i class="fab fa-whatsapp"></i> Contact Us
-                    </a>
-                </div>
+        let actionHtml = '';
+        if (type === 'shop') {
+            actionHtml = `<a href="/product/" class="st-btn-shop"><i class="fas fa-store"></i> Browse Products</a>`;
+        } else if (type === 'login') {
+            actionHtml = `
+                <button onclick="window.location.href='/account-settings'" class="st-btn-shop">
+                    <i class="fas fa-sign-in-alt"></i> Go to Login
+                </button>
+            `;
+        } else if (type === 'retry') {
+            actionHtml = `
+                <button onclick="loadOrders()" class="st-btn-shop">
+                    <i class="fas fa-sync"></i> Retry
+                </button>
             `;
         }
 
-        // ============================================================
-        //  COPY ORDER ID
-        // ============================================================
+        container.innerHTML = `
+            <div class="st-empty-orders" style="text-align:center;padding:40px 20px;">
+                <div class="st-empty-icon" style="font-size:48px;color:#E2E8F0;margin-bottom:12px;">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h2 style="font-size:18px;font-weight:700;color:#0F172A;">${title}</h2>
+                <p style="font-size:14px;color:#94A3B8;margin-bottom:16px;">${message}</p>
+                ${actionHtml}
+            </div>
+        `;
+    }
 
-        function copyOrderId(orderId) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(orderId).then(() => {
-                    showToast('✅ Order ID copied to clipboard!');
-                }).catch(() => {
-                    fallbackCopy(orderId);
-                });
-            } else {
+    // ============================================================
+    //  OPEN ORDER DETAIL (Bottom Sheet) - FIXED with await
+    // ============================================================
+
+    async function openOrderDetail(orderId, options = {}) {
+        const order = allOrders.find(o => o.id === orderId);
+        if (!order) {
+            showToast('Order not found', 'error');
+            return;
+        }
+
+        // ✅ AWAIT the user
+        const user = await getUserData();
+        if (user && !orderBelongsToUser(order, user)) {
+            showToast('This order does not belong to your account.', 'error');
+            clearOrderRoute();
+            return;
+        }
+
+        selectedOrder = order;
+        renderOrderDetail(order);
+        elements.detailOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Track which order is open for back button
+        window._currentOpenOrder = orderId;
+        routeOrderId = orderId;
+
+        if (options.updateHistory !== false) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('order', orderId);
+            const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+            window.history.pushState({ type: 'order-detail', orderId }, '', nextUrl);
+        }
+    }
+
+    // ============================================================
+    //  CLOSE ORDER DETAIL
+    // ============================================================
+
+    function closeOrderDetail(options = {}) {
+        if (!elements.detailOverlay.classList.contains('active')) {
+            return;
+        }
+
+        elements.detailOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+        window._currentOpenOrder = null;
+
+        if (options.skipHistory) {
+            clearOrderRoute();
+            return;
+        }
+
+        if (window.history.state?.type === 'order-detail' && window.history.length > 1) {
+            window.history.back();
+        } else {
+            clearOrderRoute();
+        }
+    }
+
+    // ============================================================
+    //  RENDER ORDER DETAIL
+    // ============================================================
+
+    function renderOrderDetail(order) {
+        const body = elements.detailBody;
+        const loading = elements.detailLoading;
+
+        loading.style.display = 'none';
+
+        const statusClass = getStatusColor(order.status);
+        const statusLabel = order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending';
+        const steps = getStatusSteps(order.status);
+        const totalItems = order.items?.reduce((sum, item) => sum + (item.qty || 1), 0) || 0;
+
+        // Build items HTML
+        let itemsHtml = '';
+        if (order.items && order.items.length > 0) {
+            itemsHtml = order.items.map(item => `
+                <div class="st-order-item-detail" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;">
+                    <div class="st-item-info">
+                        <span class="st-item-name" style="font-weight:600;font-size:14px;">${item.name || 'Unknown Product'}</span>
+                        <span class="st-item-meta" style="font-size:12px;color:#94A3B8;display:block;">${item.qty || 1}x ${item.variants && Object.keys(item.variants).length > 0 ? '· ' + Object.entries(item.variants).map(([k, v]) => `${k}: ${v}`).join(', ') : ''}</span>
+                    </div>
+                    <span class="st-item-price" style="font-weight:700;font-size:14px;color:#0F172A;">FCFA ${((item.price || 0) * (item.qty || 1)).toFixed(2)}</span>
+                </div>
+            `).join('');
+        }
+
+        // Build status timeline HTML
+        let timelineHtml = '';
+        if (order.status === 'cancelled') {
+            timelineHtml = `
+                <div style="text-align:center;padding:12px 0;color:#DC2626;font-weight:600;">
+                    <i class="fas fa-times-circle"></i> Order Cancelled
+                </div>
+            `;
+        } else {
+            timelineHtml = steps.map((step, index) => `
+                <div class="st-status-step ${step.completed ? 'completed' : ''} ${step.active ? 'active' : ''}" style="display:flex;align-items:center;gap:12px;padding:6px 0;">
+                    <div class="st-step-circle" style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;${step.completed ? 'background:#10B981;color:white;' : step.active ? 'background:#6C3CE1;color:white;' : 'background:#E2E8F0;color:#94A3B8;'}">
+                        ${step.completed ? '<i class="fas fa-check"></i>' : (step.active ? '<i class="fas fa-circle"></i>' : index + 1)}
+                    </div>
+                    <span class="st-step-label" style="font-weight:${step.active ? '700' : '500'};color:${step.completed ? '#10B981' : step.active ? '#6C3CE1' : '#94A3B8'};">${step.label}</span>
+                </div>
+            `).join('');
+        }
+
+        // Build WhatsApp message
+        const waMessage = `🛒 *Order #${order.id}*%0A%0A` +
+            `👤 *Customer:* ${order.customer_name || 'N/A'}%0A` +
+            `📧 *Email:* ${order.email || 'N/A'}%0A` +
+            `📱 *Phone:* ${order.phone || 'N/A'}%0A` +
+            `📍 *Address:* ${order.address || 'N/A'}%0A` +
+            `📦 *Status:* ${statusLabel}%0A` +
+            `📅 *Date:* ${formatDate(order.created_at || order.date)}%0A%0A` +
+            `📦 *Items:*%0A${order.items?.map(item => 
+                `• ${item.name} (${item.qty || 1}x) - FCFA ${((item.price || 0) * (item.qty || 1)).toFixed(2)}`
+            ).join('%0A') || 'No items'}%0A%0A` +
+            `💰 *Total:* FCFA ${(order.total || 0).toFixed(2)}`;
+
+        const phone = order.phone ? order.phone.replace(/\D/g, '') : '0172934545';
+        const waUrl = `https://wa.me/${phone}?text=${waMessage}`;
+
+        body.innerHTML = `
+            <div class="st-sheet-header" style="margin-bottom:16px;">
+                <div class="st-order-id" style="font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px;">
+                    ${order.id || 'N/A'}
+                    <button class="st-copy-btn" onclick="copyOrderId('${order.id}')" title="Copy order ID" style="background:none;border:none;color:#6C3CE1;cursor:pointer;font-size:14px;">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <div class="st-order-date" style="font-size:13px;color:#94A3B8;margin-top:4px;">
+                    <i class="fas fa-calendar-alt"></i> ${formatDate(order.created_at || order.date)}
+                </div>
+                <div style="margin-top:8px;">
+                    <span class="st-order-status ${statusClass}" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">
+                        <span class="st-status-dot" style="width:6px;height:6px;border-radius:50%;display:inline-block;background:currentColor;"></span>
+                        ${getStatusIcon(order.status)} ${statusLabel}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Status Timeline -->
+            <div class="st-status-timeline" style="padding:12px 0;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;margin-bottom:16px;">
+                ${timelineHtml}
+            </div>
+
+            <!-- Customer Info -->
+            <div class="st-detail-section" style="margin-bottom:12px;">
+                <div class="st-section-label" style="font-weight:600;font-size:14px;color:#475569;margin-bottom:4px;"><i class="fas fa-user"></i> Customer</div>
+                <div class="st-section-value" style="font-size:14px;color:#0F172A;">
+                    ${order.customer_name || 'N/A'}<br>
+                    ${order.phone ? `<a href="tel:${order.phone}" style="color:#6C3CE1;text-decoration:none;">${order.phone}</a>` : ''}
+                    ${order.address ? `<br>${order.address}` : ''}
+                </div>
+            </div>
+
+            <!-- Order Total -->
+            <div class="st-detail-section" style="margin-bottom:12px;">
+                <div class="st-section-label" style="font-weight:600;font-size:14px;color:#475569;margin-bottom:4px;"><i class="fas fa-money-bill-wave"></i> Order Total</div>
+                <div class="st-section-value" style="font-size:24px;font-weight:800;color:#6C3CE1;">
+                    FCFA ${(order.total || 0).toFixed(2)}
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="st-detail-section" style="margin-bottom:12px;">
+                <div class="st-section-label" style="font-weight:600;font-size:14px;color:#475569;margin-bottom:4px;"><i class="fas fa-boxes"></i> Order Items (${totalItems})</div>
+                ${itemsHtml}
+            </div>
+
+            <!-- Notes -->
+            ${order.notes ? `
+                <div class="st-detail-section" style="margin-bottom:12px;">
+                    <div class="st-section-label" style="font-weight:600;font-size:14px;color:#475569;margin-bottom:4px;"><i class="fas fa-sticky-note"></i> Notes</div>
+                    <div class="st-section-value" style="font-size:14px;color:#64748B;">${order.notes}</div>
+                </div>
+            ` : ''}
+
+            <!-- Actions -->
+            <div class="st-sheet-actions" style="display:flex;gap:12px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #E2E8F0;margin-top:8px;">
+                <a href="index.html" class="st-btn-primary" style="flex:1;padding:12px 20px;background:linear-gradient(135deg,#6C3CE1,#5A2FC4);color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;text-align:center;transition:all 0.3s ease;">
+                    <i class="fas fa-shopping-bag"></i> Continue Shopping
+                </a>
+                <a href="${waUrl}" target="_blank" class="st-btn-whatsapp" style="flex:1;padding:12px 20px;background:#25D366;color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;text-align:center;transition:all 0.3s ease;">
+                    <i class="fab fa-whatsapp"></i> Contact Us
+                </a>
+            </div>
+        `;
+    }
+
+    // ============================================================
+    //  COPY ORDER ID
+    // ============================================================
+
+    function copyOrderId(orderId) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(orderId).then(() => {
+                showToast('✅ Order ID copied to clipboard!');
+            }).catch(() => {
                 fallbackCopy(orderId);
+            });
+        } else {
+            fallbackCopy(orderId);
+        }
+    }
+
+    function fallbackCopy(text) {
+        const input = document.createElement('input');
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        showToast('✅ Order ID copied to clipboard!');
+    }
+
+    // ============================================================
+    //  HANDLE ANDROID BACK BUTTON
+    // ============================================================
+
+    // Handle hardware back button on Android
+    document.addEventListener('backbutton', function(e) {
+        if (elements.detailOverlay.classList.contains('active')) {
+            e.preventDefault();
+            closeOrderDetail({ skipHistory: true });
+        }
+    });
+
+    // Handle popstate (browser back)
+    window.addEventListener('popstate', function(e) {
+        if (elements.detailOverlay.classList.contains('active')) {
+            closeOrderDetail({ skipHistory: true });
+        }
+    });
+
+    // ============================================================
+    //  WAIT FOR HEADER INITIALIZATION
+    // ============================================================
+
+    function waitForHeader(callback, maxAttempts = 10) {
+        let attempts = 0;
+        
+        function checkHeader() {
+            attempts++;
+            
+            // Check if STHeader is initialized
+            if (window.STHeader?.AppState) {
+                console.log('✅ STHeader found, initializing orders...');
+                callback();
+                return;
+            }
+            
+            // Check if we have user data in storage
+            const stored = localStorage.getItem('st_customer') || sessionStorage.getItem('st_customer');
+            if (stored) {
+                try {
+                    const user = JSON.parse(stored);
+                    if (user?.id) {
+                        console.log('✅ User data found in storage, initializing orders...');
+                        callback();
+                        return;
+                    }
+                } catch (e) {}
+            }
+            
+            if (attempts < maxAttempts) {
+                console.log(`⏳ Waiting for header initialization (attempt ${attempts}/${maxAttempts})...`);
+                setTimeout(checkHeader, 300);
+            } else {
+                console.log('⚠️ Header initialization timeout, loading orders anyway...');
+                callback();
             }
         }
+        
+        checkHeader();
+    }
 
-        function fallbackCopy(text) {
-            const input = document.createElement('input');
-            input.value = text;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-            showToast('✅ Order ID copied to clipboard!');
-        }
+    // ============================================================
+    //  INITIALIZE
+    // ============================================================
 
-        // ============================================================
-        //  HANDLE ANDROID BACK BUTTON
-        // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 Orders page initializing...');
 
-        // Handle hardware back button on Android
-        document.addEventListener('backbutton', function(e) {
-            if (elements.detailOverlay.classList.contains('active')) {
-                e.preventDefault();
-                closeOrderDetail({ skipHistory: true });
-            }
-        });
-
-        // Handle popstate (browser back)
-        window.addEventListener('popstate', function(e) {
-            if (elements.detailOverlay.classList.contains('active')) {
-                closeOrderDetail({ skipHistory: true });
-            }
-        });
-
-        // ============================================================
-        //  INITIALIZE
-        // ============================================================
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load orders
+        // Wait for header to initialize, then load orders
+        waitForHeader(function() {
             loadOrders();
-
-            // Tab clicks
-            elements.tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    elements.tabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    const status = this.dataset.status;
-                    filterOrders(status);
-                });
-            });
-
-            // Close detail sheet
-            elements.detailClose.addEventListener('click', closeOrderDetail);
-
-            // Click overlay to close (only if click on overlay, not sheet)
-            elements.detailOverlay.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeOrderDetail();
-                }
-            });
-
-            // Swipe down to close (touch)
-            let startY = 0;
-            let currentY = 0;
-            let isDragging = false;
-
-            elements.detailSheet.addEventListener('touchstart', function(e) {
-                startY = e.touches[0].clientY;
-                isDragging = true;
-            }, { passive: true });
-
-            elements.detailSheet.addEventListener('touchmove', function(e) {
-                if (!isDragging) return;
-                currentY = e.touches[0].clientY;
-                const diff = currentY - startY;
-                if (diff > 50) {
-                    closeOrderDetail();
-                    isDragging = false;
-                }
-            }, { passive: true });
-
-            elements.detailSheet.addEventListener('touchend', function() {
-                isDragging = false;
-            }, { passive: true });
-
-            // Keyboard ESC to close
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && elements.detailOverlay.classList.contains('active')) {
-                    closeOrderDetail();
-                }
-            });
-
-            // Watch for header login state changes
-            if (window.STHeader) {
-                const originalUpdate = window.STHeader.updateAuthUI;
-                window.STHeader.updateAuthUI = function() {
-                    if (originalUpdate) originalUpdate();
-                    // Reload orders if user changes
-                    loadOrders();
-                };
-            }
-
-            console.log('📄 Orders page loaded');
         });
 
-        // ============================================================
-        //  EXPOSE GLOBALLY
-        // ============================================================
+        // Tab clicks
+        elements.tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                elements.tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const status = this.dataset.status;
+                filterOrders(status);
+            });
+        });
 
-        window.openOrderDetail = openOrderDetail;
-        window.closeOrderDetail = closeOrderDetail;
-        window.copyOrderId = copyOrderId;
-        window.loadOrders = loadOrders;
+        // Close detail sheet
+        elements.detailClose.addEventListener('click', function() {
+            closeOrderDetail();
+        });
 
-        console.log('✅ Orders page ready');
-    </script>
+        // Click overlay to close (only if click on overlay, not sheet)
+        elements.detailOverlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeOrderDetail();
+            }
+        });
+
+        // Swipe down to close (touch)
+        let startY = 0;
+        let isDragging = false;
+
+        elements.detailSheet.addEventListener('touchstart', function(e) {
+            startY = e.touches[0].clientY;
+            isDragging = true;
+        }, { passive: true });
+
+        elements.detailSheet.addEventListener('touchmove', function(e) {
+            if (!isDragging) return;
+            const currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+            if (diff > 50) {
+                closeOrderDetail();
+                isDragging = false;
+            }
+        }, { passive: true });
+
+        elements.detailSheet.addEventListener('touchend', function() {
+            isDragging = false;
+        }, { passive: true });
+
+        // Keyboard ESC to close
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && elements.detailOverlay.classList.contains('active')) {
+                closeOrderDetail();
+            }
+        });
+
+        console.log('📄 Orders page ready');
+    });
+
+    // ============================================================
+    //  EXPOSE GLOBALLY
+    // ============================================================
+
+    window.openOrderDetail = openOrderDetail;
+    window.closeOrderDetail = closeOrderDetail;
+    window.copyOrderId = copyOrderId;
+    window.loadOrders = loadOrders;
+    window.getUserData = getUserData;
+
+    console.log('✅ Orders page fully loaded with async fixes');
+</script>
 </body>
 </html>

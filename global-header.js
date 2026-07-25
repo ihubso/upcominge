@@ -102,7 +102,12 @@ function updateUrlWithUserInfo() {
         if (user.name && !params.has('user_name')) {
             params.set('user_name', encodeURIComponent(user.name));
         }
-        
+        if (user.phone && !params.has('user_phone')) {
+            params.set('user_phone', encodeURIComponent(user.phone));
+        }
+        if (user.address && !params.has('user_address')) {
+            params.set('user_address', encodeURIComponent(user.address));
+        }
         // Add session info
         if (!params.has('session')) {
             params.set('session', Date.now().toString());
@@ -139,6 +144,8 @@ function clearUserInfoFromUrl() {
         params.delete('user_id');
         params.delete('user_email');
         params.delete('user_name');
+        params.delete('user_phone');
+        params.delete('user_address');
         params.delete('session');
         params.delete('logged_in');
         
@@ -186,6 +193,86 @@ function getUserInfoFromUrl() {
 window.updateUrlWithUserInfo = updateUrlWithUserInfo;
 window.clearUserInfoFromUrl = clearUserInfoFromUrl;
 window.getUserInfoFromUrl = getUserInfoFromUrl;
+
+async function getCurrentUser() {
+    // First check if we have a user in AppState
+    if (!AppState.isLoggedIn || !AppState.user?.id) {
+        console.warn('⚠️ getCurrentUser: No user logged in');
+        return null;
+    }
+
+    const client = getSupabaseClient();
+    if (!client) {
+        console.warn('⚠️ getCurrentUser: Supabase client not available');
+        return null;
+    }
+
+    const customerId = AppState.user.id;
+
+    try {
+        // Fetch full user data from database
+        const { data, error } = await client
+            .from('customer_accounts')
+            .select(`
+                id,
+                email,
+                name,
+                phone,
+                address,
+                last_login,
+                created_at,
+                updated_at,
+                status,
+                bio
+            `)
+            .eq('id', customerId)
+            .maybeSingle();
+
+        if (error) {
+            console.error('❌ getCurrentUser: Error fetching user data:', error.message);
+            return null;
+        }
+
+        if (!data) {
+            console.warn('⚠️ getCurrentUser: User not found in database');
+            return null;
+        }
+
+        // Merge with existing AppState user data (preserve any additional fields)
+        const fullUser = {
+            ...AppState.user,
+            ...data
+        };
+
+        // Update AppState with fresh data
+        AppState.user = fullUser;
+
+        // Update stored session with fresh data
+        const storedData = localStorage.getItem('st_customer') || sessionStorage.getItem('st_customer');
+        if (storedData) {
+            try {
+                const parsed = JSON.parse(storedData);
+                const updated = { ...parsed, ...data };
+                const storage = localStorage.getItem('st_customer') ? 'localStorage' : 'sessionStorage';
+                if (storage === 'localStorage') {
+                    localStorage.setItem('st_customer', JSON.stringify(updated));
+                } else {
+                    sessionStorage.setItem('st_customer', JSON.stringify(updated));
+                }
+            } catch (err) {
+                // Ignore storage update errors
+            }
+        }
+
+        console.log('✅ getCurrentUser: User data fetched successfully');
+        return fullUser;
+
+    } catch (err) {
+        console.error('❌ getCurrentUser: Unexpected error:', err.message);
+        return null;
+    }
+}
+
 
 
 // ============================================================
@@ -461,19 +548,19 @@ const HEADER_CONFIG = {
     shopName: 'shop<span class="st-brand-highlight">Boss</span>',
     logoText: 'SB',
     navLinks: [
-        { label: 'Products', icon: 'fa-box', href: '/Search.html', dropdown: true, dropdownType: 'products' },
-        { label: 'Categories', icon: 'fa-th-large', href: '/category.html', dropdown: true, dropdownType: 'categories' },
-        { label: 'Brands', icon: 'fa-tag', href: '/brand.html', dropdown: true, dropdownType: 'brands' },
+        { label: 'Products', icon: 'fa-box', href: '/product/', dropdown: true, dropdownType: 'products' },
+        { label: 'Categories', icon: 'fa-th-large', href: '/category/', dropdown: true, dropdownType: 'categories' },
+        { label: 'Brands', icon: 'fa-tag', href: '/brand/', dropdown: true, dropdownType: 'brands' },
         { label: 'Contact', icon: 'fa-envelope', href: '/contactus' }
     ],
     pages: {
-        cart: '//Cart',
-        wishlist: '/wishlist.html',
-        orders: '//orders',
-        settings: '//account-settings',
-        products: '/Search.html',
-        category: '/category.html',
-        brand: 'brand.html'
+        cart: '/cart',
+        wishlist: '/wishlist',
+        orders: '/orders',
+        settings: '/account-settings',
+        products: '/product/',
+        category: '/category/',
+        brand: '/brand/'
     }
 };
 ;
@@ -2215,7 +2302,7 @@ async function populateDropdowns() {
             categoriesGrid.innerHTML = '<div class="st-dropdown-empty">No categories available</div>';
         } else {
             categoriesGrid.innerHTML = categories.map(cat => `
-                <a href="category.html?category=${encodeURIComponent(cat.name)}" class="st-dropdown-item">
+                <a href="/category/?category=${encodeURIComponent(cat.name)}" class="st-dropdown-item">
                     <div class="st-item-icon">
                         <img src="${cat.image}" alt="${cat.name}" onerror="this.parentElement.innerHTML='<span class=\\'st-icon-fallback\\'><i class=\\'fas fa-folder\\'></i></span>'">
                     </div>
@@ -2235,7 +2322,7 @@ async function populateDropdowns() {
             brandsGrid.innerHTML = '<div class="st-dropdown-empty">No brands available</div>';
         } else {
             brandsGrid.innerHTML = brands.map(brand => `
-                <a href="brand.html?brand=${encodeURIComponent(brand.name)}" class="st-dropdown-item">
+                <a href="/brand/?brand=${encodeURIComponent(brand.name)}" class="st-dropdown-item">
                     <div class="st-item-icon">
                         <img src="${brand.image}" alt="${brand.name}" onerror="this.parentElement.innerHTML='<span class=\\'st-icon-fallback\\'><i class=\\'fas fa-tag\\'></i></span>'">
                     </div>
@@ -2262,7 +2349,7 @@ async function populateDropdowns() {
 
                 if (!error && data && data.length > 0) {
                     productsGrid.innerHTML = data.map(product => `
-                        <a href="item.html?product=${product.id}" class="st-dropdown-item">
+                        <a href="/item/?product=${product.id}" class="st-dropdown-item">
                             <div class="st-item-icon">
                                 <img src="${product.image || 'https://placehold.co/100x100/6C3CE1/FFFFFF?text=Product'}" 
                                      alt="${product.name}" 
@@ -2288,6 +2375,55 @@ async function populateDropdowns() {
 // ============================================================
 // 7. HEADER LOGIC
 // ============================================================
+let cachedBusinessInfo = null;
+
+async function getBusinessInfo() {
+    if (cachedBusinessInfo) return cachedBusinessInfo;
+    
+    try {
+        const client = getSupabaseClient();
+        if (!client) {
+            console.warn('⚠️ Supabase client not available, using fallback');
+            return getFallbackBusinessInfo();
+        }
+
+        const { data, error } = await client
+            .from('business_info')
+            .select('*')
+            .limit(1)
+            .maybeSingle();
+
+        if (error) {
+            console.error('❌ Error fetching business info:', error);
+            return getFallbackBusinessInfo();
+        }
+
+        if (data) {
+            cachedBusinessInfo = data;
+            console.log('✅ Business info loaded:', cachedBusinessInfo.shop_name);
+            return cachedBusinessInfo;
+        }
+
+        return getFallbackBusinessInfo();
+    } catch (err) {
+        console.error('❌ Error fetching business info:', err);
+        return getFallbackBusinessInfo();
+    }
+}
+
+function getFallbackBusinessInfo() {
+    return {
+        id: 'fallback',
+        shop_name: 'Success Technology',
+        email: 'austinlebechi02@gmail.com',
+        phone: '+2250172934545',
+        address: 'Angre djibi terminus 82/81',
+        facebook: '',
+        instagram: '',
+        tiktok: '',
+        created_at: new Date().toISOString()
+    };
+}
 
 async function initHeader() {
     // DOM Elements
@@ -2401,7 +2537,7 @@ async function initHeader() {
     // ----- Search -----
     function handleSearch(e) {
         if (e.key === 'Enter' && e.target.value.trim() !== '') {
-            window.location.href = `Search.html?search=${encodeURIComponent(e.target.value.trim())}`;
+            window.location.href = `/Search/?search=${encodeURIComponent(e.target.value.trim())}`;
         }
     }
     
@@ -2411,9 +2547,9 @@ async function initHeader() {
     // ----- Cart & Wishlist -----
     elements.cartBtn.addEventListener('click', () => window.location.href = '/Cart');
     elements.mobileCartBtn.addEventListener('click', () => window.location.href = '/Cart');
-    elements.wishlistBtn.addEventListener('click', () => window.location.href = 'wishlist.html');
-    elements.mobileWishlistBtn.addEventListener('click', () => window.location.href = 'wishlist.html');
-        elements.foryoumobileWishlistBtn.addEventListener('click', () => window.location.href = 'ForYou.html');
+    elements.wishlistBtn.addEventListener('click', () => window.location.href = '/wishlist');
+    elements.mobileWishlistBtn.addEventListener('click', () => window.location.href = '/wishlist');
+        elements.foryoumobileWishlistBtn.addEventListener('click', () => window.location.href = '/ForYou');
     
     // ----- Auth Modal -----
     function openAuthModal() {
@@ -2749,6 +2885,25 @@ function createSearchResultsContainer() {
                 display: none !important;
             }
         }
+            /* Target the modal specifically for mobile devices */
+@media (max-width: 768px) {
+  #stAuthModal {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    padding: 0 !important;
+  }
+
+  #stAuthModal .st-modal {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    overflow-y: auto; /* Ensure content is scrollable if it exceeds screen height */
+  }
+}
     `;
     document.head.appendChild(style);
 
@@ -2850,14 +3005,14 @@ function renderSearchResults(results, query) {
                 <i class="fas fa-search" style="font-size:24px;display:block;margin-bottom:8px;color:#E2E8F0;"></i>
                 No products found for "<strong>${query}</strong>"
             </div>
-            <a href="Search.html?search=${encodeURIComponent(query)}" class="st-search-view-all">
+            <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all">
                 View all results for "${query}" →
             </a>
         `;
         container.style.display = 'block';
     } else {
         container.innerHTML = results.map((item, index) => `
-            <a href="item.html?product=${item.id}" class="st-search-item" data-index="${index}">
+            <a href="/item/?product=${item.id}" class="st-search-item" data-index="${index}">
                 <img src="${item.image || 'https://placehold.co/40x40/6C3CE1/FFFFFF?text=Product'}" 
                      alt="${item.name}" 
                      onerror="this.src='https://placehold.co/40x40/6C3CE1/FFFFFF?text=Product'">
@@ -2868,7 +3023,7 @@ function renderSearchResults(results, query) {
                 <div class="st-search-price">FCFA ${(item.price || 0).toFixed(2)}</div>
             </a>
         `).join('') + `
-            <a href="Search.html?search=${encodeURIComponent(query)}" class="st-search-view-all">
+            <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all">
                 View all ${results.length} results for "${query}" →
             </a>
         `;
@@ -2884,13 +3039,13 @@ function renderSearchResults(results, query) {
                     <i class="fas fa-search" style="font-size:32px;display:block;margin-bottom:12px;color:#E2E8F0;"></i>
                     No products found for "<strong>${query}</strong>"
                 </div>
-                <a href="Search.html?search=${encodeURIComponent(query)}" class="st-search-view-all">
+                <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all">
                     View all results for "${query}" →
                 </a>
             `;
         } else {
             mobileContainer.innerHTML = results.map(item => `
-                <a href="item.html?product=${item.id}" class="st-search-item">
+                <a href="/item/?product=${item.id}" class="st-search-item">
                     <img src="${item.image || 'https://placehold.co/50x50/6C3CE1/FFFFFF?text=Product'}" 
                          alt="${item.name}" 
                          onerror="this.src='https://placehold.co/50x50/6C3CE1/FFFFFF?text=Product'">
@@ -2901,7 +3056,7 @@ function renderSearchResults(results, query) {
                     <div class="st-search-price">FCFA ${(item.price || 0).toFixed(2)}</div>
                 </a>
             `).join('') + `
-                <a href="Search.html?search=${encodeURIComponent(query)}" class="st-search-view-all">
+                <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all">
                     View all ${results.length} results for "${query}" →
                 </a>
             `;
@@ -3075,7 +3230,7 @@ if (desktopSearch) {
             if (selectedSearchIndex >= 0) {
                 selectCurrentSearchResult();
             } else if (query) {
-                window.location.href = `Search.html?search=${encodeURIComponent(query)}`;
+                window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
             }
         } else if (e.key === 'Escape') {
             hideSearchResults();
@@ -3125,7 +3280,7 @@ if (mobileSearch) {
             e.preventDefault();
             const query = mobileSearch.value.trim();
             if (query) {
-                window.location.href = `Search.html?search=${encodeURIComponent(query)}`;
+                window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
             }
         });
     }
@@ -3166,7 +3321,7 @@ if (modalSearchInput) {
             const query = this.value.trim();
             if (query) {
                 closeMobileSearch();
-                window.location.href = `Search.html?search=${encodeURIComponent(query)}`;
+                window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
             }
         } else if (e.key === 'Escape') {
             closeMobileSearch();
@@ -3230,7 +3385,7 @@ function handleSearch(e) {
         if (selectedSearchIndex >= 0) {
             selectCurrentSearchResult();
         } else {
-            window.location.href = `Search.html?search=${encodeURIComponent(query)}`;
+            window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
         }
     }
 }
@@ -3285,7 +3440,7 @@ allSearchInputs.forEach(input => {
                     if (selectedSearchIndex >= 0) {
                         selectCurrentSearchResult();
                     } else if (query) {
-                        window.location.href = `Search.html?search=${encodeURIComponent(query)}`;
+                        window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
                     }
                 } else if (e.key === 'Escape') {
                     hideSearchResults();
@@ -3338,7 +3493,7 @@ allSearchInputs.forEach(input => {
                     const query = this.value.trim();
                     if (query) {
                         closeMobileSearch();
-                        window.location.href = `Search.html?search=${encodeURIComponent(query)}`;
+                        window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
                     }
                 } else if (e.key === 'Escape') {
                     closeMobileSearch();
@@ -3434,6 +3589,10 @@ console.log('✅ Search with real-time results initialized');
             closeAuthModal();
             
             showNotification(`✅ Welcome back, ${user.name}!`);
+            setTimeout(() => {
+    window.location.reload();
+        }, 5000); // 5000 milliseconds = 5 seconds
+
             
         } catch (err) {
             console.error('❌ Login error:', err);
@@ -3525,6 +3684,10 @@ console.log('✅ Search with real-time results initialized');
             closeAuthModal();
             
             showNotification(`✅ Account created successfully! Welcome ${user.name}!`);
+            setTimeout(() => {
+                window.location.reload();
+            }, 5000); // 5000 milliseconds = 5 seconds
+
             
         } catch (err) {
             console.error('❌ Signup error:', err);
@@ -3570,6 +3733,7 @@ console.log('✅ Search with real-time results initialized');
         updateAuthUI();
         elements.accountDropdown.classList.remove('open');
         showNotification('👋 Logged out successfully');
+       window.location.reload();
     }
     
 // Add logout button event listener elements
@@ -3975,6 +4139,8 @@ async function loadUserData(customerId, shouldMigrate = false) {
     console.log('📦 Cart:', AppState.cart.length, 'items');
     console.log('❤️ Wishlist:', AppState.wishlist.length, 'items');
     updateUrlWithUserInfo();
+    window.getCurrentUser = getCurrentUser;
+    window.getBusinessInfo = getBusinessInfo;
 }
 
 // ============================================================

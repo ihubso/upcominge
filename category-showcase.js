@@ -248,7 +248,7 @@
             }
 
             html += `
-                <div class="category-product-card" onclick="window.location.href='item.html?product=${product.id}'">
+                <div class="category-product-card" onclick="window.location.href='/item/?product=${product.id}'">
                     <div class="category-product-image">
                         <img src="${image}" alt="${product.name || 'Product'}" loading="lazy"
                              onerror="this.src='https://placehold.co/300x300/6C3CE1/FFFFFF?text=Product'">
@@ -933,7 +933,7 @@
         const subtitle = options.subtitle || 'Hurry! Take advantage of discounts of up to 50% on our collection.';
         const badge = options.badge || '🔥 Limited Time Offer';
         const countdownHours = options.countdownHours || 24;
-        const viewAllLink = options.viewAllLink || 'category.html?category=' + encodeURIComponent(filterValue);
+        const viewAllLink = options.viewAllLink || '/category/?category=' + encodeURIComponent(filterValue);
         const ctaText = options.ctaText || 'Shop Now →';
         const ctaSecondaryText = options.ctaSecondaryText || 'View All';
         const showHero = options.showHero !== false;
@@ -1104,7 +1104,7 @@
         const subtitle = container.dataset.subtitle || 'Hurry! Take advantage of discounts of up to 50% on our collection.';
         const badge = container.dataset.badge || '🔥 Limited Time Offer';
         const countdownHours = parseInt(container.dataset.countdownHours) || 24;
-        const viewAllLink = container.dataset.viewAllLink || 'category.html?category=' + encodeURIComponent(filterValue);
+        const viewAllLink = container.dataset.viewAllLink || '/category/?category=' + encodeURIComponent(filterValue);
         const ctaText = container.dataset.ctaText || 'Shop Now →';
         const ctaSecondaryText = container.dataset.ctaSecondaryText || 'View All';
         const showHero = container.dataset.showHero !== 'false';
