@@ -279,41 +279,65 @@ async function getCurrentUser() {
 // 2. CUSTOM AUTH FUNCTIONS (Using customer_accounts table)
 // ============================================================
 
-async function signUpCustomer(email, password, name, phone = '', address = '') {
+async function signUpCustomer(email, password, name, phone = '', address = '', country = '') {
     const client = getSupabaseClient();
     if (!client) throw new Error('Supabase client not available');
     
-    // Check if email already exists
-    const { data: existing, error: checkError } = await client
-        .from('customer_accounts')
-        .select('id, email')
-        .eq('email', email)
-        .maybeSingle();
+    // Validate inputs
+    if (!email) throw new Error('Email is required');
+    if (!password) throw new Error('Password is required');
+    if (!name) throw new Error('Name is required');
     
-    if (checkError) throw new Error(checkError.message);
-    if (existing) throw new Error('Email already registered. Please login.');
+    // Check if email already exists
+    try {
+        const { data: existing, error: checkError } = await client
+            .from('customer_accounts')
+            .select('id, email')
+            .eq('email', email)
+            .maybeSingle();
+        
+        if (checkError) throw new Error(checkError.message);
+        if (existing) throw new Error('Email already registered. Please login.');
+    } catch (err) {
+        if (err.message.includes('already registered')) throw err;
+        console.warn('⚠️ Email check warning:', err.message);
+    }
     
     // Generate UUID for id
     const id = crypto.randomUUID ? crypto.randomUUID() : 
         'cust_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     
-    const { data, error } = await client
-        .rpc('create_customer_account', {
-            p_id: id,
-            p_name: name,
-            p_email: email,
-            p_phone: phone || '',
-            p_address: address || '',
-            p_country: country || '',  // ✅ NEW field
-            p_password: password // Database function will hash this
-        });
-    
-    if (error) {
-        console.error('❌ Signup error:', error);
-        throw new Error(error.message);
+    try {
+        const { data, error } = await client
+            .rpc('create_customer_account', {
+                p_id: id,
+                p_name: name,
+                p_email: email,
+                p_phone: phone || '',
+                p_address: address || '',
+                p_country: country || '',
+                p_password: password
+            });
+        
+        if (error) {
+            console.error('❌ Signup error:', error);
+            throw new Error(error.message);
+        }
+        
+        console.log('✅ Account created successfully for:', email);
+        
+        return { 
+            id: id, 
+            email, 
+            name, 
+            phone: phone || '', 
+            address: address || '',
+            country: country || ''
+        };
+    } catch (err) {
+        console.error('❌ RPC error:', err);
+        throw new Error('Failed to create account. Please try again.');
     }
-    
-    return { id, email, name, phone, address };
 }
 
 async function loginCustomer(email, password) {
@@ -323,7 +347,7 @@ async function loginCustomer(email, password) {
     // Get customer by email
     const { data: customer, error } = await client
         .from('customer_accounts')
-        .select('id, name, email, phone, address, password_hash')
+         .select('id, name, email, phone, address, country, bio, password_hash') 
         .eq('email', email)
         .maybeSingle();
     
@@ -352,8 +376,10 @@ async function loginCustomer(email, password) {
         name: customer.name,
         email: customer.email,
         phone: customer.phone,
-        address: customer.address
+        address: customer.address,
+        country: customer.country || ''  // ✅ Added country
     };
+
 }
 
 // ============================================================
@@ -2781,6 +2807,31 @@ function getFallbackBusinessInfo() {
 async function initHeader() {
     // DOM Elements
     const elements = {
+        registerName: document.getElementById('stRegisterName'),
+        registerEmail: document.getElementById('stRegisterEmail'),
+        registerPassword: document.getElementById('stRegisterPassword'),
+        registerCountryCode: document.getElementById('stRegisterCountryCode'),
+        registerPhone: document.getElementById('stRegisterPhone'),
+        registerAddress: document.getElementById('stRegisterAddress'),
+        registerCountry: document.getElementById('stRegisterCountry'),
+        registerTerms: document.getElementById('stRegisterTerms'),
+        registerSubmit: document.getElementById('stRegisterSubmit'),
+        
+        switchToRegister: document.getElementById('stSwitchToRegister'),
+        switchToLogin: document.getElementById('stSwitchToLogin'),
+        myOrdersBtn: document.getElementById('stMyOrdersBtn'),
+        andmyOrdersBtn: document.getElementById('andstMyOrdersBtn'),
+        settingsBtn: document.getElementById('stSettingsBtn'),
+        andsettingsBtn: document.getElementById('andstSettingsBtn'),
+        loginEmailError: document.getElementById('stLoginEmailError'),
+        loginPasswordError: document.getElementById('stLoginPasswordError'),
+        registerNameError: document.getElementById('stRegisterNameError'),
+        registerEmailError: document.getElementById('stRegisterEmailError'),
+        registerPasswordError: document.getElementById('stRegisterPasswordError'),
+        registerPhoneError: document.getElementById('stRegisterPhoneError'),
+        registerAddressError: document.getElementById('stRegisterAddressError'),
+        registerCountryError: document.getElementById('stRegisterCountryError'),
+        registerTermsError: document.getElementById('stRegisterTermsError'),
         topbar: document.getElementById('stTopbar'),
         accountBtn: document.getElementById('stAccountBtn'),
         accountDropdown: document.getElementById('stAccountDropdown'),
