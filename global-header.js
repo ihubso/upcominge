@@ -2117,7 +2117,6 @@ i.fas.fa-heart {
                     <div class="st-nav-item" style="position:relative;">
                         <button class="st-account-btn" id="stAccountBtn">
                             <div class="st-account-avatar" id="stAccountAvatar">G</div>
-                            <span class="st-account-label" id="stAccountLabel">Guest</span>
                             <i class="fas fa-chevron-down" style="font-size:12px;opacity:0.5;"></i>
                         </button>
                         
@@ -2201,7 +2200,7 @@ i.fas.fa-heart {
                     <span class="st-icon-wrap">
                         <div class="st-avatar-small" id="stMobileAvatar">G</div>
                     </span>
-                    <span class="st-label" id="stMobileAccountLabel">Account</span>
+                    
                 </button>
             </div>
         </nav>
@@ -2852,9 +2851,7 @@ async function initHeader() {
         mobileWishlistCount: document.getElementById('stMobileWishlistCount'),
         mobileAccountBtn: document.getElementById('stMobileAccountBtn'),
         mobileAvatar: document.getElementById('stMobileAvatar'),
-        mobileAccountLabel: document.getElementById('stMobileAccountLabel'),
         accountAvatar: document.getElementById('stAccountAvatar'),
-        accountLabel: document.getElementById('stAccountLabel'),
         dropdownAvatar: document.getElementById('stDropdownAvatar'),
         dropdownName: document.getElementById('stDropdownName'),
         dropdownEmail: document.getElementById('stDropdownEmail'),
@@ -4309,14 +4306,13 @@ async function loadUserData(customerId, shouldMigrate = false) {
             
             // Desktop
             elements.accountAvatar.textContent = initial;
-            elements.accountLabel.textContent = name;
             elements.dropdownAvatar.textContent = initial;
             elements.dropdownName.textContent = name;
             elements.dropdownEmail.textContent = user.email || '';
             
             // Mobile
             elements.mobileAvatar.textContent = initial;
-            elements.mobileAccountLabel.textContent = name;
+        
             
             // Show logout button, hide auth buttons
             elements.logoutBtn.style.display = 'flex';
@@ -4334,7 +4330,7 @@ async function loadUserData(customerId, shouldMigrate = false) {
             
             // Mobile
             elements.mobileAvatar.textContent = 'G';
-            elements.mobileAccountLabel.textContent = 'Account';
+          
             
             // Hide logout button, show auth buttons
             elements.logoutBtn.style.display = 'none';
