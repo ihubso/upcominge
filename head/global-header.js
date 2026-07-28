@@ -132,7 +132,9 @@ function updateUrlWithUserInfo() {
     }
 }
 
-
+/**
+ * Clears user information from URL
+ */
 function clearUserInfoFromUrl() {
     try {
         const currentUrl = new URL(window.location.href);
@@ -272,6 +274,10 @@ async function getCurrentUser() {
 }
 
 
+
+// ============================================================
+// 2. CUSTOM AUTH FUNCTIONS (Using customer_accounts table)
+// ============================================================
 
 async function signUpCustomer(email, password, name, phone = '', address = '', country = '') {
     const client = getSupabaseClient();
@@ -2798,7 +2804,7 @@ function getFallbackBusinessInfo() {
 }
 
 async function initHeader() {
-   
+    // DOM Elements
     const elements = {
         registerName: document.getElementById('stRegisterName'),
         registerEmail: document.getElementById('stRegisterEmail'),
@@ -2999,7 +3005,9 @@ async function initHeader() {
         closeMobileDrawer();
         openRegisterModal();
     });
-
+    // ============================================================
+//  SEARCH WITH REAL-TIME RESULTS
+// ============================================================
 
 // --- Search State ---
 let searchTimeout = null;
@@ -3496,7 +3504,8 @@ function hideSearchResults() {
     // Don't hide mobile modal on blur - it's controlled separately
 }
 
-
+// --- Open Mobile Search ---
+// Update openMobileSearch function
 function openMobileSearch() {
     const overlay = document.getElementById('stSearchOverlay');
     const modal = document.getElementById('stSearchModal');
@@ -3557,6 +3566,11 @@ function selectCurrentSearchResult() {
     }
 }
 
+// ============================================================
+//  PATCH: Update Search Event Listeners
+// ============================================================
+
+// Replace the existing search event listeners with these
 
 // --- Desktop Search ---
 const desktopSearch = document.getElementById('stSearchInput');
@@ -3626,10 +3640,13 @@ if (desktopSearch) {
     });
 }
 
-
+// --- Mobile Search ---
+// --- Mobile Search ---
+// --- Mobile Search (FIXED) ---
 const mobileSearch = document.getElementById('stMobileSearchInput');
 if (mobileSearch) {
-
+    // Remove the problematic focus event
+    // Only use click event with proper prevention
     
     mobileSearch.addEventListener('click', function(e) {
         e.preventDefault();

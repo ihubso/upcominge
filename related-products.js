@@ -155,7 +155,7 @@ function renderProductCards(products, container) {
                     ` : ''}
                     </div>
                     <div class="rp-card-actions">
-                        <button class="rp-btn-cart" onclick="event.stopPropagation(); addRandomToCart('${product.id}')">
+                        <button class="rp-btn-cart" onclick="event.stopPropagation(); addToCart('${product.id}')">
                             <i class="fas fa-shopping-bag"></i> Add to Cart
                         </button>
                         <a href="/item/?product=${product.id}" class="rp-btn-view" onclick="event.stopPropagation();">

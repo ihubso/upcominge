@@ -6,31 +6,11 @@
  */
 
 // ============================================================
-// 1. SUPABASE CONFIGURATION
-// ============================================================
-
-const HOT_SUPABASE_CONFIG = {
-    url: 'https://bulprhgwuwatzobiojwz.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHByaGd3dXdhdHpvYmlvand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDczNDksImV4cCI6MjA5MjA4MzM0OX0.2fcHrGX7iXw5G9nGRNkBy70W1Ex_om1C0v3qbryPmvw'
-};
-
-let hotSupabaseClient = null;
-
-function getHotSupabaseClient() {
-    if (hotSupabaseClient) return hotSupabaseClient;
-    if (typeof supabase !== 'undefined' && supabase.createClient) {
-        hotSupabaseClient = supabase.createClient(HOT_SUPABASE_CONFIG.url, HOT_SUPABASE_CONFIG.anonKey);
-        return hotSupabaseClient;
-    }
-    return null;
-}
-
-// ============================================================
 // 2. FETCH HOT PRODUCTS
 // ============================================================
 
 async function fetchHotProducts() {
-    const client = getHotSupabaseClient();
+    const client = getSupabaseClient();
     if (!client) {
         console.warn('⚠️ Supabase not available for hot products');
         return [];
@@ -62,7 +42,7 @@ async function fetchHotProducts() {
 // ============================================================
 
 async function fetchReviewsFromDB() {
-    const client = getHotSupabaseClient(); // ✅ FIXED: Use the same client
+    const client = getSupabaseClient(); // ✅ FIXED: Use the same client
     if (!client) return {};
     
     try {
@@ -296,7 +276,7 @@ async function toggleWishlist(productId) {
         // Save to Supabase
         const customerId = window.getCurrentCustomerId?.();
         const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-        const client = getHotSupabaseClient();
+        const client = getSupabaseClient();
         if (client) {
             await saveWishlistToDB(customerId || sessionId, wishlist, !!customerId);
         }
@@ -326,7 +306,7 @@ async function toggleWishlist(productId) {
 async function addToCart(productId) {
     try {
         // Get product details
-        const client = getHotSupabaseClient();
+        const client = getSupabaseClient();
         let product = null;
 
         if (client) {
@@ -387,7 +367,7 @@ async function addToCart(productId) {
         // Save to Supabase
         const customerId = window.getCurrentCustomerId?.();
         const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-        const client2 = getHotSupabaseClient();
+        const client2 = getSupabaseClient();
         if (client2) {
             await saveCartToDB(customerId || sessionId, cart, !!customerId);
         }
@@ -411,7 +391,7 @@ async function addToCart(productId) {
 // ============================================================
 
 async function saveWishlistToDB(identifier, wishlist, hasCustomerId = false) {
-    const client = getHotSupabaseClient();
+    const client = getSupabaseClient();
     if (!client) return;
 
     const customerId = hasCustomerId ? identifier : null;
@@ -438,7 +418,7 @@ async function saveWishlistToDB(identifier, wishlist, hasCustomerId = false) {
 }
 
 async function saveCartToDB(identifier, cart, hasCustomerId = false) {
-    const client = getHotSupabaseClient();
+    const client = getSupabaseClient();
     if (!client) return;
 
     const customerId = hasCustomerId ? identifier : null;

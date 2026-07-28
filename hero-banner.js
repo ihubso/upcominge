@@ -7,31 +7,11 @@
  */
 
 // ============================================================
-// 1. SUPABASE CONFIGURATION
-// ============================================================
-
-const HERO_SUPABASE_CONFIG = {
-    url: 'https://bulprhgwuwatzobiojwz.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHByaGd3dXdhdHpvYmlvand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDczNDksImV4cCI6MjA5MjA4MzM0OX0.2fcHrGX7iXw5G9nGRNkBy70W1Ex_om1C0v3qbryPmvw'
-};
-
-let heroSupabaseClient = null;
-
-function getHeroSupabaseClient() {
-    if (heroSupabaseClient) return heroSupabaseClient;
-    if (typeof supabase !== 'undefined' && supabase.createClient) {
-        heroSupabaseClient = supabase.createClient(HERO_SUPABASE_CONFIG.url, HERO_SUPABASE_CONFIG.anonKey);
-        return heroSupabaseClient;
-    }
-    return null;
-}
-
-// ============================================================
 // 2. FETCH FEATURED PRODUCTS
 // ============================================================
 
 async function fetchFeaturedProducts() {
-    const client = getHeroSupabaseClient();
+    const client = getSupabaseClient();
     if (!client) {
         console.warn('⚠️ Supabase not available for hero banner');
         return [];

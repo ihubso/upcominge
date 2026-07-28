@@ -14,22 +14,6 @@
         countdownTarget: null // Will be set to 24 hours from now
     };
 
-    // ============================================================
-    // 1. SUPABASE CLIENT
-    // ============================================================
-
-    function getSupabaseClient() {
-        if (window.supabaseClient) return window.supabaseClient;
-        if (typeof supabase !== 'undefined' && supabase.createClient) {
-            const client = supabase.createClient(
-                'https://bulprhgwuwatzobiojwz.supabase.co',
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHByaGd3dXdhdHpvYmlvand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDczNDksImV4cCI6MjA5MjA4MzM0OX0.2fcHrGX7iXw5G9nGRNkBy70W1Ex_om1C0v3qbryPmvw'
-            );
-            window.supabaseClient = client;
-            return client;
-        }
-        return null;
-    }
 
     // ============================================================
     // 2. FETCH PRODUCTS
@@ -266,9 +250,9 @@
                             ${isDeal && originalPrice > price ? 
                                 `<span class="original-price">${formatPrice(originalPrice)}</span>` : ''}
                         </div>
-                        <button class="category-add-btn" onclick="event.stopPropagation(); window.addToCategoryCart('${product.id}')">
-                            <i class="fas fa-shopping-bag"></i> Add
-                        </button>
+                        <a href="/item/?id=${product.id}" class="st-btn-view">
+                            <i class="fas fa-eye"></i>
+                        </a>
                     </div>
                 </div>
             `;

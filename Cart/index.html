@@ -744,7 +744,7 @@
     // 4. SAVE CART - FIXED: Always saves to localStorage
     // ============================================================
 
-    function saveCart() {
+    async function saveCart() {
         // 1. DEDUPLICATE: Remove duplicate product entries before saving
         const uniqueCart = [];
         const seen = new Set();
@@ -768,8 +768,8 @@
         cartItems = uniqueCart;
         
         // ✅ 2. ALWAYS save to localStorage first (for checkout page)
-        localStorage.setItem('st_cart', JSON.stringify(cartItems));
-        sessionStorage.setItem('st_cart', JSON.stringify(cartItems));
+        localStorage.setItem('st_cartcheckout', JSON.stringify(cartItems));
+        sessionStorage.setItem('st_cartcheckeout', JSON.stringify(cartItems));
         console.log('💾 Cart saved to localStorage:', cartItems.length, 'items');
 
         // 3. Update header badge
@@ -944,11 +944,11 @@
     document.addEventListener('DOMContentLoaded', () => {
         const checkoutBtn = document.getElementById('stCheckoutBtn');
         if (checkoutBtn) {
-            checkoutBtn.addEventListener('click', () => {
+            checkoutBtn.addEventListener('click',  async () => {
                 if (cartItems.length === 0) return;
                 
                 // ✅ CRITICAL: Save cart to localStorage before navigating
-                saveCart();
+                await saveCart();
                 
                 const isLoggedIn = window.STHeader?.AppState?.isLoggedIn || false;
                 
@@ -1050,17 +1050,6 @@
 
     async function loadCartData() {
         try {
-            // ✅ 1. First try to load from localStorage (fastest)
-            const localCart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-            
-            if (localCart && localCart.length > 0) {
-                cartItems = localCart;
-                console.log('📦 Cart loaded from localStorage:', cartItems.length, 'items');
-                renderCart();
-                // Still sync with DB in background
-                syncCartWithDB();
-                return;
-            }
 
             // 2. If no local cart, try Supabase
             const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
@@ -1073,8 +1062,7 @@
                 if (dbCart && dbCart.length > 0) {
                     console.log('📦 Cart loaded from DB using customer_id:', dbCart.length, 'items');
                     cartItems = dbCart;
-                    // Save to localStorage for next time
-                    localStorage.setItem('st_cart', JSON.stringify(cartItems));
+        
                     renderCart();
                     return;
                 }
@@ -1086,7 +1074,7 @@
                 if (dbCart && dbCart.length > 0) {
                     console.log('📦 Cart loaded from DB using session_id:', dbCart.length, 'items');
                     cartItems = dbCart;
-                    localStorage.setItem('st_cart', JSON.stringify(cartItems));
+                   
                     
                     // Migrate to customer_id if logged in
                     if (customerId) {
@@ -1101,12 +1089,12 @@
 
             // 4. No cart found - start empty
             cartItems = [];
-            localStorage.removeItem('st_cart');
+        
             renderCart();
             
         } catch (err) {
             console.warn('⚠️ Failed to load cart:', err.message);
-            cartItems = JSON.parse(localStorage.getItem('st_cart') || '[]');
+           
             renderCart();
         }
     }
