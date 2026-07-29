@@ -225,7 +225,7 @@ $finalPrice = $dealDiscount > 0 ? $price * (1 - $dealDiscount / 100) : $price;
         </div>
         
         <div class="redirect">
-            👉 <a href="/item/?product=<?php echo $productId; ?>">View full product page</a> with cart & reviews
+            👉 <a href="/item/?product=<?php echo $productId; ?>">View full product page</a> with cart & reviews v1202
         </div>
     </div>
 </body>
