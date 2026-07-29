@@ -3,10 +3,7 @@
     {
       "source": "/item/:productId",
       "destination": "/api/item?product=:productId"
-    },
-    {
-      "source": "/((?!item|api).*).*",
-      "destination": "/404/index.html"
     }
-  ]
+  ],
+  "cleanUrls": true
 }
