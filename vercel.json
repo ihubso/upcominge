@@ -4,6 +4,5 @@
       "source": "/item/:productId",
       "destination": "/api/item?product=:productId"
     }
-  ],
-  "cleanUrls": true
+  ]
 }
