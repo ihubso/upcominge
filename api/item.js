@@ -549,6 +549,7 @@ module.exports = async (req, res) => {
         
         <div class="footer-link">
             👉 <a href="/item/?product=${product}">View full product page</a> with cart & reviews
+            v01
         </div>
     </div>
 </body>
