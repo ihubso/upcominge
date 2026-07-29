@@ -141,11 +141,7 @@
                                 <span class="deal-current-price">FCFA ${currentPrice.toFixed(2)}</span>
                                 <span class="deal-original-price">FCFA ${originalPrice.toFixed(2)}</span>
                             </div>
-                            <div class="deal-card-actions">
-                                <button class="deal-btn-cart" onclick="event.stopPropagation(); window.addToCartFromDeal('${deal.id}')">
-                                    <i class="fas fa-shopping-bag"></i> Add to Cart
-                                </button>
-                            </div>
+      
                         </div>
                     </div>
                 </div>
@@ -238,91 +234,7 @@
         }
     }
 
-    // ============================================================
-    // 6. ADD TO CART FROM DEALS
-    // ============================================================
 
-
-async function addToCartFromDeal(productId) {
-    try {
-        // Get product details
-        const client = getHotSupabaseClient();
-        let product = null;
-
-        if (client) {
-            const { data, error } = await client
-                .from('products')
-                .select('*')
-                .eq('id', productId)
-                .single();
-
-            if (!error && data) {
-                product = data;
-            }
-        }
-
-
-        if (!product) {
-            const card = document.querySelector(`.hot-product-card[data-product-id="${productId}"]`);
-            if (card) {
-                const name = card.querySelector('.hot-product-name')?.textContent || 'Unknown Product';
-                const priceText = card.querySelector('.hot-current-price')?.textContent || '$0';
-                const price = parseFloat(priceText.replace('$', ''));
-                const image = card.querySelector('.hot-product-image img')?.src || 'https://placehold.co/400x400';
-                product = { id: productId, name, price, image };
-            }
-        }
-
-        if (!product) {
-            showToast('❌ Product not found', 'error');
-            return;
-        }
-
-        // Get current cart
-        let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-
-        // Check if product already in cart
-        const existingIndex = cart.findIndex(item => item.product_id === productId || item.id === productId);
-
-        if (existingIndex !== -1) {
-            cart[existingIndex].qty = (cart[existingIndex].qty || 1) + 1;
-        } else {
-            cart.push({
-                product_id: productId,
-                id: productId,
-                name: product.name || 'Unknown Product',
-                price: product.price || 0,
-                qty: 1,
-                image: product.image || product.images?.[0] || 'https://placehold.co/400x400',
-                variants: product.variants || {},
-                isDeal: product.isDeal || false,
-                originalPrice: product.originalPrice || null,
-                discount: product.discount || null,
-                brand: product.brand || ''
-            });
-        }
-
-
-        const customerId = window.getCurrentCustomerId?.();
-        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-        const client2 = getHotSupabaseClient();
-        if (client2) {
-            await saveCartToDB(customerId || sessionId, cart, !!customerId);
-        }
-
-        // Update header
-        if (window.STHeader) {
-            window.STHeader.AppState.cart = cart;
-            window.STHeader.updateCounts();
-        }
-
-        showToast('✅ Added to cart!', 'success');
-
-    } catch (err) {
-        console.error('❌ Error adding to cart:', err);
-        showToast('❌ Failed to add to cart', 'error');
-    }
-}
 
     // ============================================================
     // 7. TOAST NOTIFICATION
@@ -706,7 +618,7 @@ async function addToCartFromDeal(productId) {
         window.loadAllDeals = function() {
             window.location.href = '/deals/';
         };
-        window.addToCartFromDeal = addToCartFromDeal;
+      
 
         console.log(`✅ Deals initialized: ${deals.length} deals - Slider Mode`);
     }

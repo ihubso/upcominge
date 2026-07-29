@@ -155,9 +155,6 @@ function renderProductCards(products, container) {
                     ` : ''}
                     </div>
                     <div class="rp-card-actions">
-                        <button class="rp-btn-cart" onclick="event.stopPropagation(); addToCart('${product.id}')">
-                            <i class="fas fa-shopping-bag"></i> Add to Cart
-                        </button>
                         <a href="/item/?product=${product.id}" class="rp-btn-view" onclick="event.stopPropagation();">
                             <i class="fas fa-eye"></i>
                         </a>
@@ -241,104 +238,6 @@ async function saveRandomWishlistToDB(identifier, wishlist, hasCustomerId = fals
     }
 }
 
-// ============================================================
-// ADD TO CART
-// ============================================================
-async function addRandomToCart(productId) {
-    try {
-        const allProducts = await fetchAllProducts();
-        const product = allProducts.find(p => p.id === productId);
-        
-        if (!product) {
-            showRandomToast('❌ Product not found', 'error');
-            return;
-        }
-
-        let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-        const existingIndex = cart.findIndex(item => 
-            item.product_id === productId || item.id === productId
-        );
-
-        if (existingIndex !== -1) {
-            cart[existingIndex].qty = (cart[existingIndex].qty || 1) + 1;
-        } else {
-            cart.push({
-                product_id: productId,
-                id: productId,
-                name: product.name || 'Unknown Product',
-                price: product.price || 0,
-                qty: 1,
-                image: product.image || product.images?.[0] || 'https://placehold.co/400x400',
-                variants: product.variants || {},
-                isDeal: product.isDeal || false,
-                originalPrice: product.originalPrice || null,
-                discount: product.discount || null,
-                brand: product.brand || ''
-            });
-        }
-
-        
-
-        // Save to Supabase
-        const customerId = window.getCurrentCustomerId?.();
-        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-        const client = getSupabaseClient();
-        if (client) {
-            await saveRandomCartToDB(customerId || sessionId, cart, !!customerId);
-        }
-
-        // Update header
-        if (window.STHeader) {
-            window.STHeader.AppState.cart = cart;
-            if (window.STHeader.updateCounts) {
-                window.STHeader.updateCounts();
-            }
-        }
-
-        showRandomToast('✅ Added to cart!', 'success');
-
-    } catch (err) {
-        console.error('❌ Error adding to cart:', err);
-        showRandomToast('❌ Failed to add to cart', 'error');
-    }
-}
-
-async function saveRandomCartToDB(identifier, cart, hasCustomerId = false) {
-    const client = getSupabaseClient();
-    if (!client) return;
-
-    const customerId = hasCustomerId ? identifier : null;
-    const sessionId = hasCustomerId ? null : identifier;
-
-    try {
-        if (customerId) {
-            await client.from('cart').delete().eq('customer_id', customerId);
-        } else {
-            await client.from('cart').delete().eq('session_id', sessionId);
-        }
-        if (cart.length > 0) {
-            const rows = cart.map(item => ({
-                ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
-                product_id: item.product_id || item.id || '',
-                name: item.name || 'Unknown Product',
-                price: item.price || 0,
-                qty: item.qty || 1,
-                image: item.image || 'https://placehold.co/400x400',
-                variants: item.variants || {},
-                is_deal: item.isDeal || false,
-                original_price: item.originalPrice || null,
-                discount: item.discount || null
-            }));
-            const validRows = rows.filter(row => row.product_id);
-            if (validRows.length > 0) {
-                const { error } = await client.from('cart').insert(validRows);
-                if (error) console.error('❌ Error saving cart:', error.message);
-            }
-        }
-    } catch (err) {
-        console.error('❌ Error:', err.message);
-    }
-}
 
 // ============================================================
 // TOAST NOTIFICATION
@@ -1086,13 +985,11 @@ window.RandomProducts = {
     fetchAll: fetchAllProducts,
     getRandom: getRandomProducts,
     loadMore: loadMoreProducts,
-    addToCart: addRandomToCart,
     toggleWishlist: toggleRandomWishlist
 };
 
 // Expose individual functions for inline onclick handlers
 window.toggleRandomWishlist = toggleRandomWishlist;
-window.addRandomToCart = addRandomToCart;
 
 // ============================================================
 // AUTO-INITIALIZE

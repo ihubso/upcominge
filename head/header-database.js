@@ -34,42 +34,63 @@ async function fetchCartFromDB(customerId) {
     }
 }
 
-async function saveCartToDB(customerId, cart) {
-    if (!customerId) {
-        console.warn('⚠️ saveCartToDB: No customer_id provided - skipping DB sync');
-        return;
-    }
-    
-    const client = getSupabaseClient();
-    if (!client) return;
-    
-    try {
-        await client.from('cart').delete().eq('customer_id', customerId);
+    async function saveCartToDB(identifier, cart, hasCustomerId = false) {
+        const client = getSupabaseClient();
+        if (!client) return;
         
-        if (cart.length > 0) {
-            const rows = cart.map(item => ({
-                customer_id: customerId,
-                product_id: item.product_id || item.id || '',
-                name: item.name || 'Unknown Product',
-                price: item.price || 0,
-                qty: item.qty || 1,
-                image: item.image || 'https://placehold.co/600x400',
-                variants: item.variants || {},
-                is_deal: item.isDeal || false,
-                original_price: item.originalPrice || null,
-                discount: item.discount || null
-            }));
+        try {
+            // Delete ONLY the rows for this specific identifier
+            if (hasCustomerId) {
+                await client.from('cart').delete().eq('customer_id', identifier);
+            } else {
+                await client.from('cart').delete().eq('session_id', identifier);
+            }
+            
+            if (cart.length === 0) {
+                console.log('✅ Cart cleared from DB (empty cart)');
+                return;
+            }
+            
+            // Insert new cart items
+            const rows = cart.map(item => {
+                const row = {
+                    product_id: item.product_id || item.id || '',
+                    name: item.name || 'Unknown Product',
+                    price: item.price || 0,
+                    qty: item.qty || 1,
+                    image: item.image || 'https://placehold.co/600x400',
+                    variants: item.variants || {},
+                    is_deal: item.isDeal || false,
+                    original_price: item.originalPrice || null,
+                    discount: item.discount || null,
+                    brand: item.brand || ''
+                };
+                
+                if (hasCustomerId) {
+                    row.customer_id = identifier;
+                    row.session_id = null;
+                } else {
+                    row.session_id = identifier;
+                    row.customer_id = null;
+                }
+                
+                return row;
+            });
             
             const validRows = rows.filter(row => row.product_id);
             if (validRows.length > 0) {
                 const { error } = await client.from('cart').insert(validRows);
-                if (error) console.error('❌ Error saving cart:', error.message);
+                if (error) {
+                    console.error('❌ Error saving cart:', error.message);
+                } else {
+                    console.log(`✅ Cart saved to DB: ${validRows.length} items (${hasCustomerId ? 'customer_id' : 'session_id'})`);
+                }
             }
+        } catch (err) {
+            console.error('❌ Error saving cart:', err.message);
         }
-    } catch (err) {
-        console.error('❌ Error saving cart:', err.message);
     }
-}
+
 
 async function fetchWishlistFromDB(customerId) {
     if (!customerId) {

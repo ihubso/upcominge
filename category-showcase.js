@@ -275,74 +275,6 @@
     }
 
     // ============================================================
-    // 9. ADD TO CART
-    // ============================================================
-
-    async function addToCategoryCart(productId) {
-        try {
-            const client = getSupabaseClient();
-            let product = null;
-
-            if (client) {
-                const { data, error } = await client
-                    .from('products')
-                    .select('*')
-                    .eq('id', productId)
-                    .single();
-
-                if (!error && data) {
-                    product = data;
-                }
-            }
-
-            if (!product) {
-                showCategoryToast('❌ Product not found', 'error');
-                return;
-            }
-
-            let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-            const existing = cart.find(item => item.product_id === productId || item.id === productId);
-
-            if (existing) {
-                existing.qty = (existing.qty || 0) + 1;
-            } else {
-                cart.push({
-                    product_id: productId,
-                    id: productId,
-                    name: product.name || 'Unknown',
-                    price: product.price || 0,
-                    qty: 1,
-                    image: product.image || 'https://placehold.co/400x400',
-                    variants: product.variants || {},
-                    brand: product.brand || '',
-                    isDeal: product.isDeal || false,
-                    originalPrice: product.originalPrice || null,
-                    discount: product.discount || null
-                });
-            }
-
-           
-
-            const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
-            if (customerId && window.saveCartToDB) {
-                await window.saveCartToDB(customerId, cart);
-            }
-
-            if (window.STHeader) {
-                window.STHeader.AppState.cart = cart;
-                if (window.STHeader.updateCounts) {
-                    window.STHeader.updateCounts();
-                }
-            }
-
-            showCategoryToast(`✅ ${product.name || 'Product'} added!`, 'success');
-        } catch (err) {
-            console.error('❌ Add to cart error:', err);
-            showCategoryToast('❌ Failed to add', 'error');
-        }
-    }
-
-    // ============================================================
     // 10. TOAST NOTIFICATION
     // ============================================================
 
@@ -1018,8 +950,7 @@
             // Render products
             renderProducts(products, 'categoryProducts', title);
 
-            // Expose functions
-            window.addToCategoryCart = addToCategoryCart;
+       
 
             console.log(`✅ Category Showcase initialized: ${products.length} products, filter: ${filterType}=${filterValue}, ${heroImages.length} hero images`);
 
@@ -1067,7 +998,6 @@
         init: initCategoryShowcase,
         fetchProducts: fetchProductsByCategoryOrBrand,
         renderProducts: renderProducts,
-        addToCart: addToCategoryCart,
         startCountdown: startCountdown,
         detectCategory: detectCategoryFromUrl,
         fetchHeroImages: fetchRandomProductImages

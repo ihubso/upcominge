@@ -234,9 +234,6 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
                     ` : ''}
                     </div>
                     <div class="hot-product-actions">
-                        <button class="hot-btn-cart" onclick="addToCart('${product.id}')">
-                            <i class="fas fa-shopping-bag"></i> Add to Cart
-                        </button>
                         <a href="/item/?id=${product.id}" class="hot-btn-view">
                             <i class="fas fa-eye"></i>
                         </a>
@@ -299,92 +296,6 @@ async function toggleWishlist(productId) {
     }
 }
 
-// ============================================================
-// 7. ADD TO CART
-// ============================================================
-
-async function addToCart(productId) {
-    try {
-        // Get product details
-        const client = getSupabaseClient();
-        let product = null;
-
-        if (client) {
-            const { data, error } = await client
-                .from('products')
-                .select('*')
-                .eq('id', productId)
-                .single();
-
-            if (!error && data) {
-                product = data;
-            }
-        }
-
-
-        if (!product) {
-            const card = document.querySelector(`.hot-product-card[data-product-id="${productId}"]`);
-            if (card) {
-                const name = card.querySelector('.hot-product-name')?.textContent || 'Unknown Product';
-                const priceText = card.querySelector('.hot-current-price')?.textContent || '$0';
-                const price = parseFloat(priceText.replace('$', ''));
-                const image = card.querySelector('.hot-product-image img')?.src || 'https://placehold.co/400x400';
-                product = { id: productId, name, price, image };
-            }
-        }
-
-        if (!product) {
-            showToast('❌ Product not found', 'error');
-            return;
-        }
-
-        // Get current cart
-        let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-
-        // Check if product already in cart
-        const existingIndex = cart.findIndex(item => item.product_id === productId || item.id === productId);
-
-        if (existingIndex !== -1) {
-            cart[existingIndex].qty = (cart[existingIndex].qty || 1) + 1;
-        } else {
-            cart.push({
-                product_id: productId,
-                id: productId,
-                name: product.name || 'Unknown Product',
-                price: product.price || 0,
-                qty: 1,
-                image: product.image || product.images?.[0] || 'https://placehold.co/400x400',
-                variants: product.variants || {},
-                isDeal: product.isDeal || false,
-                originalPrice: product.originalPrice || null,
-                discount: product.discount || null,
-                brand: product.brand || ''
-            });
-        }
-
-    
-
-        // Save to Supabase
-        const customerId = window.getCurrentCustomerId?.();
-        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-        const client2 = getSupabaseClient();
-        if (client2) {
-            await saveCartToDB(customerId || sessionId, cart, !!customerId);
-        }
-
-        // Update header
-        if (window.STHeader) {
-            window.STHeader.AppState.cart = cart;
-            window.STHeader.updateCounts();
-        }
-
-        showToast('✅ Added to cart!', 'success');
-
-    } catch (err) {
-        console.error('❌ Error adding to cart:', err);
-        showToast('❌ Failed to add to cart', 'error');
-    }
-}
 
 // ============================================================
 // 8. SUPABASE SYNC FUNCTIONS
@@ -417,44 +328,6 @@ async function saveWishlistToDB(identifier, wishlist, hasCustomerId = false) {
     }
 }
 
-async function saveCartToDB(identifier, cart, hasCustomerId = false) {
-    const client = getSupabaseClient();
-    if (!client) return;
-
-    const customerId = hasCustomerId ? identifier : null;
-    const sessionId = hasCustomerId ? null : identifier;
-
-    try {
-        if (customerId) {
-            await client.from('cart').delete().eq('customer_id', customerId);
-        } else {
-            await client.from('cart').delete().eq('session_id', sessionId);
-        }
-
-        if (cart.length > 0) {
-            const rows = cart.map(item => ({
-                ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
-                product_id: item.product_id || item.id || '',
-                name: item.name || 'Unknown Product',
-                price: item.price || 0,
-                qty: item.qty || 1,
-                image: item.image || 'https://placehold.co/400x400',
-                variants: item.variants || {},
-                is_deal: item.isDeal || false,
-                original_price: item.originalPrice || null,
-                discount: item.discount || null
-            }));
-
-            const validRows = rows.filter(row => row.product_id);
-            if (validRows.length > 0) {
-                const { error } = await client.from('cart').insert(validRows);
-                if (error) console.error('❌ Error saving cart:', error.message);
-            }
-        }
-    } catch (err) {
-        console.error('❌ Error:', err.message);
-    }
-}
 
 // ============================================================
 // 9. TOAST NOTIFICATION
@@ -1192,7 +1065,6 @@ async function initHotProducts(containerId = 'hotProducts', limit = 8) {
 
     // Expose functions globally for onclick handlers
     window.toggleWishlist = toggleWishlist;
-    window.addToCart = addToCart;
 
     console.log('✅ Hot products initialized with', products.length, 'products');
 }
@@ -1228,10 +1100,8 @@ window.hotProducts = {
     init: initHotProducts,
     fetch: fetchHotProducts,
     render: renderHotProducts,
-    addToCart: addToCart,
     toggleWishlist: toggleWishlist,
-    showToast: showToast,
-    getSupabaseClient: getHotSupabaseClient
+    showToast: showToast
 };
 
 console.log('✅ Hot Products System Loaded');

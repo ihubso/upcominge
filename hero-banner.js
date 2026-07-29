@@ -987,7 +987,6 @@ window.heroBanner = {
     init: initHeroBanner,
     fetchFeatured: fetchFeaturedProducts,
     render: renderHeroBanner,
-    getSupabaseClient: getHeroSupabaseClient
 };
 
 console.log('✅ Hero Banner System Loaded');

@@ -133,6 +133,37 @@ function getFallbackBusinessInfo() {
     };
 }
 
+function setPendingCheckout(value = true) {
+    try {
+        const state = value ? '1' : '0';
+        localStorage.setItem('st_pending_checkout', state);
+        sessionStorage.setItem('st_pending_checkout', state);
+    } catch (err) {
+        console.warn('⚠️ Failed to save pending checkout state:', err);
+    }
+}
+
+function clearPendingCheckout() {
+    try {
+        localStorage.removeItem('st_pending_checkout');
+        sessionStorage.removeItem('st_pending_checkout');
+    } catch (err) {
+        console.warn('⚠️ Failed to clear pending checkout state:', err);
+    }
+}
+
+function shouldRedirectToCheckout() {
+    try {
+        return localStorage.getItem('st_pending_checkout') === '1' || sessionStorage.getItem('st_pending_checkout') === '1';
+    } catch (err) {
+        return false;
+    }
+}
+
+window.setPendingCheckout = setPendingCheckout;
+window.clearPendingCheckout = clearPendingCheckout;
+window.shouldRedirectToCheckout = shouldRedirectToCheckout;
+
 async function initHeader() {
    
     const elements = {
@@ -240,13 +271,10 @@ async function initHeader() {
     
     // ----- Mobile Account Button -----
     elements.mobileAccountBtn.addEventListener('click', () => {
-        if (AppState.isLoggedIn) {
-            elements.accountDropdown.classList.toggle('open');
-            openMobileDrawer();
-        } else {
-            openLoginModal();
-        }
+   openMobileDrawer();
     });
+      
+
     
     // ----- Mobile Drawer -----
     function openMobileDrawer() {
@@ -1286,32 +1314,25 @@ console.log('✅ Search with real-time results initialized');
             AppState.authAttempts = 0;
             
             // Save user session
-            AppState.user = user;
-            AppState.isLoggedIn = true;
-            
-            // Check if "Remember Me" is checked
             const remember = elements.loginRemember && elements.loginRemember.checked;
-            
-            if (remember) {
-                localStorage.setItem('st_customer', JSON.stringify(user));
-                sessionStorage.removeItem('st_customer');
-                console.log('🔑 Remember me: saved to localStorage');
-            } else {
-                sessionStorage.setItem('st_customer', JSON.stringify(user));
-                localStorage.removeItem('st_customer');
-                console.log('🔑 Session only: saved to sessionStorage');
-            }
+            setAuthenticatedUser(user, { remember, persist: true });
             
             // Load cart and wishlist from DB using customer_id
-             await loadUserData(user.id, false);
-              updateUrlWithUserInfo(); 
-            updateAuthUI();
+            await loadUserData(user.id, false);
             closeAuthModal();
             
-            showNotification(`✅ Welcome back, ${user.name}!`);
-            setTimeout(() => {
-    window.location.reload();
-        }, 5000); // 5000 milliseconds = 5 seconds
+            if (window.shouldRedirectToCheckout && window.shouldRedirectToCheckout()) {
+                window.clearPendingCheckout();
+                showNotification('✅ Redirecting you to checkout...');
+                setTimeout(() => {
+                    window.location.href = '/checkout/';
+                }, 300);
+            } else {
+                showNotification(`✅ Welcome back, ${user.name}!`);
+                setTimeout(() => {
+                    window.location.reload();
+                }, 5000);
+            }
 
             
         } catch (err) {
@@ -1442,22 +1463,24 @@ elements.registerSubmit.addEventListener('click', async () => {
         AppState.authAttempts = 0;
         
         // Save user session
-        AppState.user = user;
-        AppState.isLoggedIn = true;
-        localStorage.setItem('st_customer', JSON.stringify(user));
-        sessionStorage.removeItem('st_customer');
+        setAuthenticatedUser(user, { remember: true, persist: true });
         
         // Load cart and wishlist from DB
         await loadUserData(user.id, true);
-        updateUrlWithUserInfo();
-        updateAuthUI();
         closeAuthModal();
         
-        showNotification(`✅ Account created successfully! Welcome ${user.name}!`);
-        
-        setTimeout(() => {
-            window.location.reload();
-        }, 5000);
+        if (window.shouldRedirectToCheckout && window.shouldRedirectToCheckout()) {
+            window.clearPendingCheckout();
+            showNotification('✅ Redirecting you to checkout...');
+            setTimeout(() => {
+                window.location.href = '/checkout/';
+            }, 300);
+        } else {
+            showNotification(`✅ Account created successfully! Welcome ${user.name}!`);
+            setTimeout(() => {
+                window.location.reload();
+            }, 5000);
+        }
         
     } catch (err) {
         console.error('❌ Signup error:', err);
@@ -1570,7 +1593,7 @@ async function loadUserData(customerId, shouldMigrate = false) {
             // User has existing cart in DB - use it
             AppState.cart = dbCart;
             // Update local storage to match DB
-            localStorage.setItem('st_cart', JSON.stringify(dbCart));
+            localStorage.setItem('stdbcart', JSON.stringify(dbCart));
             console.log(`📦 Loaded ${dbCart.length} items from DB cart`);
         } else if (shouldMigrate) {
             // Only migrate local cart if this is a NEW account (signup)
@@ -1625,37 +1648,37 @@ async function loadUserData(customerId, shouldMigrate = false) {
             const initial = name.charAt(0).toUpperCase();
             
             // Desktop
-            elements.accountAvatar.textContent = initial;
-            elements.dropdownAvatar.textContent = initial;
-            elements.dropdownName.textContent = name;
-            elements.dropdownEmail.textContent = user.email || '';
+                if (elements.accountAvatar) elements.accountAvatar.textContent = initial;
+                if (elements.dropdownAvatar) elements.dropdownAvatar.textContent = initial;
+                if (elements.dropdownName) elements.dropdownName.textContent = name;
+                if (elements.dropdownEmail) elements.dropdownEmail.textContent = user.email || '';
             
             // Mobile
-            elements.mobileAvatar.textContent = initial;
+                if (elements.mobileAvatar) elements.mobileAvatar.textContent = initial;
         
             
             // Show logout button, hide auth buttons
-            elements.logoutBtn.style.display = 'flex';
-            elements.androidLogout.style.display = 'flex';
-            elements.authButtons.style.display = 'none';
-            elements.mobileLoginBtn.style.display = 'none';
-            elements.mobileRegisterBtn.style.display = 'none';
+                if (elements.logoutBtn) elements.logoutBtn.style.display = 'flex';
+                if (elements.androidLogout) elements.androidLogout.style.display = 'flex';
+                if (elements.authButtons) elements.authButtons.style.display = 'none';
+                if (elements.mobileLoginBtn) elements.mobileLoginBtn.style.display = 'none';
+                if (elements.mobileRegisterBtn) elements.mobileRegisterBtn.style.display = 'none';
         } else {
             // Desktop
-            elements.accountAvatar.textContent = 'G';
-            elements.accountLabel.textContent = 'Guest';
-            elements.dropdownAvatar.textContent = 'G';
-            elements.dropdownName.textContent = 'Guest';
-            elements.dropdownEmail.textContent = '';
+                if (elements.accountAvatar) elements.accountAvatar.textContent = 'G';
+                if (elements.accountLabel) elements.accountLabel.textContent = 'Guest';
+                if (elements.dropdownAvatar) elements.dropdownAvatar.textContent = 'G';
+                if (elements.dropdownName) elements.dropdownName.textContent = 'Guest';
+                if (elements.dropdownEmail) elements.dropdownEmail.textContent = '';
             
             // Mobile
-            elements.mobileAvatar.textContent = 'G';
+                if (elements.mobileAvatar) elements.mobileAvatar.textContent = 'G';
           
             
             // Hide logout button, show auth buttons
-            elements.logoutBtn.style.display = 'none';
-             elements.androidLogout.style.display = 'none';
-            elements.authButtons.style.display = 'block';
+                if (elements.logoutBtn) elements.logoutBtn.style.display = 'none';
+                if (elements.androidLogout) elements.androidLogout.style.display = 'none';
+                if (elements.authButtons) elements.authButtons.style.display = 'block';
         }
         
         updateCounts();
@@ -1665,10 +1688,40 @@ async function loadUserData(customerId, shouldMigrate = false) {
     function updateCounts() {
         const totalItems = AppState.cart.reduce((sum, item) => sum + (item.qty || 1), 0);
         
-        elements.cartCount.textContent = totalItems;
-        elements.wishlistCount.textContent = AppState.wishlist.length;
-        elements.mobileCartCount.textContent = totalItems;
-        elements.mobileWishlistCount.textContent = AppState.wishlist.length;
+        if (elements.cartCount) elements.cartCount.textContent = totalItems;
+        if (elements.wishlistCount) elements.wishlistCount.textContent = AppState.wishlist.length;
+        if (elements.mobileCartCount) elements.mobileCartCount.textContent = totalItems;
+        if (elements.mobileWishlistCount) elements.mobileWishlistCount.textContent = AppState.wishlist.length;
+    }
+
+    function setAuthenticatedUser(user, { remember = false, persist = true } = {}) {
+        if (!user?.id) return false;
+
+        AppState.user = user;
+        AppState.isLoggedIn = true;
+
+        if (window.STHeader) {
+            window.STHeader.AppState = AppState;
+        }
+
+        window.AppState = AppState;
+
+        if (persist) {
+            if (remember) {
+                localStorage.setItem('st_customer', JSON.stringify(user));
+                sessionStorage.removeItem('st_customer');
+            } else {
+                sessionStorage.setItem('st_customer', JSON.stringify(user));
+                localStorage.removeItem('st_customer');
+            }
+        }
+
+        if (typeof window.updateUrlWithUserInfo === 'function') {
+            window.updateUrlWithUserInfo();
+        }
+
+        updateAuthUI();
+        return true;
     }
     
     // ============================================================
@@ -1704,13 +1757,9 @@ async function loadUserData(customerId, shouldMigrate = false) {
             console.log(`🔑 Auto-login from ${source} for:`, user.email);
             
             // Set user state
-            AppState.user = user;
-            AppState.isLoggedIn = true;
+            setAuthenticatedUser(user, { remember: source === 'localStorage', persist: true });
             
-    
-              await loadUserData(user.id, false);
-               updateUrlWithUserInfo(); 
-            updateAuthUI();
+            await loadUserData(user.id, false);
             
             console.log('✅ Auto-login successful');
         } catch (err) {
@@ -1869,8 +1918,7 @@ async function loadUserData(customerId, shouldMigrate = false) {
     // FIX: Properly expose save functions without circular reference
     // ============================================================
     
-    // Make sure these are the actual functions, not wrappers that call themselves
-    window.saveCartToDB = saveCartToDB;
+
     window.saveWishlistToDB = saveWishlistToDB;
     window.fetchCartFromDB = fetchCartFromDB;
     window.fetchWishlistFromDB = fetchWishlistFromDB;
@@ -1896,7 +1944,7 @@ async function loadUserData(customerId, shouldMigrate = false) {
         loginCustomer,
         signUpCustomer,
         fetchCartFromDB,
-        saveCartToDB,
+    
         fetchWishlistFromDB,
         saveWishlistToDB,
         validateEmail,
@@ -1932,7 +1980,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // Expose critical functions globally for other scripts
 window.getSupabaseClient = getSupabaseClient;
 window.getCurrentCustomerId = getCurrentCustomerId;
-window.saveCartToDB = saveCartToDB;
 window.saveWishlistToDB = saveWishlistToDB;
 window.fetchCartFromDB = fetchCartFromDB;
 window.fetchWishlistFromDB = fetchWishlistFromDB;

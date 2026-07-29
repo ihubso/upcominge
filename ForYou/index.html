@@ -8,7 +8,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-        <script src="../global-header.js"></script>
+      <script src="/head/header-core.js" defer></script>
+<script src="/head/header-database.js" defer></script>
+<script src="/head/header-auth.js" defer></script>
+<script src="/head/header-dropdowns.js" defer></script>
+<script src="/head/header-search.js" defer></script>
+<script src="/head/header-init.js" defer></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -1510,7 +1515,6 @@
               <div class="card-meta">${p.brand ? `<span>${p.brand}</span>` : ''}${p.brand ? `<span class="dot"></span>` : ''}<span>${sold} sold</span></div>
               <div class="card-price">FCFA ${(p.price || 0).toFixed(2)}${isDeal && p.originalPrice ? `<span class="original">FCFA ${(p.originalPrice || 0).toFixed(2)}</span>` : ''}</div>
               <div class="card-actions">
-                <button class="btn-add" onclick="event.stopPropagation(); addToCart('${p.id}')"><i class="fas fa-shopping-bag"></i> Add</button>
                 <button class="btn-wish ${isWished ? 'active' : ''}" onclick="event.stopPropagation(); toggleWishlist('${p.id}')"><i class="fas fa-heart"></i></button>
               </div>
             </div>
@@ -1553,7 +1557,6 @@ function closereccomedsection() {
               <div class="foryou-stats">${rating > 0 ? `<span class="rating"><i class="fas fa-star" style="color:#F59E0B;"></i> ${rating.toFixed(1)}</span>` : ''}<span>${sold} sold</span></div>
             </div>
             <div class="foryou-actions">
-              <button class="btn-add-small" onclick="event.stopPropagation(); addToCart('${p.id}')"><i class="fas fa-shopping-bag"></i> Add</button>
               <button class="btn-wish-small ${isWished ? 'active' : ''}" onclick="event.stopPropagation(); toggleWishlist('${p.id}')"><i class="fas fa-heart"></i></button>
             </div>
           </div>
@@ -1563,88 +1566,6 @@ function closereccomedsection() {
 
     }
 
-async function addToCart(productId) {
-    try {
-        // Get product details
-        const client = getSupabaseClient();
-        let product = null;
-
-        if (client) {
-            const { data, error } = await client
-                .from('products')
-                .select('*')
-                .eq('id', productId)
-                .single();
-
-            if (!error && data) {
-                product = data;
-            }
-        }
-
-
-        if (!product) {
-            const card = document.querySelector(`.hot-product-card[data-product-id="${productId}"]`);
-            if (card) {
-                const name = card.querySelector('.hot-product-name')?.textContent || 'Unknown Product';
-                const priceText = card.querySelector('.hot-current-price')?.textContent || '$0';
-                const price = parseFloat(priceText.replace('$', ''));
-                const image = card.querySelector('.hot-product-image img')?.src || 'https://placehold.co/400x400';
-                product = { id: productId, name, price, image };
-            }
-        }
-
-        if (!product) {
-            showToast('❌ Product not found', 'error');
-            return;
-        }
-
-        // Get current cart
-        let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-
-        // Check if product already in cart
-        const existingIndex = cart.findIndex(item => item.product_id === productId || item.id === productId);
-
-        if (existingIndex !== -1) {
-            cart[existingIndex].qty = (cart[existingIndex].qty || 1) + 1;
-        } else {
-            cart.push({
-                product_id: productId,
-                id: productId,
-                name: product.name || 'Unknown Product',
-                price: product.price || 0,
-                qty: 1,
-                image: product.image || product.images?.[0] || 'https://placehold.co/400x400',
-                variants: product.variants || {},
-                isDeal: product.isDeal || false,
-                originalPrice: product.originalPrice || null,
-                discount: product.discount || null,
-                brand: product.brand || ''
-            });
-        }
-
-
-
-        // Save to Supabase
-        const customerId = window.getCurrentCustomerId?.();
-        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-        const client2 = getSupabaseClient();
-        if (client2) {
-            await saveCartToDB(customerId || sessionId, cart, !!customerId);
-        }
-
-        // Update header
-        if (window.STHeader) {
-            window.STHeader.AppState.cart = cart;
-            window.STHeader.updateCounts();
-        }
-
-        showToast('✅ Added to cart!', 'success');
-
-    } catch (err) {
-        console.error('❌ Error adding to cart:', err);
-        showToast('❌ Failed to add to cart', 'error');
-    }
-}
 
     async function toggleWishlist(productId) {
       try {
@@ -1658,7 +1579,6 @@ async function addToCart(productId) {
       } catch (err) { console.error(err); showToast('❌ Failed', 'error'); }
     }
 
-    window.addToCart = addToCart;
     window.toggleWishlist = toggleWishlist;
 
 document.getElementById('categoryList').addEventListener('click', function(e) {

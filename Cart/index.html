@@ -13,7 +13,12 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../global-header.js"></script>
+  <script src="/head/header-core.js" defer></script>
+<script src="/head/header-database.js" defer></script>
+<script src="/head/header-auth.js" defer></script>
+<script src="/head/header-dropdowns.js" defer></script>
+<script src="/head/header-search.js" defer></script>
+<script src="/head/header-init.js" defer></script>
 
     <style>
         /* ============================================
@@ -639,32 +644,80 @@
     // 2. RENDER CART
     // ============================================================
 
-    function renderCart() {
-        const container = document.getElementById('stCartItemsContainer');
-        const loading = document.getElementById('stCartLoading');
-        const cartCount = document.getElementById('stCartPageCount');
+function renderCart() {
+    const container = document.getElementById('stCartItemsContainer');
+    const loading = document.getElementById('stCartLoading');
+    const cartCount = document.getElementById('stCartPageCount');
 
-        loading.style.display = 'none';
+    loading.style.display = 'none';
 
-        if (!cartItems || cartItems.length === 0) {
-            container.innerHTML = `
-                <div class="st-empty-cart">
-                    <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
-                    <h2>Your cart is empty</h2>
-                    <p>Looks like you haven't added any items to your cart yet.</p>
-                    <a href="/product/" class="st-btn-shop">
-                        <i class="fas fa-store"></i> Start Shopping
-                    </a>
-                </div>
-            `;
-            cartCount.textContent = '0 items';
-            updateSummary();
-            return;
+    if (!cartItems || cartItems.length === 0) {
+        container.innerHTML = `
+            <div class="st-empty-cart">
+                <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
+                <h2>Your cart is empty</h2>
+                <p>Looks like you haven't added any items to your cart yet.</p>
+                <a href="/product/" class="st-btn-shop">
+                    <i class="fas fa-store"></i> Start Shopping
+                </a>
+            </div>
+        `;
+        cartCount.textContent = '0 items';
+        updateSummary();
+        return;
+    }
+
+    cartCount.textContent = cartItems.length + ' item' + (cartItems.length > 1 ? 's' : '');
+
+    container.innerHTML = cartItems.map((item, index) => {
+        // --- 1. SAFE VARIANT HANDLING ---
+        let variantMarkup = '';
+        
+        if (item.variants) {
+            let parsedVariants = item.variants;
+            
+            // Handle raw JSON strings from Supabase
+            if (typeof parsedVariants === 'string') {
+                try {
+                    parsedVariants = JSON.parse(parsedVariants);
+                } catch (e) {
+                    if (parsedVariants.trim() !== '{}') {
+                        variantMarkup = `<span class="st-item-variant">${parsedVariants}</span>`;
+                    }
+                }
+            }
+
+            // Handle parsed object (Ensure it's not empty `{}`)
+            if (typeof parsedVariants === 'object' && parsedVariants !== null && !variantMarkup) {
+                const entries = Object.entries(parsedVariants);
+                if (entries.length > 0) {
+                    const formattedText = entries.map(([key, val]) => `${key}: ${val}`).join(' | ');
+                    variantMarkup = `<span class="st-item-variant">${formattedText}</span>`;
+                }
+            }
         }
 
-        cartCount.textContent = cartItems.length + ' item' + (cartItems.length > 1 ? 's' : '');
+        // --- 2. SAFE DEAL & PRICE HANDLING ---
+        const price = Number(item.price || 0);
+        const originalPrice = Number(item.original_price || item.originalPrice || 0);
+        const isDeal = item.is_deal || item.isDeal || (originalPrice > price);
+        
+        let dealBadgeMarkup = '';
+        let originalPriceMarkup = '';
 
-        container.innerHTML = cartItems.map((item, index) => `
+        if (isDeal) {
+            dealBadgeMarkup = `<span class="st-deal-badge" style="background:#EF4444; color:white; font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px; margin-left:6px;"><i class="fas fa-fire"></i> DEAL</span>`;
+            
+            if (originalPrice > price) {
+                const discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
+                originalPriceMarkup = `
+                    <span class="st-original-price" style="text-decoration:line-through; color:#94A3B8; font-size:14px; margin-left:6px;">$${originalPrice.toFixed(2)}</span>
+                    <span class="st-deal-badge" style="background:#10B981; color:white; font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px; margin-left:4px;">-${discountPercent}%</span>
+                `;
+            }
+        }
+
+        return `
             <div class="st-cart-item" data-index="${index}">
                 <div class="st-cart-item-image">
                     <img src="${item.image || 'https://placehold.co/600x400'}" 
@@ -676,17 +729,15 @@
                         ${item.name || 'Unknown Product'}
                     </a>
                     ${item.brand ? `<span class="st-item-brand">${item.brand}</span>` : ''}
-                    ${item.variants && Object.keys(item.variants).length > 0 ? `
-                        <span class="st-item-variant">
-                            ${Object.entries(item.variants).map(([key, val]) => `${key}: ${val}`).join(' | ')}
-                        </span>
-                    ` : ''}
+                    
+                    <!-- Renders variant if present -->
+                    ${variantMarkup}
+
                     <div class="st-item-price">
-                        $${(item.price || 0).toFixed(2)}
-                        ${item.originalPrice && item.originalPrice > item.price ? `
-                            <span class="st-original-price">$${item.originalPrice.toFixed(2)}</span>
-                            <span class="st-deal-badge">-${Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}%</span>
-                        ` : ''}
+                        $${price.toFixed(2)}
+                        <!-- Renders original price & deal badge if present -->
+                        ${originalPriceMarkup}
+                        ${dealBadgeMarkup}
                     </div>
                 </div>
                 <div class="st-cart-item-actions">
@@ -704,11 +755,11 @@
                     </button>
                 </div>
             </div>
-        `).join('');
+        `;
+    }).join('');
 
-        updateSummary();
-    }
-
+    updateSummary();
+}
     // ============================================================
     // 3. CART OPERATIONS
     // ============================================================
@@ -831,62 +882,6 @@
     // 6. SAVE CART TO DB
     // ============================================================
 
-    async function saveCartToDB(identifier, cart, hasCustomerId = false) {
-        const client = getSupabaseClient();
-        if (!client) return;
-        
-        try {
-            // Delete ONLY the rows for this specific identifier
-            if (hasCustomerId) {
-                await client.from('cart').delete().eq('customer_id', identifier);
-            } else {
-                await client.from('cart').delete().eq('session_id', identifier);
-            }
-            
-            if (cart.length === 0) {
-                console.log('✅ Cart cleared from DB (empty cart)');
-                return;
-            }
-            
-            // Insert new cart items
-            const rows = cart.map(item => {
-                const row = {
-                    product_id: item.product_id || item.id || '',
-                    name: item.name || 'Unknown Product',
-                    price: item.price || 0,
-                    qty: item.qty || 1,
-                    image: item.image || 'https://placehold.co/600x400',
-                    variants: item.variants || {},
-                    is_deal: item.isDeal || false,
-                    original_price: item.originalPrice || null,
-                    discount: item.discount || null,
-                    brand: item.brand || ''
-                };
-                
-                if (hasCustomerId) {
-                    row.customer_id = identifier;
-                    row.session_id = null;
-                } else {
-                    row.session_id = identifier;
-                    row.customer_id = null;
-                }
-                
-                return row;
-            });
-            
-            const validRows = rows.filter(row => row.product_id);
-            if (validRows.length > 0) {
-                const { error } = await client.from('cart').insert(validRows);
-                if (error) {
-                    console.error('❌ Error saving cart:', error.message);
-                } else {
-                    console.log(`✅ Cart saved to DB: ${validRows.length} items (${hasCustomerId ? 'customer_id' : 'session_id'})`);
-                }
-            }
-        } catch (err) {
-            console.error('❌ Error saving cart:', err.message);
-        }
-    }
 
     // ============================================================
     // 7. SUMMARY
@@ -953,6 +948,13 @@
                 const isLoggedIn = window.STHeader?.AppState?.isLoggedIn || false;
                 
                 if (!isLoggedIn) {
+                    if (window.setPendingCheckout) {
+                        window.setPendingCheckout(true);
+                    } else {
+                        localStorage.setItem('st_pending_checkout', '1');
+                        sessionStorage.setItem('st_pending_checkout', '1');
+                    }
+                    
                     showNotification('⚠️ Please login to checkout', 'error');
                     if (window.STHeader?.openLoginModal) {
                         window.STHeader.openLoginModal();
@@ -960,6 +962,9 @@
                     return;
                 }
                 
+                if (window.clearPendingCheckout) {
+                    window.clearPendingCheckout();
+                }
                 window.location.href = '/checkout/';
             });
         }
@@ -1047,79 +1052,101 @@
     // ============================================================
     // 12. LOAD CART DATA - FIXED: Prioritizes localStorage
     // ============================================================
-
-    async function loadCartData() {
+    async function getCart() {
         try {
+            return JSON.parse(localStorage.getItem('st_cart') || '[]');
+        } catch (e) {
+            return [];
+        }
+    }
 
-            // 2. If no local cart, try Supabase
-            const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
-            const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-            
-            let dbCart = [];
-
-            if (customerId) {
-                dbCart = await fetchCartFromDB(customerId, true);
-                if (dbCart && dbCart.length > 0) {
-                    console.log('📦 Cart loaded from DB using customer_id:', dbCart.length, 'items');
-                    cartItems = dbCart;
+async function loadCartData() {
+    try {
+        // 1. Get customer ID and session ID
+        const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
+        const sessionId = window.getSessionId ? window.getSessionId() : localStorage.getItem('st_session_id') || 'session_' + Date.now();
         
-                    renderCart();
-                    return;
-                }
-            }
+        // 2. Check if user is logged in (using AppState if available)
+        const isLoggedIn = window.AppState?.isLoggedIn || false;
+        
+        let dbCart = [];
+        let loadedFromDB = false;
 
-            // 3. Try session_id cart
-            if (!dbCart || dbCart.length === 0) {
-                dbCart = await fetchCartFromDB(sessionId, false);
-                if (dbCart && dbCart.length > 0) {
-                    console.log('📦 Cart loaded from DB using session_id:', dbCart.length, 'items');
-                    cartItems = dbCart;
-                   
+        // 3. If logged in, try customer_id first
+        if (isLoggedIn && customerId) {
+            dbCart = await fetchCartFromDB(customerId, true);
+            if (dbCart && dbCart.length > 0) {
+                console.log('📦 Cart loaded from DB using customer_id:', dbCart.length, 'items');
+                cartItems = dbCart;
+                loadedFromDB = true;
+                renderCart();
+                return;
+            }
+        }
+
+        // 4. Try session_id cart (for guests or if customer_id didn't work)
+        if (!loadedFromDB) {
+            dbCart = await fetchCartFromDB(sessionId, false);
+            if (dbCart && dbCart.length > 0) {
+                console.log('📦 Cart loaded from DB using session_id:', dbCart.length, 'items');
+                cartItems = dbCart;
+                
+                // 5. Migrate guest cart to customer_id if user is logged in
+                if (isLoggedIn && customerId) {
+                    console.log('🔄 Migrating guest cart to customer_id');
+                    await saveCartToDB(customerId, cartItems, true);
+                    await saveCartToDB(sessionId, [], false);
+                }
+                
+                loadedFromDB = true;
+                renderCart();
+                return;
+            }
+        }
+
+        // 6. No cart found - check localStorage or start empty
+        if (!loadedFromDB) {
+            // Try to load from localStorage as fallback
+            try {
+                const localCart = JSON.parse(localStorage.getItem('st_cart') || '[]');
+                if (localCart && localCart.length > 0) {
+                    console.log('📦 Cart loaded from localStorage:', localCart.length, 'items');
+                    cartItems = localCart;
                     
-                    // Migrate to customer_id if logged in
-                    if (customerId) {
-                        console.log('🔄 Migrating guest cart to customer_id');
+                    // If logged in, save localStorage cart to DB
+                    if (isLoggedIn && customerId) {
+                        console.log('🔄 Migrating localStorage cart to DB');
                         await saveCartToDB(customerId, cartItems, true);
-                        await saveCartToDB(sessionId, [], false);
                     }
+                    
                     renderCart();
                     return;
                 }
+            } catch (e) {
+                console.warn('Failed to load from localStorage:', e.message);
             }
+        }
 
-            // 4. No cart found - start empty
+        // 7. No cart found anywhere - start empty
+        if (!loadedFromDB) {
+            console.log('🛒 Starting with empty cart');
             cartItems = [];
-        
-            renderCart();
-            
-        } catch (err) {
-            console.warn('⚠️ Failed to load cart:', err.message);
-           
-            renderCart();
-        }
-    }
-
-    // ============================================================
-    // 13. SYNC CART WITH DB (Background)
-    // ============================================================
-
-    async function syncCartWithDB() {
-        try {
-            if (!cartItems || cartItems.length === 0) return;
-            
-            const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
-            const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-            
-            if (customerId) {
-                await saveCartToDB(customerId, cartItems, true);
-            } else {
-                await saveCartToDB(sessionId, cartItems, false);
+            // Clear any stale data
+            await saveCartToDB(sessionId, [], false);
+            if (isLoggedIn && customerId) {
+                await saveCartToDB(customerId, [], true);
             }
-            console.log('🔄 Cart synced with DB in background');
-        } catch (err) {
-            console.warn('⚠️ Background sync failed:', err.message);
+            renderCart();
         }
+        
+    } catch (err) {
+        console.error('❌ Failed to load cart:', err.message);
+        // Fallback to empty cart
+        cartItems = [];
+        renderCart();
     }
+}
+
 
     // ============================================================
     // 14. INITIALIZATION
@@ -1147,11 +1174,9 @@
     window.saveCart = saveCart;
     window.renderCart = renderCart;
     window.showNotification = showNotification;
-    window.getSupabaseClient = getSupabaseClient;
     window.fetchCartFromDB = fetchCartFromDB;
-    window.saveCartToDB = saveCartToDB;
     window.loadCartData = loadCartData;
-    window.syncCartWithDB = syncCartWithDB;
+  
     </script>
 </body>
 </html>

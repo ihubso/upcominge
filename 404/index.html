@@ -471,7 +471,7 @@
             <a href="index.html" class="btn-primary">
                 <i class="fas fa-home"></i> Back to Home
             </a>
-            <a href="products.html" class="btn-secondary">
+            <a href="/product/" class="btn-secondary">
                 <i class="fas fa-store"></i> Browse Products
             </a>
             <a href="contact.html" class="btn-secondary help">
@@ -482,7 +482,7 @@
         <!-- Quick Links -->
         <div class="error-quick-links">
             <a href="/index.html"><i class="fas fa-home"></i> Home</a>
-            <a href="products.html"><i class="fas fa-box"></i> Products</a>
+            <a href="/product/"><i class="fas fa-box"></i> Products</a>
             <a href="/categories.html"><i class="fas fa-th-large"></i> Categories</a>
             <a href="/deals/"><i class="fas fa-tags"></i> Deals</a>
             <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
@@ -507,7 +507,7 @@
                 const input = document.getElementById('errorSearchInput');
                 const query = input.value.trim();
                 if (query) {
-                    window.location.href = `products.html?search=${encodeURIComponent(query)}`;
+                    window.location.href = `/product/?search=${encodeURIComponent(query)}`;
                 } else {
                     // Focus the input if empty
                     input.focus();
@@ -540,7 +540,7 @@
             const input = document.getElementById('errorSearchInput');
             const query = input.value.trim();
             if (query) {
-                window.location.href = `products.html?search=${encodeURIComponent(query)}`;
+                window.location.href = `/product/?search=${encodeURIComponent(query)}`;
             }
         };
     </script>

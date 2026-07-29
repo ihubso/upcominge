@@ -13,7 +13,12 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../global-header.js"></script>
+  <script src="/head/header-core.js" defer></script>
+<script src="/head/header-database.js" defer></script>
+<script src="/head/header-auth.js" defer></script>
+<script src="/head/header-dropdowns.js" defer></script>
+<script src="/head/header-search.js" defer></script>
+<script src="/head/header-init.js" defer></script>
     <style>
         /* ============================================
            WISHLIST PAGE STYLES (Includes Skeleton)
@@ -1021,62 +1026,6 @@
             showNotification('🗑️ Wishlist cleared', 'info');
         }
 
-        // ============================================================
-        // 7. ADD TO CART FROM WISHLIST
-        // ============================================================
-
-        async function addToCart(productId) {
-            try {
-                const product = await fetchProductDetails(productId);
-                if (!product) {
-                    showNotification('❌ Product not found', 'error');
-                    return;
-                }
-
-                let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-                
-                const existingIndex = cart.findIndex(item => 
-                    (item.product_id === productId || item.id === productId)
-                );
-                
-                if (existingIndex !== -1) {
-                    cart[existingIndex].qty = (cart[existingIndex].qty || 1) + 1;
-                } else {
-                    cart.push({
-                        product_id: productId,
-                        id: productId,
-                        name: product.name || 'Unknown Product',
-                        price: product.price || 0,
-                        qty: 1,
-                        image: product.image || product.images?.[0] || 'https://placehold.co/600x400',
-                        variants: product.variants || {},
-                        isDeal: product.isDeal || false,
-                        originalPrice: product.originalPrice || null,
-                        discount: product.discount || null,
-                        brand: product.brand || ''
-                    });
-                }
-                
-            
-                
-                const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-                const client = getSupabaseClient();
-                if (client) {
-                    await saveCartToDB(sessionId, cart);
-                }
-                
-                if (window.STHeader && window.STHeader.updateCounts) {
-                    window.STHeader.AppState.cart = cart;
-                    window.STHeader.updateCounts();
-                }
-                
-                showNotification('✅ Added to cart!', 'success');
-                
-            } catch (err) {
-                console.error('❌ Error adding to cart:', err);
-                showNotification('❌ Failed to add to cart', 'error');
-            }
-        }
 
         // ============================================================
         // 8. SUPABASE SYNC FUNCTIONS
@@ -1131,37 +1080,6 @@
             }
         }
 
-        async function saveCartToDB(sessionId, cart) {
-            const client = getSupabaseClient();
-            if (!client) return;
-            
-            try {
-                await client.from('cart').delete().eq('session_id', sessionId);
-                
-                if (cart.length > 0) {
-                    const rows = cart.map(item => ({
-                        session_id: sessionId,
-                        product_id: item.product_id || item.id || '',
-                        name: item.name || 'Unknown Product',
-                        price: item.price || 0,
-                        qty: item.qty || 1,
-                        image: item.image || 'https://placehold.co/600x400',
-                        variants: item.variants || {},
-                        is_deal: item.isDeal || false,
-                        original_price: item.originalPrice || null,
-                        discount: item.discount || null
-                    }));
-                    
-                    const validRows = rows.filter(row => row.product_id);
-                    if (validRows.length > 0) {
-                        const { error } = await client.from('cart').insert(validRows);
-                        if (error) console.error('❌ Error saving cart:', error.message);
-                    }
-                }
-            } catch (err) {
-                console.error('❌ Error:', err.message);
-            }
-        }
 
         // ============================================================
         // 9. LOAD WISHLIST DATA
@@ -1237,7 +1155,6 @@
             document.getElementById('stClearWishlistBtn').addEventListener('click', clearWishlist);
             
             window.removeFromWishlist = removeFromWishlist;
-            window.addToCart = addToCart;
             window.clearWishlist = clearWishlist;
             window.renderWishlist = renderWishlist;
             window.showNotification = showNotification;
@@ -1245,7 +1162,7 @@
             window.getSupabaseClient = getSupabaseClient;
             window.fetchWishlistFromDB = fetchWishlistFromDB;
             window.saveWishlistToDB = saveWishlistToDB;
-            window.saveCartToDB = saveCartToDB;
+           
         });
 
         console.log('✅ Wishlist Page Loaded');

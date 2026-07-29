@@ -22,6 +22,28 @@ function getSupabaseClient() {
     loadSupabaseSDK();
     return null;
 }
+function generateSessionId() {
+
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+}
+
+function getSessionId() {
+    const customerId = getCurrentCustomerId();
+    if (customerId) {
+        return customerId;
+    }
+
+    try {
+        let sessionId = localStorage.getItem('st_session_id');
+        if (!sessionId) {
+            sessionId = generateSessionId();
+            localStorage.setItem('st_session_id', sessionId);
+        }
+        return sessionId;
+    } catch (err) {
+        return generateSessionId();
+    }
+}
 
 function getCurrentCustomerId() {
     // First check if user is logged in via STHeader AppState
@@ -59,6 +81,10 @@ function getCurrentCustomerId() {
 }
 
 window.getCurrentCustomerId = getCurrentCustomerId;
+window.getSessionId = getSessionId;
+
+// Ensure a guest session ID exists on every page load
+getSessionId();
 
 function loadSupabaseSDK() {
     if (document.querySelector('script[src*=\"supabase-js\"]')) return;

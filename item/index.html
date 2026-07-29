@@ -12,8 +12,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
    <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-
-    <script defer src="../global-header.js"></script>
+<script src="/head/header-core.js" defer></script>
+<script src="/head/header-database.js" defer></script>
+<script src="/head/header-auth.js" defer></script>
+<script src="/head/header-dropdowns.js" defer></script>
+<script src="/head/header-search.js" defer></script>
+<script src="/head/header-init.js" defer></script>
     <style>
         
 .zoommodal-overlay {
@@ -475,6 +479,22 @@
             transform: translateX(-2px);
         }
 
+        .add-to-cart-content {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .add-to-cart-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.35);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
         .related-loadmore {
             text-align: center;
             padding: 2rem 0;
@@ -560,6 +580,12 @@
         .related-loadmore .loader-skeleton .skeleton-card-mini .skeleton-line.w-50 {
             width: 50%;
         }
+.dealBadge-Overlay{
+                border: 3px solid #e2e8f0;
+            border-top-color: #e60012;
+            background: #e60012;
+            color: white;
+                  }
 
         .related-loadmore .loader-skeleton .loading-text {
             display: flex;
@@ -972,7 +998,7 @@
                     <div>
                         <div class="main-image-container" id="mainImageContainer">
                             <img id="mainProductImage" src="" alt="Product" />
-                            <div id="dealBadgeOverlay" class="absolute top-4 left-4 bg-primary text-white px-4 py-2 rounded-full font-bold text-lg shadow-lg hidden">
+                            <div id="dealBadgeOverlay" class="dealBadge-Overlay absolute top-4 left-4 bg-red-1000 text-white px-4 py-2 rounded-full font-bold text-lg shadow-lg hidden">
                                 -0% OFF
                             </div>
                         </div>
@@ -987,6 +1013,9 @@
                         <div class="flex items-center gap-3 mt-3 mb-4">
                             <div id="productRating" class="star-rating"></div>
                             <span id="reviewCount" class="text-sm text-gray-500">0 Reviews</span>
+                        </div>
+                        <div id="dealInfo" class="mt-4 hidden">
+                            <p class="text-sm text-green-600 font-medium">🔥 Deal of the Day - Limited Time Offer!</p>
                         </div>
                         <div id="priceSection" class="mb-6"></div>
                         <div id="descriptionSection" class="mb-6">
@@ -1008,7 +1037,9 @@
                         </div>
                         <div class="flex flex-col sm:flex-row gap-4">
                             <button id="addToCartBtn" class="flex-1 bg-black text-white py-4 rounded-xl font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
-                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                                <span class="add-to-cart-content">
+                                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                                </span>
                             </button>
                             <button id="wishlistBtn" class="flex-1 bg-white border border-gray-200 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
                                 <i class="far fa-heart"></i> Wishlist
@@ -1017,9 +1048,7 @@
                                 <i class="fas fa-share-alt"></i> Share
                             </button>
                         </div>
-                        <div id="dealInfo" class="mt-4 hidden">
-                            <p class="text-sm text-green-600 font-medium">🔥 Deal of the Day - Limited Time Offer!</p>
-                        </div>
+
                     </div>
                 </div>
 
@@ -1033,34 +1062,34 @@
                 </div>
 
                 <!-- Reviews Section -->
-                <div id="reviewsSection" class="mt-12 pt-8 border-t border-gray-200 reviews-dropdown-section collapsed">
-                    <button id="reviewsToggleBtn" type="button" class="reviews-toggle text-left w-full mb-6" aria-expanded="false">
-                        <span class="text-2xl font-bold flex items-center gap-2">
-                            ⭐ Customer Reviews (<span id="reviewCountLabel">0</span>)
-                        </span>
-                        <span id="reviewsToggleIcon" class="reviews-toggle-icon text-2xl transition-transform">▼</span>
-                    </button>
-                    <div id="reviewsContent" class="reviews-content">
-                        <div id="reviewsList" class="space-y-4 max-h-96 overflow-y-auto pr-2 mb-8"></div>
-                        <div class="bg-gray-50 rounded-2xl p-6">
-                            <h4 class="font-bold mb-4">✏️ Write a Review</h4>
-                            <div class="space-y-3">
-                                <input type="text" id="reviewUserName" placeholder="Your name" class="w-full border border-gray-200 rounded-lg p-3 text-sm" />
-                                <select id="reviewRating" class="w-full border border-gray-200 rounded-lg p-3 text-sm">
-                                    <option value="5">★★★★★ (5)</option>
-                                    <option value="4">★★★★☆ (4)</option>
-                                    <option value="3">★★★☆☆ (3)</option>
-                                    <option value="2">★★☆☆☆ (2)</option>
-                                    <option value="1">★☆☆☆☆ (1)</option>
-                                </select>
-                                <textarea id="reviewComment" placeholder="Your review..." rows="3" class="w-full border border-gray-200 rounded-lg p-3 text-sm"></textarea>
-                                <button id="submitReviewBtn" class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primaryHover transition">
-                                    Submit Review
-                                </button>
-                            </div>
+            <div id="reviewsSection" class="mt-12 pt-8 border-t border-gray-200">
+                <button id="reviewsToggleBtn" type="button" class="reviews-toggle text-left w-full mb-6 flex items-center justify-between" aria-expanded="false">
+                    <span class="text-2xl font-bold flex items-center gap-2">
+                        ⭐ Customer Reviews (<span id="reviewCountLabel">0</span>)
+                    </span>
+                    <span id="reviewsToggleIcon" class="reviews-toggle-icon text-2xl transition-transform duration-300">▼</span>
+                </button>
+                <div id="reviewsContent" class="reviews-content hidden">
+                    <div id="reviewsList" class="space-y-4 max-h-96 overflow-y-auto pr-2 mb-8"></div>
+                    <div class="bg-gray-50 rounded-2xl p-6">
+                        <h4 class="font-bold mb-4">✏️ Write a Review</h4>
+                        <div class="space-y-3">
+                            <input type="text" id="reviewUserName" placeholder="Your name" class="w-full border border-gray-200 rounded-lg p-3 text-sm" />
+                            <select id="reviewRating" class="w-full border border-gray-200 rounded-lg p-3 text-sm">
+                                <option value="5">★★★★★ (5)</option>
+                                <option value="4">★★★★☆ (4)</option>
+                                <option value="3">★★★☆☆ (3)</option>
+                                <option value="2">★★☆☆☆ (2)</option>
+                                <option value="1">★☆☆☆☆ (1)</option>
+                            </select>
+                            <textarea id="reviewComment" placeholder="Your review..." rows="3" class="w-full border border-gray-200 rounded-lg p-3 text-sm"></textarea>
+                            <button id="submitReviewBtn" class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primaryHover transition">
+                                Submit Review
+                            </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
                 <!-- Related Products -->
                 <div id="relatedSection" class="mt-12 pt-8 border-t border-gray-200">
@@ -1387,8 +1416,8 @@
                                     <span class="deal-original-price">FCFA ${originalPrice.toFixed(2)}</span>
                                 </div>
                                 <div class="deal-card-actions">
-                                    <button class="deal-btn-cart" onclick="event.stopPropagation(); window.addToCartFromDeal('${deal.id}')">
-                                        <i class="fas fa-shopping-bag"></i> Add to Cart
+                                    <button class="deal-btn-cart" onclick="window.location.href='/item/?product=${deal.id}')">
+                                        <i class="fas fa-shopping-bag"></i> VIEW DETAILS
                                     </button>
                                 </div>
                             </div>
@@ -1461,72 +1490,6 @@
         }
 
         // --- Add to Cart from Deal ---
-        window.addToCartFromDeal = async function(productId) {
-            try {
-                const client = getSupabaseClient();
-                let product = null;
-
-                if (client) {
-                    const { data, error } = await client
-                        .from('products')
-                        .select('*')
-                        .eq('id', productId)
-                        .single();
-
-                    if (!error && data) {
-                        product = data;
-                    }
-                }
-
-                if (!product) {
-                    showToast('❌ Product not found');
-                    return;
-                }
-
-                let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-                const existing = cart.find(item => item.product_id === productId || item.id === productId);
-
-                if (existing) {
-                    existing.qty = (existing.qty || 0) + 1;
-                } else {
-                    // Check if this product has a deal
-                    const deal = await checkProductDeal(productId);
-                    const dealDiscount = deal ? deal.discount : 0;
-                    cart.push({
-                        product_id: productId,
-                        id: productId,
-                        name: product.name || 'Unknown',
-                        price: dealDiscount > 0 ? product.price * (1 - dealDiscount / 100) : product.price,
-                        qty: 1,
-                        image: product.image || 'https://placehold.co/400x400',
-                        variants: product.variants || {},
-                        isDeal: dealDiscount > 0,
-                        originalPrice: dealDiscount > 0 ? product.price : null,
-                        discount: dealDiscount > 0 ? dealDiscount : null,
-                        brand: product.brand || ''
-                    });
-                }
-
-              
-
-                const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
-                if (customerId && window.saveCartToDB) {
-                    await window.saveCartToDB(customerId, cart);
-                }
-
-                if (window.STHeader) {
-                    window.STHeader.AppState.cart = cart;
-                    if (window.STHeader.updateCounts) {
-                        window.STHeader.updateCounts();
-                    }
-                }
-
-                showToast(`✅ ${product.name || 'Product'} added to cart!`);
-            } catch (err) {
-                console.error('❌ Add to cart error:', err);
-                showToast('❌ Failed to add to cart');
-            }
-        };
 
         // --- Fetch All Products (for related) ---
         async function getAllProducts() {
@@ -1555,56 +1518,100 @@
         }
 
         // --- Cart Functions ---
-        async function getCart() {
-            try {
-                const cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-                return cart;
-            } catch (e) {
-                return [];
-            }
-        }
+async function getCart() {
+    try {
+        // First try to get from localStorage
+        const cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
+        return cart;
+    } catch (e) {
+        return [];
+    }
+}
 
-        async function saveCart(cart) {
+
+async function saveCart(cart) {
+    const customerId = window.getCurrentCustomerId?.();
+    const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+    const client = getSupabaseClient();
+    
+    if (client) {
+        try {
+            // Customer-specific query: Delete with correct customer_id or session_id
+            if (customerId) {
+                await client.from('cart').delete().eq('customer_id', customerId);
+            } else {
+                await client.from('cart').delete().eq('session_id', sessionId);
+            }
             
-
-            const customerId = window.getCurrentCustomerId?.();
-            const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-            const client = getSupabaseClient();
-            if (client) {
-                try {
+            if (cart.length > 0) {
+                // Process each cart item with variant matching
+                for (const item of cart) {
+                    // Check if this product + variant combination already exists
+                    const variantsJson = item.variants ? JSON.stringify(item.variants) : '{}';
+                    
+                    let existingQuery = client
+                        .from('cart')
+                        .select('*')
+                        .eq('product_id', item.product_id || item.id || '')
+                        .eq('variants', variantsJson);
+                    
+                    // Add customer/session filter
                     if (customerId) {
-                        await client.from('cart').delete().eq('customer_id', customerId);
+                        existingQuery = existingQuery.eq('customer_id', customerId);
                     } else {
-                        await client.from('cart').delete().eq('session_id', sessionId);
+                        existingQuery = existingQuery.eq('session_id', sessionId);
                     }
-                    if (cart.length > 0) {
-                        const rows = cart.map(item => ({
-                            ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
-                            product_id: item.product_id || item.id || '',
-                            name: item.name || 'Unknown Product',
-                            price: item.price || 0,
-                            qty: item.qty || 1,
-                            image: item.image || 'https://placehold.co/400x400'
-                        }));
-                        const validRows = rows.filter(row => row.product_id);
-                        if (validRows.length > 0) {
-                            await client.from('cart').insert(validRows);
-                        }
+                    
+                    const { data: existingItems, error: queryError } = await existingQuery;
+                    
+                    if (queryError) throw queryError;
+                    
+                    const row = {
+                        ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
+                        product_id: item.product_id || item.id || '',
+                        name: item.name || 'Unknown Product',
+                        price: item.price || 0,
+                        qty: item.qty || 1,
+                        image: item.image || 'https://placehold.co/400x400',
+                        variants: item.variants || {},
+                        is_deal: item.is_deal ?? item.isDeal ?? false,
+                        original_price: item.original_price ?? item.originalPrice ?? null,
+                        discount: item.discount || null,
+                        brand: item.brand || null
+                    };
+                    
+                    if (existingItems && existingItems.length > 0) {
+                        // UPDATE: Same product + same variants exists → UPDATE quantity
+                        const existingItem = existingItems[0];
+                        const newQty = (existingItem.qty || 0) + (item.qty || 1);
+                        await client
+                            .from('cart')
+                            .update({ qty: newQty })
+                            .eq('id', existingItem.id);
+                    } else {
+                        // INSERT: Different product or different variants → INSERT new row
+                        await client.from('cart').insert([row]);
                     }
-                } catch (err) {
-                    console.warn('Cart sync error:', err.message);
                 }
             }
-
-            if (window.STHeader) {
-                window.STHeader.AppState.cart = cart;
-                if (window.STHeader.updateCounts) {
-                    window.STHeader.updateCounts();
-                }
-            }
-
-            await renderCart();
+        } catch (err) {
+            console.warn('Cart sync error:', err.message);
         }
+    }
+
+    // Update localStorage
+    localStorage.setItem('st_cart', JSON.stringify(cart));
+
+    // Update header
+    if (window.STHeader) {
+        window.STHeader.AppState.cart = cart;
+        if (window.STHeader.updateCounts) {
+            window.STHeader.updateCounts();
+        }
+    }
+
+    await renderCart();
+}
 
         // --- Wishlist Functions ---
         async function getWishlist() {
@@ -1694,45 +1701,66 @@
         };
 
         // --- Add to Cart ---
-        async function handleAddToCart(product) {
-            const qtyInput = document.getElementById('qtyInput');
-            const qty = parseInt(qtyInput.value) || 1;
+async function handleAddToCart(product) {
+    const btn = document.getElementById('addToCartBtn');
+    const qtyInput = document.getElementById('qtyInput');
+    const qty = parseInt(qtyInput.value) || 1;
 
-            if (product.stock !== undefined && qty > product.stock) {
-                showToast('⚠️ Only ' + product.stock + ' items available');
-                return;
-            }
+    if (!btn) return;
 
-            const cart = await getCart();
-            const existingIndex = cart.findIndex(item =>
-                item.product_id === product.id || item.id === product.id
-            );
+    if (btn.dataset.loading === 'true') return;
 
-            const variants = Object.keys(currentVariants).length > 0 ? { ...currentVariants } : {};
+    btn.dataset.loading = 'true';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="add-to-cart-content"><span class="add-to-cart-spinner"></span> Adding...</span>';
 
-            if (existingIndex !== -1) {
-                cart[existingIndex].qty = (cart[existingIndex].qty || 0) + qty;
-            } else {
-                const deal = await checkProductDeal(product.id);
-                const dealDiscount = deal ? deal.discount : 0;
-                cart.push({
-                    product_id: product.id,
-                    id: product.id,
-                    name: product.name,
-                    price: dealDiscount > 0 ? product.price * (1 - dealDiscount / 100) : product.price,
-                    qty: qty,
-                    image: product.image || 'https://placehold.co/400x400',
-                    variants: variants,
-                    isDeal: dealDiscount > 0,
-                    originalPrice: dealDiscount > 0 ? product.price : null,
-                    discount: dealDiscount > 0 ? dealDiscount : null,
-                    brand: product.brand || ''
-                });
-            }
-
-            await saveCart(cart);
-            showToast('✅ Added to cart!');
+    try {
+        if (product.stock !== undefined && qty > product.stock) {
+            showToast('⚠️ Only ' + product.stock + ' items available');
+            return;
         }
+
+        const cart = await getCart();
+    const variants = Object.keys(currentVariants).length > 0 ? { ...currentVariants } : {};
+    const variantsJson = JSON.stringify(variants);
+    
+    // Check for existing item with same product_id AND same variants
+    const existingIndex = cart.findIndex(item => 
+        (item.product_id === product.id || item.id === product.id) && 
+        JSON.stringify(item.variants || {}) === variantsJson
+    );
+
+    if (existingIndex !== -1) {
+        // UPDATE: Same product + same variants → UPDATE quantity
+        cart[existingIndex].qty = (cart[existingIndex].qty || 0) + qty;
+    } else {
+        // INSERT: New row (different product or different variants)
+        const deal = await checkProductDeal(product.id);
+        const dealDiscount = deal ? deal.discount : 0;
+        cart.push({
+            product_id: product.id,
+            id: product.id,
+            name: product.name,
+            price: dealDiscount > 0 ? product.price * (1 - dealDiscount / 100) : product.price,
+            qty: qty,
+            image: product.image || 'https://placehold.co/400x400',
+            variants: variants,
+            isDeal: dealDiscount > 0,
+            originalPrice: dealDiscount > 0 ? product.price : null,
+            discount: dealDiscount > 0 ? dealDiscount : null,
+            brand: product.brand || ''
+        });
+    }
+
+        await saveCart(cart);
+        showToast('✅ Added to cart!');
+    } finally {
+        btn.dataset.loading = 'false';
+        btn.disabled = false;
+        btn.innerHTML = '<span class="add-to-cart-content"><i class="fas fa-shopping-cart"></i> Add to Cart</span>';
+    }
+}
+
 
         // --- Toggle Wishlist ---
         async function handleToggleWishlist(productId) {
@@ -1895,24 +1923,46 @@
             });
         }
 
-        async function updateQtyByIndex(index, delta) {
-            const cart = await getCart();
-            if (index < 0 || index >= cart.length) return;
-            const item = cart[index];
-            const newQ = (item.qty || 0) + delta;
-            if (newQ <= 0) {
-                cart.splice(index, 1);
-            } else {
-                item.qty = newQ;
-            }
-            await saveCart(cart);
-        }
+async function updateQtyByIndex(index, delta) {
+    const cart = await getCart();
+    if (index < 0 || index >= cart.length) return;
+    
+    const item = cart[index];
+    const newQ = (item.qty || 0) + delta;
+    
+    if (newQ <= 0) {
+        // Remove item
+        cart.splice(index, 1);
+    } else {
+        item.qty = newQ;
+    }
+    
+    await saveCart(cart);
+}
 
-        window.clearCart = async function() {
-            await saveCart([]);
-            showToast('Cart cleared');
-            await renderCart();
-        };
+
+window.clearCart = async function() {
+    const customerId = window.getCurrentCustomerId?.();
+    const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+    const client = getSupabaseClient();
+    
+    if (client) {
+        try {
+            // Customer-specific cleanup: Remove all items for this customer/session
+            if (customerId) {
+                await client.from('cart').delete().eq('customer_id', customerId);
+            } else {
+                await client.from('cart').delete().eq('session_id', sessionId);
+            }
+        } catch (err) {
+            console.warn('Failed to clear cart from DB:', err.message);
+        }
+    }
+    
+    await saveCart([]);
+    showToast('Cart cleared');
+    await renderCart();
+};
 
         window.openCheckout = function() {
             const cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
@@ -2164,6 +2214,7 @@
                 ).join('');
             }
 
+            // Replace the variant button rendering & click logic inside renderProduct() with this:
             const variantsSection = document.getElementById('variantsSection');
             if (product.variants && product.variants.length > 0) {
                 variantsSection.innerHTML = product.variants.map(v => `
@@ -2171,27 +2222,33 @@
                         <label class="text-sm font-medium text-gray-700 block mb-2">${v.type}:</label>
                         <div class="flex flex-wrap gap-2" data-variant-type="${v.type}">
                             ${v.values.map(val => `
-                                <button type="button" class="variant-option px-4 py-2 border border-gray-300 rounded-full text-sm hover:border-primary transition-colors"
+                                <button type="button" class="variant-option px-4 py-2 border border-gray-300 rounded-full text-sm transition-colors"
                                         data-variant-value="${val}">${val}</button>
                             `).join('')}
                         </div>
                     </div>
                 `).join('');
+
+                // Active Selection Handler
                 variantsSection.querySelectorAll('.variant-option').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const container = this.closest('div[data-variant-type]');
                         const type = container.dataset.variantType;
-                        container.querySelectorAll('.variant-option').forEach(b =>
-                            b.classList.remove('bg-primary', 'text-white', 'border-primary')
-                        );
-                        this.classList.add('bg-primary', 'text-white', 'border-primary');
+                        
+                        // Remove 'selected' from siblings
+                        container.querySelectorAll('.variant-option').forEach(b => b.classList.remove('selected'));
+                        
+                        // Add 'selected' to clicked element
+                        this.classList.add('selected');
                         currentVariants[type] = this.dataset.variantValue;
                     });
                 });
+
+                // Select the first variant option by default
                 variantsSection.querySelectorAll('div[data-variant-type]').forEach(container => {
                     const first = container.querySelector('.variant-option');
                     if (first) {
-                        first.classList.add('bg-primary', 'text-white', 'border-primary');
+                        first.classList.add('selected');
                         const type = container.dataset.variantType;
                         currentVariants[type] = first.dataset.variantValue;
                     }
@@ -2283,22 +2340,25 @@
 
         // --- Review Dropdown ---
         function initReviewDropdown() {
-            const button = document.getElementById('reviewsToggleBtn');
-            if (!button) return;
-            const section = document.getElementById('reviewsSection');
-
-            button.addEventListener('click', () => {
-                if (window.matchMedia('(min-width: 640px)').matches) return;
-                const expanded = section.classList.toggle('expanded');
-                section.classList.toggle('collapsed', !expanded);
-                section.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-            });
-
-            if (window.matchMedia('(min-width: 640px)').matches) {
-                section.classList.remove('collapsed');
-                section.classList.add('expanded');
-                section.setAttribute('aria-expanded', 'true');
-            }
+            const toggleBtn = document.getElementById('reviewsToggleBtn');
+    const reviewsContent = document.getElementById('reviewsContent');
+    const toggleIcon = document.getElementById('reviewsToggleIcon');
+    
+    toggleBtn.addEventListener('click', function() {
+        // Toggle the hidden class
+        reviewsContent.classList.toggle('hidden');
+        
+        // Update aria-expanded attribute
+        const isExpanded = !reviewsContent.classList.contains('hidden');
+        toggleBtn.setAttribute('aria-expanded', isExpanded);
+        
+        // Rotate the icon
+        if (isExpanded) {
+            toggleIcon.style.transform = 'rotate(180deg)';
+        } else {
+            toggleIcon.style.transform = 'rotate(0deg)';
+        }
+    });
         }
 
         // --- Initialize ---
@@ -2312,8 +2372,8 @@
 
 
                setTimeout(() => {
-        loadProduct();
-    }, 500);
+                    loadProduct();
+                }, 500);
 
             renderCart();
             initReviewDropdown();

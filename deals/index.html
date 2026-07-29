@@ -8,7 +8,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../global-header.js"></script>
+  <script src="/head/header-core.js" defer></script>
+<script src="/head/header-database.js" defer></script>
+<script src="/head/header-auth.js" defer></script>
+<script src="/head/header-dropdowns.js" defer></script>
+<script src="/head/header-search.js" defer></script>
+<script src="/head/header-init.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -1615,7 +1620,7 @@
                         <div class="empty-icon"><i class="fas fa-tags"></i></div>
                         <h2>No Deals Available</h2>
                         <p>Check back soon for amazing offers!</p>
-                        <a href="products.html" style="display:inline-block;padding:12px 32px;background:#6C3CE1;color:white;border-radius:12px;text-decoration:none;font-weight:600;">
+                        <a href="/product/" style="display:inline-block;padding:12px 32px;background:#6C3CE1;color:white;border-radius:12px;text-decoration:none;font-weight:600;">
                             <i class="fas fa-store"></i> Browse Products
                         </a>
                     </div>
@@ -1670,9 +1675,6 @@
                                 <span class="deal-savings">Save ${discount}%</span>
                             </div>
                             <div class="deal-actions">
-                                <button class="deal-btn-cart" onclick="event.stopPropagation(); addToCart('${deal.id}')">
-                                    <i class="fas fa-shopping-bag"></i> Add to Cart
-                                </button>
                                 <button class="deal-btn-view" onclick="event.stopPropagation(); window.location.href='/item/?product=${deal.id}'">
                                     <i class="fas fa-eye"></i>
                                 </button>
@@ -1693,80 +1695,6 @@
                     </div>
                 `;
             }).join('');
-        }
-
-        // ============================================================
-        //  ADD TO CART
-        // ============================================================
-
-        async function addToCart(productId) {
-            try {
-                const client = getSupabaseClient();
-                let product = null;
-
-                product = allDeals.find(d => d.id === productId);
-
-                if (!product && client) {
-                    const { data, error } = await client
-                        .from('products')
-                        .select('*')
-                        .eq('id', productId)
-                        .single();
-
-                    if (!error && data) {
-                        product = data;
-                    }
-                }
-
-                if (!product) {
-                    showToast('❌ Product not found', 'error');
-                    return;
-                }
-
-                let cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
-                const existing = cart.find(item => item.product_id === productId || item.id === productId);
-
-                const deal = allDeals.find(d => d.id === productId);
-                const discount = deal?.dealDiscount || 0;
-                const price = discount > 0 ? product.price * (1 - discount / 100) : product.price;
-
-                if (existing) {
-                    existing.qty = (existing.qty || 0) + 1;
-                } else {
-                    cart.push({
-                        product_id: productId,
-                        id: productId,
-                        name: product.name || 'Unknown',
-                        price: price,
-                        qty: 1,
-                        image: product.image || 'https://placehold.co/400x400',
-                        variants: product.variants || {},
-                        isDeal: discount > 0,
-                        originalPrice: discount > 0 ? product.price : null,
-                        discount: discount > 0 ? discount : null,
-                        brand: product.brand || ''
-                    });
-                }
-
-             
-
-                const customerId = window.getCurrentCustomerId ? window.getCurrentCustomerId() : null;
-                if (customerId && window.saveCartToDB) {
-                    await window.saveCartToDB(customerId, cart);
-                }
-
-                if (window.STHeader) {
-                    window.STHeader.AppState.cart = cart;
-                    if (window.STHeader.updateCounts) {
-                        window.STHeader.updateCounts();
-                    }
-                }
-
-                showToast(`✅ ${product.name || 'Product'} added to cart!`);
-            } catch (err) {
-                console.error('❌ Add to cart error:', err);
-                showToast('❌ Failed to add to cart', 'error');
-            }
         }
 
         // ============================================================
@@ -1930,7 +1858,7 @@
         //  EXPOSE GLOBALLY
         // ============================================================
 
-        window.addToCart = addToCart;
+        
         window.toggleWishlist = toggleWishlist;
         window.filterDeals = filterDeals;
 
