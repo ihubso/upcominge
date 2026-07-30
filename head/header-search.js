@@ -1436,6 +1436,8 @@ i.fas.fa-heart {
   opacity: 0.8;
   margin-right: 4px;
 }
+footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 30px; margin-top: 40px; }
+  
 
 
         </style>

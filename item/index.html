@@ -1073,6 +1073,8 @@
                     <div id="reviewsList" class="space-y-4 max-h-96 overflow-y-auto pr-2 mb-8"></div>
                     <div class="bg-gray-50 rounded-2xl p-6">
                         <h4 class="font-bold mb-4">✏️ Write a Review</h4>
+                        <form id="reviewForm" class="space-y-4">
+                            
                         <div class="space-y-3">
                             <input type="text" id="reviewUserName" placeholder="Your name" class="w-full border border-gray-200 rounded-lg p-3 text-sm" />
                             <select id="reviewRating" class="w-full border border-gray-200 rounded-lg p-3 text-sm">
@@ -1083,10 +1085,11 @@
                                 <option value="1">★☆☆☆☆ (1)</option>
                             </select>
                             <textarea id="reviewComment" placeholder="Your review..." rows="3" class="w-full border border-gray-200 rounded-lg p-3 text-sm"></textarea>
-                            <button id="submitReviewBtn" class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primaryHover transition">
+                            <button id="submitReviewBtn" class="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-primaryHover transition">
                                 Submit Review
                             </button>
                         </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -1304,10 +1307,16 @@
                     .from('deals')
                     .select('discount')
                     .eq('product_id', productId)
-                    .single();
+                    .maybeSingle();
 
-                if (error || !data) return null;
-                return data;
+                if (error) {
+                    if (error.code !== 'PGRST116') {
+                        console.warn('⚠️ Deal lookup error:', error.message);
+                    }
+                    return null;
+                }
+
+                return data || null;
             } catch (err) {
                 return null;
             }
@@ -1655,23 +1664,6 @@ async function saveCart(cart) {
             }
         }
 
-        // --- Reviews Functions ---
-        function getProductReviews(productId) {
-            const reviews = window._cachedReviews || {};
-            return reviews[productId] || [];
-        }
-
-        function getAverageRating(productId) {
-            const revs = getProductReviews(productId);
-            if (!revs.length) return 0;
-            const sum = revs.reduce((s, r) => s + r.rating, 0);
-            return sum / revs.length;
-        }
-
-        function getReviewCount(productId) {
-            return getProductReviews(productId).length;
-        }
-
         // --- Get URL parameters ---
         function getProductIdFromUrl() {
             const params = new URLSearchParams(window.location.search);
@@ -1834,49 +1826,239 @@ async function handleAddToCart(product) {
         }
 
         // --- Submit Review ---
-        async function handleSubmitReview(productId) {
-            const userName = document.getElementById('reviewUserName').value.trim();
-            if (!userName) {
-                showToast('Please enter your name');
-                return;
-            }
-            const rating = parseInt(document.getElementById('reviewRating').value);
-            const comment = document.getElementById('reviewComment').value.trim();
-            if (!comment) {
-                showToast('Please write a review');
-                return;
-            }
+// ============================================================
+//  REVIEWS - Full Implementation with Supabase
+// ============================================================
 
-            try {
-                if (!window._cachedReviews) window._cachedReviews = {};
-                if (!window._cachedReviews[productId]) window._cachedReviews[productId] = [];
+// --- State ---
+let _cachedReviews = {};
 
-                window._cachedReviews[productId].push({
-                    id: Date.now(),
-                    user: userName,
-                    rating: rating,
-                    comment: comment,
-                    date: new Date().toLocaleDateString()
-                });
-
-                localStorage.setItem('st_reviews', JSON.stringify(window._cachedReviews));
-
-                renderReviews(productId);
-
-                const avg = getAverageRating(productId);
-                const count = getReviewCount(productId);
-                document.getElementById('productRating').innerHTML = renderStars(avg);
-                document.getElementById('reviewCount').textContent = `${count} Reviews`;
-                document.getElementById('reviewCountLabel').textContent = count;
-
-                document.getElementById('reviewComment').value = '';
-                showToast('Thank you for your review! 🎉');
-            } catch (e) {
-                console.error('Review error:', e);
-                showToast('Error submitting review');
-            }
+// --- Load Reviews from Supabase ---
+async function loadReviewsFromSupabase() {
+    try {
+        const client = getSupabaseClient();
+        if (!client) {
+            loadReviewsFromLocalStorage();
+            return;
         }
 
+        const { data, error } = await client
+            .from('reviews')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('❌ Error loading reviews:', error);
+            loadReviewsFromLocalStorage();
+            return;
+        }
+
+        // Organize reviews by product_id
+        const reviews = {};
+        data.forEach(review => {
+            if (!reviews[review.product_id]) {
+                reviews[review.product_id] = [];
+            }
+            reviews[review.product_id].push({
+                id: review.id,
+                user: review.user_name,
+                rating: review.rating,
+                comment: review.comment,
+                date: review.date || new Date(review.created_at).toLocaleDateString()
+            });
+        });
+
+        _cachedReviews = reviews;
+        localStorage.setItem('st_reviews', JSON.stringify(reviews));
+        
+        console.log(`✅ Loaded ${data.length} reviews from Supabase`);
+        return reviews;
+
+    } catch (err) {
+        console.error('❌ Error loading reviews:', err);
+        loadReviewsFromLocalStorage();
+    }
+}
+
+// --- Load Reviews from localStorage (Fallback) ---
+function loadReviewsFromLocalStorage() {
+    try {
+        const saved = JSON.parse(localStorage.getItem('st_reviews') || '{}');
+        _cachedReviews = saved;
+        console.log(`✅ Loaded reviews from localStorage`);
+    } catch (e) {
+        _cachedReviews = {};
+    }
+}
+
+// --- Get Reviews for a Product ---
+function getProductReviews(productId) {
+    return _cachedReviews[productId] || [];
+}
+
+// --- Get Average Rating ---
+function getAverageRating(productId) {
+    const revs = getProductReviews(productId);
+    if (!revs.length) return 0;
+    const sum = revs.reduce((s, r) => s + r.rating, 0);
+    return sum / revs.length;
+}
+
+// --- Get Review Count ---
+function getReviewCount(productId) {
+    return getProductReviews(productId).length;
+}
+
+// --- Submit Review ---
+async function handleSubmitReview(productId) {
+    const nameInput = document.getElementById('reviewUserName');
+    const ratingSelect = document.getElementById('reviewRating');
+    const commentInput = document.getElementById('reviewComment');
+    const submitBtn = document.getElementById('submitReviewBtn');
+
+    const userName = nameInput.value.trim();
+    if (!userName) {
+        showToast('Please enter your name');
+        return;
+    }
+    const rating = parseInt(ratingSelect.value);
+    const comment = commentInput.value.trim();
+    if (!comment) {
+        showToast('Please write a review');
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="inline-flex items-center gap-2"><span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span> Submitting...</span>';
+
+    try {
+        const client = getSupabaseClient();
+        if (!client) {
+            showToast('⚠️ Offline mode: Review saved locally', 'warning');
+            saveReviewLocally(productId, userName, rating, comment);
+            return;
+        }
+
+        const reviewData = {
+            id: Date.now(),
+            product_id: productId,
+            user_name: userName,
+            rating: rating,
+            comment: comment,
+            date: new Date().toLocaleDateString(),
+            created_at: new Date().toISOString()
+        };
+
+        const { data, error } = await client
+            .from('reviews')
+            .insert([reviewData])
+            .select();
+
+        if (error) {
+            console.error('❌ Supabase error:', error);
+            showToast('⚠️ Network error: Review saved locally', 'warning');
+            saveReviewLocally(productId, userName, rating, comment);
+            return;
+        }
+
+        console.log('✅ Review saved to Supabase:', data);
+        saveReviewLocally(productId, userName, rating, comment);
+
+        commentInput.value = '';
+        showToast('Thank you for your review! 🎉');
+
+    } catch (e) {
+        console.error('Review error:', e);
+        showToast('⚠️ Error saving review. Saved locally.', 'warning');
+        saveReviewLocally(productId, userName, rating, comment);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Submit Review';
+    }
+}
+
+// --- Save Review Locally ---
+function saveReviewLocally(productId, userName, rating, comment) {
+    if (!_cachedReviews[productId]) _cachedReviews[productId] = [];
+
+    _cachedReviews[productId].push({
+        id: Date.now(),
+        user: userName,
+        rating: rating,
+        comment: comment,
+        date: new Date().toLocaleDateString()
+    });
+
+    localStorage.setItem('st_reviews', JSON.stringify(_cachedReviews));
+    
+    renderReviews(productId);
+    updateReviewUI(productId);
+}
+
+// --- Render Reviews ---
+function renderReviews(productId) {
+    const reviews = getProductReviews(productId);
+    const list = document.getElementById('reviewsList');
+    if (!list) return;
+
+    if (reviews.length === 0) {
+        list.innerHTML = '<p class="text-gray-400 text-sm">No reviews yet. Be the first to review!</p>';
+        return;
+    }
+
+    list.innerHTML = reviews.map(r => `
+        <div class="bg-gray-50 rounded-xl p-4">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="font-semibold">${r.user || 'Anonymous'}</p>
+                    <div class="star-rating text-sm">${renderStars(r.rating)}</div>
+                </div>
+                <span class="text-xs text-gray-400">${r.date || ''}</span>
+            </div>
+            <p class="text-sm text-gray-700 mt-2">${r.comment}</p>
+        </div>
+    `).join('');
+}
+
+// --- Update Review UI ---
+function updateReviewUI(productId) {
+    const avg = getAverageRating(productId);
+    const count = getReviewCount(productId);
+    const ratingEl = document.getElementById('productRating');
+    const countEl = document.getElementById('reviewCount');
+    const labelEl = document.getElementById('reviewCountLabel');
+
+    if (ratingEl) ratingEl.innerHTML = renderStars(avg);
+    if (countEl) countEl.textContent = `${count} Reviews`;
+    if (labelEl) labelEl.textContent = count;
+}
+
+// --- Render Stars ---
+function renderStars(rating) {
+    const full = Math.floor(rating);
+    let html = '';
+    for (let i = 0; i < full; i++) html += '★';
+    for (let i = full; i < 5; i++) html += '☆';
+    return html;
+}
+
+// --- Show Toast ---
+function showToast(message, type = 'success') {
+    const existing = document.querySelector('.toast-msg');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = `toast-msg ${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(-20px)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
         // --- Render Cart Modal ---
         async function renderCart() {
             const cart = await getCart();
@@ -2129,12 +2311,7 @@ window.clearCart = async function() {
             document.getElementById('productcategory').textContent = product.category || 'all';
             document.getElementById('productName').textContent = product.name;
 
-            try {
-                const saved = JSON.parse(localStorage.getItem('st_reviews') || '{}');
-                window._cachedReviews = saved;
-            } catch (e) {
-                window._cachedReviews = {};
-            }
+            loadReviewsFromLocalStorage();
 
             const avg = getAverageRating(product.id);
             const count = getReviewCount(product.id);
@@ -2286,6 +2463,13 @@ window.clearCart = async function() {
             document.getElementById('shareBtn').onclick = () => handleShare(product);
             document.getElementById('submitReviewBtn').onclick = () => handleSubmitReview(product.id);
 
+            const nameInput = document.getElementById('reviewUserName');
+            const customerName = window.STHeader?.AppState?.user?.name || window.STHeader?.AppState?.user?.full_name || window.STHeader?.AppState?.user?.email || '';
+            if (nameInput && customerName) {
+                nameInput.value = customerName;
+                nameInput.readOnly = true;
+            }
+
             const qtyInput = document.getElementById('qtyInput');
             qtyInput.max = product.stock || 99;
             qtyInput.addEventListener('change', () => {
@@ -2362,14 +2546,9 @@ window.clearCart = async function() {
         }
 
         // --- Initialize ---
-        document.addEventListener('DOMContentLoaded', () => {
-            try {
-                const saved = JSON.parse(localStorage.getItem('st_reviews') || '{}');
-                window._cachedReviews = saved;
-            } catch (e) {
-                window._cachedReviews = {};
-            }
-
+        document.addEventListener('DOMContentLoaded', async () => {
+            loadReviewsFromLocalStorage();
+            await loadReviewsFromSupabase();
 
                setTimeout(() => {
                     loadProduct();

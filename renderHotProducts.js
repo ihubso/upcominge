@@ -221,9 +221,9 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
                     </a>
                     ${product.brand ? `<span class="hot-product-brand">${product.brand}</span>` : ''}
                     <div class="hot-product-price">
-                        <span class="hot-current-price">$${price.toFixed(2)}</span>
+                        <span class="hot-current-price">FCFA${price.toFixed(2)}</span>
                         ${discountPercent > 0 ? `
-                            <span class="hot-original-price">$${originalPrice.toFixed(2)}</span>
+                            <span class="hot-original-price">FCFA${originalPrice.toFixed(2)}</span>
                         ` : ''}
                     </div>
                     ${rating > 0 ? `

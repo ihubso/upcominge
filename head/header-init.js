@@ -65,7 +65,7 @@ async function populateDropdowns() {
                             </div>
                             <div class="st-item-info">
                                 <span class="st-item-name">${product.name}</span>
-                                <span class="st-item-count">$${(product.price || 0).toFixed(2)}</span>
+                                <span class="st-item-count">FCFA${(product.price || 0).toFixed(2)}</span>
                             </div>
                         </a>
                     `).join('');
