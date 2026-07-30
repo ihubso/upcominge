@@ -539,6 +539,12 @@ function openNotificationModal() {
     if (modal) {
         modal.classList.add('open');
         document.body.style.overflow = 'hidden';
+        
+        // Push modal state to history
+        if (history.state?.modal !== 'notifications') {
+            history.pushState({ modal: 'notifications' }, '');
+        }
+        
         // Mark all as read when opened
         markAllNotificationsAsRead();
     }
@@ -546,13 +552,21 @@ function openNotificationModal() {
 }
 
 // --- Close Notification Modal ---
-function closeNotificationModal() {
+function closeNotificationModal(isBackNavigation = false) {
     const modal = document.getElementById('stNotificationModal');
     const overlay = document.getElementById('stNotificationOverlay');
     if (modal) modal.classList.remove('open');
     if (overlay) overlay.classList.remove('active');
     document.body.style.overflow = '';
+
+    // Remove state from history if closed manually (not via back button)
+    if (!isBackNavigation && history.state?.modal === 'notifications') {
+        history.back();
+    }
 }
+
+
+
 
 // --- Setup Notification UI ---
 function setupNotificationUI() {
