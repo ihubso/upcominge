@@ -1957,6 +1957,14 @@ async function loadUserData(customerId, shouldMigrate = false) {
     console.log('📦 Cart:', AppState.cart.length, 'items');
     console.log('❤️ Wishlist:', AppState.wishlist.length, 'items');
     updateUrlWithUserInfo();
+     await requestNotificationPermission();
+    await initNotifications();
+    // Register service worker for client-side push scaffolding
+    try {
+        await registerServiceWorker();
+    } catch (err) {
+        console.warn('⚠️ Service worker registration skipped:', err);
+    }
     window.getCurrentUser = getCurrentUser;
     window.getBusinessInfo = getBusinessInfo;
 }
@@ -1986,3 +1994,84 @@ window.fetchWishlistFromDB = fetchWishlistFromDB;
 window.fetchCategoriesAndBrands = fetchCategoriesAndBrands;
 
 console.log('✅ Global Header System Loaded (Customer-based Auth)');
+
+// --- Service Worker & Push Helpers (client-only scaffolding) ---
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+async function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) {
+        console.warn('⚠️ Service workers are not supported in this browser');
+        return null;
+    }
+
+    try {
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        console.log('✅ Service worker registered:', reg.scope);
+        return reg;
+    } catch (err) {
+        console.warn('⚠️ Service worker registration failed:', err);
+        return null;
+    }
+}
+
+async function subscribeToPush(vapidPublicKey) {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        console.warn('⚠️ PushManager not supported in this browser');
+        return null;
+    }
+
+    try {
+        const reg = await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub && vapidPublicKey) {
+            sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+            });
+        }
+
+        if (sub) {
+            localStorage.setItem('st_push_subscription', JSON.stringify(sub));
+            console.log('✅ Push subscription ready');
+        }
+        return sub;
+    } catch (err) {
+        console.warn('⚠️ Failed to subscribe to push:', err);
+        return null;
+    }
+}
+
+window.testOrderNotif = function(payload = {}) {
+    try {
+        const message = {
+            type: 'TEST_PUSH',
+            payload: {
+                title: payload.title || 'Test Notification',
+                body: payload.body || 'This is a test notification',
+                url: payload.url || '/',
+                icon: payload.icon || '/favicon.png'
+            }
+        };
+
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage(message);
+        } else if (navigator.serviceWorker) {
+            navigator.serviceWorker.ready.then(reg => {
+                if (reg && reg.active) reg.active.postMessage(message);
+            });
+        } else {
+            console.warn('⚠️ Service worker not available to post test message');
+        }
+    } catch (e) {
+        console.warn('⚠️ testOrderNotif failed:', e);
+    }
+};

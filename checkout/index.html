@@ -1141,6 +1141,28 @@ async function placeOrder(e) {
         orderTotal = 0;
 
         showToast('✅ Order placed successfully! 🎉');
+        // --- Trigger in-app + native notification for the placed order ---
+        try {
+            const notifTitle = `✅ Order ${orderId} Placed`;
+            const notifText = `Thank you ${name}! Your order ${orderId} totaling FCFA ${orderData.total} has been received.`;
+            const orderLink = `/orders/?order=${encodeURIComponent(orderId)}`;
+
+            if (window.notificationSystem && typeof window.notificationSystem.add === 'function') {
+                window.notificationSystem.add(notifTitle, notifText, 'order', orderLink, null);
+            } else if (typeof addNotification === 'function') {
+                addNotification(notifTitle, notifText, 'order', orderLink, null);
+            }
+
+            // Post a message to the service worker to simulate/show a notification while page is active
+            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'ORDER_CREATED',
+                    payload: { id: orderId, title: notifTitle, body: notifText, url: orderLink }
+                });
+            }
+        } catch (e) {
+            console.warn('⚠️ Order notification trigger failed:', e);
+        }
 
     } catch (err) {
         console.error('❌ Error placing order:', err);

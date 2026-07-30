@@ -1438,8 +1438,339 @@ i.fas.fa-heart {
 }
 footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 30px; margin-top: 40px; }
   
+.st-notification-modal {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 420px;
+            max-width: 90vw;
+            height: 100vh;
+            background: white;
+            z-index: 10002;
+            transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -8px 0 40px rgba(0,0,0,0.12);
+            display: flex;
+            flex-direction: column;
+        }
 
+        .st-notification-modal.open {
+            right: 0;
+        }
 
+        .st-notification-modal .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 1px solid #E2E8F0;
+            flex-shrink: 0;
+            background: white;
+        }
+
+        .st-notification-modal .modal-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .st-notification-modal .modal-header h2 i {
+            color: #6C3CE1;
+        }
+
+        .st-notification-modal .modal-header .close-btn {
+            padding: 8px;
+            border: none;
+            background: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #94A3B8;
+            transition: color 0.2s ease;
+        }
+
+        .st-notification-modal .modal-header .close-btn:hover {
+            color: #EF4444;
+        }
+
+        .st-notification-modal .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 20px 20px;
+        }
+
+        .st-notification-modal .modal-body::-webkit-scrollbar {
+            width: 4px;
+        }
+        .st-notification-modal .modal-body::-webkit-scrollbar-thumb {
+            background: #E2E8F0;
+            border-radius: 4px;
+        }
+
+        .notification-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            transition: background 0.2s ease;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+            position: relative;
+            align-items: flex-start;
+        }
+
+        .notification-item:hover {
+            background: #f8fafc;
+        }
+
+        .notification-item.unread {
+            background: #f8fafc;
+        }
+
+        .notification-item .notif-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+
+        .notification-item .notif-icon.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10B981;
+        }
+
+        .notification-item .notif-icon.info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3B82F6;
+        }
+
+        .notification-item .notif-icon.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #F59E0B;
+        }
+
+        .notification-item .notif-icon.deal {
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+        }
+
+        .notification-item .notif-image {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #f1f5f9;
+        }
+
+        .notification-item .notif-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .notification-item .notif-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-item .notif-content .notif-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #0F172A;
+        }
+
+        .notification-item .notif-content .notif-text {
+            font-size: 13px;
+            color: #64748B;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .notification-item .notif-content .notif-time {
+            font-size: 11px;
+            color: #94A3B8;
+            margin-top: 2px;
+        }
+
+        .notification-item .notif-unread-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #6C3CE1;
+            flex-shrink: 0;
+            margin-top: 8px;
+        }
+
+        .notification-item .notif-delete {
+            border: none;
+            background: none;
+            color: #94A3B8;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 4px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+
+        .notification-item:hover .notif-delete {
+            opacity: 1;
+        }
+
+        .notification-item .notif-delete:hover {
+            color: #EF4444;
+        }
+
+        .notification-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94A3B8;
+        }
+
+        .notification-empty i {
+            font-size: 48px;
+            color: #E2E8F0;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .notification-mark-all {
+            border: none;
+            background: none;
+            color: #6C3CE1;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+            font-family: inherit;
+        }
+
+        .notification-mark-all:hover {
+            background: rgba(108, 60, 225, 0.08);
+        }
+
+        .notification-clear-all {
+            border: none;
+            background: none;
+            color: #94A3B8;
+            font-weight: 500;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .notification-clear-all:hover {
+            color: #EF4444;
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        /* Notification Overlay */
+        .st-notification-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 10001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .st-notification-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Toast notification */
+        .st-notif-toast {
+            position: fixed;
+            top: 90px;
+            right: 24px;
+            max-width: 380px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+            border-left: 4px solid #6C3CE1;
+            z-index: 30001;
+            animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .st-notification-modal {
+                width: 100%;
+                max-width: 100%;
+                right: -100%;
+                border-radius: 0;
+            }
+
+            .st-notification-modal.open {
+                right: 0;
+            }
+
+            .st-notif-toast {
+                top: 76px;
+                right: 12px;
+                left: 12px;
+                max-width: 100%;
+                width: auto;
+                border-radius: 12px;
+            }
+        }
+        #stMobileNotificationBtn {
+        position: relative;
+        cursor: pointer;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        i.fas.fa-bell {
+        font-size: 20px;
+        color: rgb(74, 85, 104);
+        }
+
+        #stMobileNotificationCount {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        background-color: rgb(239, 68, 68);
+        color: white;
+        border-radius: 9999px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0px 4px;
+        font-weight: bold;
+        border: 2px solid white;
+        }
         </style>
         
         <!-- ============================================
@@ -1554,6 +1885,10 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                     <input type="search" class="st-search-input" id="stMobileSearchInput" 
                         placeholder="Search..." autocomplete="off" readonly="readonly">
                 </div>
+                <span class="st-icon-wrap" id="stMobileNotificationBtn"">
+                    <i class="fas fa-bell"></i>
+                    <span class="st-badge" id="stMobileNotificationCount" style="background:#EF4444;font-size:9px;min-width:18px;height:18px;top:-6px;right:-10px;display:none;">0</span>
+                </span>
                 
                 <button class="st-mobile-toggle-bar" id="stMobileToggle">
                     <i class="fas fa-bars"></i>
@@ -1654,6 +1989,16 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
             <i class="fas fa-cog"></i> Settings
             </button>
 
+        </div>
+        <div class="st-notification-overlay" id="stNotificationOverlay"></div>
+        <div class="st-notification-modal" id="stNotificationModal">
+            <div class="modal-header">
+                <h2><i class="fas fa-bell"></i> Notifications</h2>
+                <button class="close-btn" id="stNotificationClose">&times;</button>
+            </div>
+            <div class="modal-body" id="stNotificationBody">
+                <!-- Will be populated by JavaScript -->
+            </div>
         </div>
         
         <!-- ============================================
