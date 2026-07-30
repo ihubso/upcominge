@@ -1,7 +1,7 @@
 
 const HEADER_CONFIG = {
-    shopName: 'shop<span class="st-brand-highlight">Boss</span>',
-    logoText: 'SB',
+    shopName: 'SUCESS<span class="st-brand-highlight">TECHNOLOGY</span>',
+    logoText: 'ST',
     navLinks: [
         { label: 'Products', icon: 'fa-box', href: '/product/', dropdown: true, dropdownType: 'products' },
         { label: 'Categories', icon: 'fa-th-large', href: '/category/', dropdown: true, dropdownType: 'categories' },

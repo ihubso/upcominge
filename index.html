@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Order Status · Sucess Technology</title>
+  <title>welcome · Sucess Technology</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,12 +18,38 @@
 <script src="head/header-dropdowns.js" defer></script>
 <script src="head/header-search.js" defer></script>
 <script src="head/header-init.js" defer></script>
-   
+ 
 </head>
 <div id="app">
 <!-- Hero Banner Container -->
+ <section class="hero-banner-section">
 <div class="hero-banner-wrapper">
-    <div id="heroBanner"></div>
+    <div id="heroBanner">
+       <div class="hero-skeleton-wrapper">
+            <div class="hero-skeleton-slide">
+                <div class="hero-skeleton-content">
+                    <div class="hero-skeleton-text">
+                        <div class="skeleton-badge"></div>
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-brand"></div>
+                        <div class="skeleton-price">
+                            <div class="skeleton-current-price"></div>
+                            <div class="skeleton-original-price"></div>
+                            <div class="skeleton-discount"></div>
+                        </div>
+                        <div class="skeleton-description"></div>
+                        <div class="skeleton-btn"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-skeleton-dots">
+                <div class="skeleton-dot active"></div>
+                <div class="skeleton-dot"></div>
+                <div class="skeleton-dot"></div>
+                <div class="skeleton-dot"></div>
+            </div>
+        </div>
+    </div>
 </div>
 </div>
 <section class="best-categories-section">
@@ -117,9 +143,9 @@
     <p id="footerAddress"></p>
   </div>
 </footer>
- 
-  <script src="hero-banner.js"></script>
-    <script src="renderHotProducts.js"></script>
+     <script src="hero-banner.js"defer></script>
+
+    <script src="renderHotProducts.js"defer></script>
     <script src="deals-component.js"></script>
     <script src="related-products.js"></script>
     <script src="category-showcase.js"></script>
