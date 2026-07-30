@@ -821,6 +821,7 @@ function renderCart() {
         // ✅ 2. ALWAYS save to localStorage first (for checkout page)
         localStorage.setItem('st_cartcheckout', JSON.stringify(cartItems));
         sessionStorage.setItem('st_cartcheckeout', JSON.stringify(cartItems));
+        localStorage.removeItem('st_cart');
         console.log('💾 Cart saved to localStorage:', cartItems.length, 'items');
 
         // 3. Update header badge
