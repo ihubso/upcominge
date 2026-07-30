@@ -564,7 +564,12 @@ function closeNotificationModal(isBackNavigation = false) {
         history.back();
     }
 }
-
+window.addEventListener('popstate', (event) => {
+    // If the modal state is gone, close the modal
+    if (!event.state || event.state.modal !== 'notifications') {
+        closeNotificationModal(true);
+    }
+});
 
 
 
