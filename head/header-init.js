@@ -1967,6 +1967,11 @@ async function loadUserData(customerId, shouldMigrate = false) {
     }
     window.getCurrentUser = getCurrentUser;
     window.getBusinessInfo = getBusinessInfo;
+    // Initialize the push manager
+    window.pushManager = new PushNotificationManager();
+    setTimeout(() => {
+        window.pushManager.init();
+    }, 2000);
 }
 
 // ============================================================
