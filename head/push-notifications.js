@@ -162,7 +162,7 @@ class PushNotificationManager {
                 await this.subscribeToPush();
                 await this.loadSubscriptionFromServer();
                 this.initialized = true;
-                this.showToast('✅ Notifications enabled successfully!');
+
             } else {
                 this.showToast('⚠️ Notification permission was not granted.');
             }

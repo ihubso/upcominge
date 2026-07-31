@@ -2447,6 +2447,9 @@ window.clearCart = async function() {
             const wishlist = await getWishlist();
             isWished = wishlist.includes(product.id);
             updateWishlistButton();
+                       if (typeof trackProductView === 'function') {
+                await trackProductView(product.id);
+            }
 
             renderReviews(product.id);
             await renderRelatedProducts(product);

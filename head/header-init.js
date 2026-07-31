@@ -751,37 +751,41 @@ async function performSearch(query) {
 }
 
 // --- Render Search Results ---
+// --- Render Search Results ---
 function renderSearchResults(results, query) {
     // Desktop results
     const container = document.getElementById('stSearchResults');
     if (!container) return;
 
+    // Properly encode the query for use in HTML attributes
+    const encodedQuery = encodeURIComponent(query);
+
     if (results.length === 0) {
         container.innerHTML = `
             <div class="st-search-empty">
                 <i class="fas fa-search" style="font-size:24px;display:block;margin-bottom:8px;color:#E2E8F0;"></i>
-                No products found for "<strong>${query}</strong>"
+                No products found for "<strong>${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</strong>"
             </div>
-            <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all">
-                View all results for "${query}" →
+            <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');">
+                View all results for "${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}" →
             </a>
         `;
         container.style.display = 'block';
     } else {
         container.innerHTML = results.map((item, index) => `
-            <a href="/item/?product=${item.id}" class="st-search-item" data-index="${index}">
+            <a href="/item/?product=${item.id}" class="st-search-item" data-index="${index}" onclick="handleSearchClick(event, '${encodedQuery}', '/item/?product=${item.id}');">
                 <img src="${item.image || 'https://placehold.co/40x40/6C3CE1/FFFFFF?text=Product'}" 
-                     alt="${item.name}" 
+                     alt="${item.name.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}" 
                      onerror="this.src='https://placehold.co/40x40/6C3CE1/FFFFFF?text=Product'">
                 <div class="st-search-info">
                     <div class="st-search-name">${highlightMatch(item.name || 'Unknown', query)}</div>
-                    <div class="st-search-meta">${item.brand || item.category || ''}</div>
+                    <div class="st-search-meta">${(item.brand || item.category || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
                 </div>
                 <div class="st-search-price">FCFA ${(item.price || 0).toFixed(2)}</div>
             </a>
         `).join('') + `
-            <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all">
-                View all ${results.length} results for "${query}" →
+            <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');">
+                View all ${results.length} results for "${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}" →
             </a>
         `;
         container.style.display = 'block';
@@ -794,33 +798,56 @@ function renderSearchResults(results, query) {
             mobileContainer.innerHTML = `
                 <div class="st-search-empty">
                     <i class="fas fa-search" style="font-size:32px;display:block;margin-bottom:12px;color:#E2E8F0;"></i>
-                    No products found for "<strong>${query}</strong>"
+                    No products found for "<strong>${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</strong>"
                 </div>
-                <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all">
-                    View all results for "${query}" →
+                <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');">
+                    View all results for "${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}" →
                 </a>
             `;
         } else {
             mobileContainer.innerHTML = results.map(item => `
-                <a href="/item/?product=${item.id}" class="st-search-item">
+                <a href="/item/?product=${item.id}" class="st-search-item" onclick="handleSearchClick(event, '${encodedQuery}', '/item/?product=${item.id}');">
                     <img src="${item.image || 'https://placehold.co/50x50/6C3CE1/FFFFFF?text=Product'}" 
-                         alt="${item.name}" 
+                         alt="${item.name.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}" 
                          onerror="this.src='https://placehold.co/50x50/6C3CE1/FFFFFF?text=Product'">
                     <div class="st-search-info">
                         <div class="st-search-name">${highlightMatch(item.name || 'Unknown', query)}</div>
-                        <div class="st-search-meta">${item.brand || item.category || ''}</div>
+                        <div class="st-search-meta">${(item.brand || item.category || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
                     </div>
                     <div class="st-search-price">FCFA ${(item.price || 0).toFixed(2)}</div>
                 </a>
             `).join('') + `
-                <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all">
-                    View all ${results.length} results for "${query}" →
+                <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');">
+                    View all ${results.length} results for "${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}" →
                 </a>
             `;
         }
     }
 }
 
+// --- Handle Search Click with Analytics ---
+async function handleSearchClick(event, encodedQuery, url) {
+    // Prevent default navigation
+    event.preventDefault();
+    
+    try {
+        // Decode the query for analytics
+        const query = decodeURIComponent(encodedQuery);
+        
+        // Send analytics - wait for it to complete
+        await recordHeaderSearchQuery(query);
+        
+        console.log('✅ Search analytics recorded for:', query);
+        
+        // Now navigate to the URL
+        window.location.href = url;
+    } catch (err) {
+        console.warn('⚠️ Search analytics failed, but continuing navigation:', err);
+        // Even if analytics fails, navigate to the URL
+        window.location.href = url;
+    }
+}
+ window.handleSearchClick = handleSearchClick;
 // --- Highlight Match ---
 function highlightMatch(text, query) {
     if (!text || !query) return text;
@@ -921,6 +948,16 @@ function selectCurrentSearchResult() {
     }
 }
 
+async function recordHeaderSearchQuery(query) {
+    if (!query || !query.trim()) return;
+    if (typeof window.saveSearchAnalyticsToDB === 'function') {
+        try {
+            await window.saveSearchAnalyticsToDB(query.trim());
+        } catch (err) {
+            console.warn('⚠️ Header search analytics save failed:', err);
+        }
+    }
+}
 
 // --- Desktop Search ---
 const desktopSearch = document.getElementById('stSearchInput');
@@ -981,6 +1018,7 @@ if (desktopSearch) {
             if (selectedSearchIndex >= 0) {
                 selectCurrentSearchResult();
             } else if (query) {
+                recordHeaderSearchQuery(query).catch(() => {});
                 window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
             }
         } else if (e.key === 'Escape') {
@@ -1028,6 +1066,7 @@ if (mobileSearch) {
             e.preventDefault();
             const query = mobileSearch.value.trim();
             if (query) {
+                recordHeaderSearchQuery(query).catch(() => {});
                 window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
             }
         });
@@ -1068,6 +1107,7 @@ if (modalSearchInput) {
             e.preventDefault();
             const query = this.value.trim();
             if (query) {
+                recordHeaderSearchQuery(query).catch(() => {});
                 closeMobileSearch();
                 window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
             }
@@ -1188,6 +1228,7 @@ allSearchInputs.forEach(input => {
                     if (selectedSearchIndex >= 0) {
                         selectCurrentSearchResult();
                     } else if (query) {
+                        recordHeaderSearchQuery(query).catch(() => {});
                         window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
                     }
                 } else if (e.key === 'Escape') {
@@ -1240,6 +1281,8 @@ allSearchInputs.forEach(input => {
                     e.preventDefault();
                     const query = this.value.trim();
                     if (query) {
+                      
+                        recordHeaderSearchQuery(query).catch(() => {});
                         closeMobileSearch();
                         window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
                     }
@@ -1967,6 +2010,7 @@ async function loadUserData(customerId, shouldMigrate = false) {
     }
     window.getCurrentUser = getCurrentUser;
     window.getBusinessInfo = getBusinessInfo;
+    
     // Initialize the push manager
     window.pushManager = new PushNotificationManager();
     setTimeout(() => {

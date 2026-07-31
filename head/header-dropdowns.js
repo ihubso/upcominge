@@ -630,3 +630,67 @@ function initNotifications() {
     // Initialize notification system
     initNotificationSystem();
 }
+
+
+
+function getViewAnalytics() {
+  try {
+    const stored = localStorage.getItem('st_view_analytics');
+    if (!stored) return {};
+    return JSON.parse(stored);
+  } catch (err) {
+    console.warn('⚠️ Could not read view analytics locally:', err.message);
+    return {};
+  }
+}
+
+function setViewAnalytics(analytics) {
+  try {
+    localStorage.setItem('st_view_analytics', JSON.stringify(analytics));
+  } catch (err) {
+    console.warn('⚠️ Could not save view analytics locally:', err.message);
+  }
+}
+
+async function saveViewAnalyticsToDB(productId, data) {
+  const client = getSupabaseClient();
+  if (!client) return;
+
+  try {
+    const { error } = await client
+      .from('view_analytics')
+      .upsert({
+        product_id: productId,
+        count: data.count,
+        first_viewed: data.firstViewed,
+        last_viewed: data.lastViewed
+      }, {
+        onConflict: 'product_id'
+      });
+
+    if (error) {
+      console.warn('⚠️ Could not save view analytics:', error.message);
+    }
+  } catch (err) {
+    console.warn('⚠️ View analytics sync skipped:', err.message);
+  }
+}
+
+async function trackProductView(productId) {
+  if (!productId) return;
+
+  const analytics = getViewAnalytics();
+  const now = new Date().toISOString();
+  const entry = analytics[productId] || {
+    count: 0,
+    firstViewed: now,
+    lastViewed: now
+  };
+
+  entry.count = (Number(entry.count) || 0) + 1;
+  entry.lastViewed = now;
+  analytics[productId] = entry;
+
+  setViewAnalytics(analytics);
+  await saveViewAnalyticsToDB(productId, entry);
+}

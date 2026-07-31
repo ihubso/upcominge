@@ -136,6 +136,95 @@ async function saveWishlistToDB(customerId, wishlist) {
         console.error('❌ Error saving wishlist:', err.message);
     }
 }
+
+async function fetchSearchAnalyticsFromDB() {
+    const client = getSupabaseClient();
+    if (!client) {
+        console.warn('⚠️ Supabase not available for search analytics');
+        return {};
+    }
+
+    try {
+        const { data, error } = await client
+            .from('search_analytics')
+            .select('*');
+
+        if (error) {
+            console.error('❌ Error fetching search analytics:', error.message);
+            return {};
+        }
+
+        const analytics = {};
+        (data || []).forEach(row => {
+            analytics[row.query] = {
+                query: row.query,
+                count: row.count,
+                lastSearched: row.last_searched
+            };
+        });
+        return analytics;
+    } catch (err) {
+        console.error('❌ Error fetching search analytics:', err.message);
+        return {};
+    }
+}
+
+async function saveSearchAnalyticsToDB(query) {
+    if (!query || !query.trim()) return;
+
+    const client = getSupabaseClient();
+    if (!client) {
+        console.warn('⚠️ Supabase not available for search analytics');
+        return;
+    }
+
+    const normalizedQuery = query.trim();
+
+    try {
+        const { data, error } = await client
+            .from('search_analytics')
+            .select('count')
+            .eq('query', normalizedQuery)
+            .single();
+
+        if (error && error.code !== 'PGRST116') {
+            console.error('❌ Error reading search analytics row:', error.message);
+            return;
+        }
+
+        const now = new Date().toISOString();
+
+        if (data && typeof data.count === 'number') {
+            const { error: updateError } = await client
+                .from('search_analytics')
+                .update({
+                    count: data.count + 1,
+                    last_searched: now
+                })
+                .eq('query', normalizedQuery);
+
+            if (updateError) {
+                console.error('❌ Error updating search analytics:', updateError.message);
+            }
+        } else {
+            const { error: insertError } = await client
+                .from('search_analytics')
+                .insert([{ query: normalizedQuery, count: 1, last_searched: now }]);
+
+            if (insertError) {
+                console.error('❌ Error inserting search analytics:', insertError.message);
+            }
+        }
+    } catch (err) {
+        console.error('❌ Error saving search analytics:', err.message);
+    }
+}
+
+// Expose search analytics helper to global window object
+if (typeof window !== 'undefined') {
+    window.saveSearchAnalyticsToDB = saveSearchAnalyticsToDB;
+}
+
 async function fetchCategoriesAndBrands() {
     const client = getSupabaseClient();
     if (!client) {

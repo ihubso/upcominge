@@ -7,7 +7,7 @@
 // ============================================
 
 // Version number = Cache name - Changing version creates new cache
-const CACHE_NAME = 'success-technology-v3'; // Increment this to create new cache
+const CACHE_NAME = 'success-technology-v3.1.10'; // Increment this to create new cache
 
 // Assets to cache on install
 const ASSETS_TO_CACHE = [
@@ -107,6 +107,13 @@ self.addEventListener('activate', function(event) {
 self.addEventListener('fetch', function(event) {
     // Don't intercept chrome-extension requests or non-GET requests
     if (!event.request.url.startsWith('http') || event.request.method !== 'GET') {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
+    // Avoid caching any cross-origin requests (including Supabase assets)
+    const requestUrl = new URL(event.request.url);
+    if (requestUrl.origin !== self.location.origin) {
         event.respondWith(fetch(event.request));
         return;
     }

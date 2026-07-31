@@ -907,6 +907,19 @@
         //  SEARCH
         // ============================================================
 
+        async function recordSearchQuery(query) {
+            if (!query || !query.trim()) return;
+            const normalized = query.trim();
+
+            if (window.saveSearchAnalyticsToDB) {
+                try {
+                    await window.saveSearchAnalyticsToDB(normalized);
+                } catch (err) {
+                    console.warn('⚠️ Search analytics save failed:', err);
+                }
+            }
+        }
+
         async function performSearch(query, page = 1, append = false) {
             if (isLoading) return;
             isLoading = true;
@@ -920,6 +933,9 @@
                 const result = await fetchProducts(query, page);
                 const products = result.products || [];
                 const total = result.total || 0;
+                if (!append && query && query.trim()) {
+                    recordSearchQuery(query).catch(() => {});
+                }
 
                 // Filter by category if selected
                 let filtered = products;

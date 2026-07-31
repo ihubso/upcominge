@@ -1,113 +1,111 @@
-// supabase/functions/send-push/index.ts
-// This is a Supabase Edge Function for sending push notifications
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import webPush from "npm:web-push@3.6.7";
 
-// Your VAPID private key - keep this secure!
-const VAPID_PRIVATE_KEY = "Y0tevI6hf8uyKQr1rqOzXjTOGTBKT4Fz_VV9jnYrlOs";
-const VAPID_PUBLIC_KEY = "BI-tM9VQcqAeco67R9VhA9TxByJyFjPgcMcqS_dhfOsve-BcVA5G_0fQIK9uVcECs_sbqnUGWOa1t5kFs-94FRg";
-const VAPID_EMAIL = "austinlebechi02@gmail.com";
+const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY") || "Y0tevI6hf8uyKQr1rqOzXjTOGTBKT4Fz_VV9jnYrlOs";
+const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY") || "BI-tM9VQcqAeco67R9VhA9TxByJyFjPgcMcqS_dhfOsve-BcVA5G_0fQIK9uVcECs_sbqnUGWOa1t5kFs-94FRg";
+const VAPID_EMAIL = Deno.env.get("VAPID_EMAIL") || "austinlebechi02@gmail.com";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "https://bulprhgwuwatzobiojwz.supabase.co";
-const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "your-service-role-key";
+const supabaseKey = Deno.env.get("SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_ANON_KEY") || "";
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Configure VAPID once globally
+webPush.setVapidDetails(
+    `mailto:${VAPID_EMAIL}`,
+    VAPID_PUBLIC_KEY,
+    VAPID_PRIVATE_KEY
+);
 
-// Helper to send a push notification via Web Push API
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
 async function sendPushNotification(subscription: any, payload: any) {
-    const webPush = await import("https://esm.sh/web-push@3.4.5");
-    
-    webPush.setVapidDetails(
-        `mailto:${VAPID_EMAIL}`,
-        VAPID_PUBLIC_KEY,
-        VAPID_PRIVATE_KEY
-    );
-    
-    const options = {
-        TTL: 86400, // 24 hours
-        vapidDetails: {
-            subject: `mailto:${VAPID_EMAIL}`,
-            publicKey: VAPID_PUBLIC_KEY,
-            privateKey: VAPID_PRIVATE_KEY
-        }
-    };
-    
     try {
         const result = await webPush.sendNotification(
             subscription,
             JSON.stringify(payload),
-            options
+            { TTL: 86400 }
         );
-        
         return { success: true, result };
-    } catch (error) {
-        console.error("Error sending push notification:", error);
-        return { success: false, error: error.message };
+    } catch (error: any) {
+        console.error("❌ Push Gateway Error:", error.statusCode || error.message, error.body);
+        return { 
+            success: false, 
+            statusCode: error.statusCode || 500,
+            error: error.message || "Failed to deliver notification" 
+        };
     }
 }
 
 serve(async (req) => {
+    if (req.method === 'OPTIONS') {
+        return new Response(null, { headers: corsHeaders });
+    }
+
     try {
-        const { userId, title, body, data, targetUserId } = await req.json();
-        
-        console.log("📤 Sending push notification:", { userId, targetUserId, title });
-        
-        // Determine which user to send to
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader) {
+            return new Response(
+                JSON.stringify({ code: 'UNAUTHORIZED_NO_AUTH_HEADER', message: 'Missing authorization header' }),
+                { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
+
+        const token = authHeader.replace('Bearer ', '');
+        const supabaseClient = createClient(supabaseUrl, supabaseKey || token);
+
+        const body = await req.json();
+        const { userId, targetUserId, title, body: messageBody, data } = body;
         const targetUser = targetUserId || userId;
-        
-        // Get the subscription from Supabase
-        const { data: subscriptionData, error: subscriptionError } = await supabase
+
+        if (!targetUser) {
+            return new Response(
+                JSON.stringify({ success: false, error: "No target user ID provided" }),
+                { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
+
+        // Retrieve token
+        const { data: subscriptionData, error: subscriptionError } = await supabaseClient
             .from("push_subscriptions")
             .select("subscription")
             .eq("user_id", targetUser)
-            .single();
-        
-        if (subscriptionError) {
-            console.error("❌ Error fetching subscription:", subscriptionError);
+            .maybeSingle();
+
+        if (subscriptionError || !subscriptionData?.subscription) {
             return new Response(
                 JSON.stringify({ 
                     success: false, 
-                    error: "Subscription not found",
-                    details: subscriptionError.message
+                    error: subscriptionError ? subscriptionError.message : "No active push subscription found for this user" 
                 }),
-                { 
-                    status: 404,
-                    headers: { "Content-Type": "application/json" }
-                }
+                { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
         }
-        
-        if (!subscriptionData || !subscriptionData.subscription) {
-            return new Response(
-                JSON.stringify({ 
-                    success: false, 
-                    error: "No active subscription found for this user" 
-                }),
-                { 
-                    status: 404,
-                    headers: { "Content-Type": "application/json" }
-                }
-            );
-        }
-        
-        // Prepare the notification payload
+
         const payload = {
             title: title || "Sucess Technology",
-            body: body || "You have a new notification",
+            body: messageBody || "You have a new notification",
             icon: "/favicon.png",
             badge: "/favicon.png",
             data: data || {}
         };
-        
-        // Send the notification
-        const result = await sendPushNotification(
-            subscriptionData.subscription,
-            payload
-        );
-        
-        // Log the notification
-        await supabase
+
+        const result = await sendPushNotification(subscriptionData.subscription, payload);
+
+        // Remove stale/expired subscriptions if endpoint returned 404 or 410
+        if (!result.success && (result.statusCode === 404 || result.statusCode === 410)) {
+            console.warn(`🗑️ Cleaning up expired push token for user: ${targetUser}`);
+            await supabaseClient
+                .from("push_subscriptions")
+                .delete()
+                .eq("user_id", targetUser);
+        }
+
+        // Log result to push_notifications table
+        await supabaseClient
             .from("push_notifications")
             .insert({
                 user_id: targetUser,
@@ -115,35 +113,27 @@ serve(async (req) => {
                 body: payload.body,
                 data: payload.data,
                 sent_at: new Date().toISOString(),
-                delivered: result.success
+                delivered: result.success,
+                error: result.error || null
             });
-        
+
         return new Response(
             JSON.stringify({ 
                 success: result.success,
-                message: result.success ? "Notification sent" : "Failed to send notification",
-                result: result.result || null,
+                message: result.success ? "Notification sent successfully" : "Failed push gateway delivery",
                 error: result.error || null
             }),
             { 
-                status: result.success ? 200 : 500,
-                headers: { "Content-Type": "application/json" }
+                status: 200, // Return 200 so admin JS receives actionable JSON rather than unhandled fetch 500
+                headers: { ...corsHeaders, "Content-Type": "application/json" } 
             }
         );
-        
-    } catch (error) {
-        console.error("❌ Error in send-push function:", error);
-        
+
+    } catch (error: any) {
+        console.error("❌ Fatal Error in Edge Function:", error);
         return new Response(
-            JSON.stringify({ 
-                success: false, 
-                error: error.message,
-                stack: error.stack 
-            }),
-            { 
-                status: 500,
-                headers: { "Content-Type": "application/json" }
-            }
+            JSON.stringify({ success: false, error: error.message }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
     }
 });
