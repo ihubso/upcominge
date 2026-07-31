@@ -1770,7 +1770,30 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
         padding: 0px 4px;
         font-weight: bold;
         border: 2px solid white;
-        }
+        }@media (max-width: 991px) {
+  @keyframes abbreviateBrand {
+    0%, 70% { max-width: 400px; }
+    100% { max-width: 65px; }
+  }
+
+  @keyframes fadeHighlight {
+    0%, 70% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .st-brand-text {
+    display: inline-block !important;
+    vertical-align: middle;
+    overflow: hidden;
+    white-space: nowrap;
+    animation: abbreviateBrand 3s forwards ease-in-out;
+  }
+
+  .st-brand-highlight {
+    display: inline-block;
+    animation: fadeHighlight 3s forwards ease-in-out;
+  }
+}
         </style>
         
         <!-- ============================================
