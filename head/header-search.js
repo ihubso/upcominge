@@ -1412,7 +1412,17 @@ i.fas.fa-heart {
   opacity: 0.8;
   margin-right: 4px;
 }
+#stMobileDrawer {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
+.st-mobile-drawer-body {
+  flex: 1 1 0%;
+  overflow-y: auto;
+  height: auto;
+}
 .st-mobile-nav-link i {
   color: rgb(108, 60, 225);
   opacity: 0.8;
@@ -1881,7 +1891,17 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                                 <button class="st-account-dropdown-item danger" id="stLogoutBtn" style="display:none;">
                                     <i class="fas fa-sign-out-alt"></i> Logout
                                 </button>
+                                <button class="st-account-dropdown-item" id="stAboutUsBtn" onclick="window.location.href='/AboutUs'">
+                                    <i class="fa fa-info-circle"></i> About Us
+                                </button>
+                                <button class="st-account-dropdown-item" id="stTermsBtn" onclick="window.location.href='/Terms'">
+                                    <i class="fa fa-file-text"></i> Terms & Conditions
+                                </button>
+                                <button class="st-account-dropdown-item" id="stContactBtn" onclick="window.location.href='/contactus'">
+                                    <i class="fa fa-map-marker"></i> Locate Us
+                                </button>
                             </div>
+
                             <div id="stAuthButtons" style="padding-top:12px;border-top:1px solid var(--st-gray-light);margin-top:4px;">
                                 <button class="st-account-dropdown-item" id="stLoginBtn">
                                     <i class="fas fa-sign-in-alt"></i> Login
@@ -1890,6 +1910,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                                     <i class="fas fa-user-plus"></i> Register
                                 </button>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -1965,52 +1986,54 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                 </div>
                 <button class="st-mobile-close" id="stMobileClose">&times;</button>
             </div>
-            <ul class="st-mobile-nav-list" id="stMobileNavList">
-                ${HEADER_CONFIG.navLinks.map(link => `
+            <div class="st-mobile-drawer-body">
+                <ul class="st-mobile-nav-list" id="stMobileNavList">
+                    ${HEADER_CONFIG.navLinks.map(link => `
+                        <li class="st-mobile-nav-item">
+                            <a href="${link.href}" class="st-mobile-nav-link">
+                                <i class="fas ${link.icon}"></i> ${link.label}
+                            </a>
+                        </li>
+                    `).join('')}
                     <li class="st-mobile-nav-item">
-                        <a href="${link.href}" class="st-mobile-nav-link">
-                            <i class="fas ${link.icon}"></i> ${link.label}
+                        <a href="/AboutUs" class="st-mobile-nav-link">
+                            <i class="fas fa-info-circle"></i> About Us
                         </a>
                     </li>
-                `).join('')}
-                <li class="st-mobile-nav-item">
-                    <a href="/AboutUs" class="st-mobile-nav-link">
-                        <i class="fas fa-info-circle"></i> About Us
-                    </a>
-                </li>
-                <li class="st-mobile-nav-item">
-                    <a href="/Terms" class="st-mobile-nav-link">
-                        <i class="fas fa-file-contract"></i> Terms
-                    </a>
-                </li>
-            </ul>
+                    <li class="st-mobile-nav-item">
+                        <a href="/Terms" class="st-mobile-nav-link">
+                            <i class="fas fa-file-contract"></i> Terms
+                        </a>
+                    </li>
+                </ul>
 
-                 <button class="st-nav-item" id="stMobileWishlistBtn">
-                    <span class="st-icon-wrap">
-                        <i class="fas fa-heart"></i>
-                        <span class="st-badge" id="stMobileWishlistCount">0</span>
-                    </span>
-                    <span class="st-label">Wishlist</span>
+                    <button class="st-nav-item" id="stMobileWishlistBtn">
+                        <span class="st-icon-wrap">
+                            <i class="fas fa-heart"></i>
+                            <span class="st-badge" id="stMobileWishlistCount">0</span>
+                        </span>
+                        <span class="st-label">Wishlist</span>
+                    </button>
+                <button class="st-account-dropdown-item" id="andstMyOrdersBtn">
+                    <i class="fas fa-shopping-bag"></i> My Orders
                 </button>
-             <button class="st-account-dropdown-item" id="andstMyOrdersBtn">
-                <i class="fas fa-shopping-bag"></i> My Orders
-            </button>
-            <div id="stLogoutactt" style="padding-top:16px;border-top:1px solid var(--st-gray-light);">
-                <button class="st-mobile-nav-link" id="stMobileLoginBtn">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
-                <button class="st-mobile-nav-link" id="stMobileRegisterBtn">
-                    <i class="fas fa-user-plus"></i> Register
+                <div id="stLogoutactt" style="padding-top:16px;border-top:1px solid var(--st-gray-light);">
+                    <button class="st-mobile-nav-link" id="stMobileLoginBtn">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                    <button class="st-mobile-nav-link" id="stMobileRegisterBtn">
+                        <i class="fas fa-user-plus"></i> Register
+                    </button>
+                </div>
+                <div style="padding-top:16px;border-top:1px solid var(--st-gray-light);">
+                    <button class="st-account-dropdown-item danger" id="stAndroidLogout" style="display:none;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+                <button class="st-account-dropdown-item" id="andstSettingsBtn">
+                <i class="fas fa-cog"></i> Settings
                 </button>
             </div>
-             <div style="padding-top:16px;border-top:1px solid var(--st-gray-light);">
-                <button class="st-account-dropdown-item danger" id="stAndroidLogout" style="display:none;">
-                <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-               </div>
-            <button class="st-account-dropdown-item" id="andstSettingsBtn">
-            <i class="fas fa-cog"></i> Settings
-            </button>
 
         </div>
         <div class="st-notification-overlay" id="stNotificationOverlay"></div>
@@ -2401,13 +2424,13 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                     </div>
                     
                     <!-- Terms & Conditions -->
-                    <div class="st-form-group" style="margin-top:8px;">
-                        <label style="display:flex;align-items:flex-start;gap:10px;font-weight:500;font-size:14px;color:#1E293B;cursor:pointer;">
-                            <input type="checkbox" id="stRegisterTerms" required style="margin-top:3px;width:18px;height:18px;accent-color:#6C3CE1;">
-                            <span>I agree to the <a href="#" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Terms of Service</a> and <a href="#" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Privacy Policy</a>.</span>
-                        </label>
-                        <div class="st-form-error" id="stRegisterTermsError">You must agree to the terms to create an account</div>
-                    </div>
+                        <div class="st-form-group" style="margin-top:8px;">
+                            <label style="display:flex;align-items:flex-start;gap:10px;font-weight:500;font-size:14px;color:#1E293B;cursor:pointer;">
+                                <input type="checkbox" id="stRegisterTerms" required style="margin-top:3px;width:18px;height:18px;accent-color:#6C3CE1;">
+                                <span>I agree to the <a href="/terms" target="_blank" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Terms of Service</a> and <a href="/Policy" target="_blank" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Privacy Policy</a>.</span>
+                            </label>
+                            <div class="st-form-error" id="stRegisterTermsError">You must agree to the terms to create an account</div>
+                        </div>
                     
                     <!-- Submit Button -->
                     <button class="st-btn-primary" id="stRegisterSubmit">
