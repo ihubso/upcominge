@@ -2006,7 +2006,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                         </a>
                     </li>
                 </ul>
-
+                <div style="padding-top:16px;border-top:1px solid var(--st-gray-light);">
                     <button class="st-nav-item" id="stMobileWishlistBtn">
                         <span class="st-icon-wrap">
                             <i class="fas fa-heart"></i>
@@ -2017,6 +2017,11 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                 <button class="st-account-dropdown-item" id="andstMyOrdersBtn">
                     <i class="fas fa-shopping-bag"></i> My Orders
                 </button>
+                <button class="st-account-dropdown-item" id="andstSettingsBtn">
+                <i class="fas fa-cog"></i> Settings
+                </button>
+                </div>
+
                 <div id="stLogoutactt" style="padding-top:16px;border-top:1px solid var(--st-gray-light);">
                     <button class="st-mobile-nav-link" id="stMobileLoginBtn">
                         <i class="fas fa-sign-in-alt"></i> Login
@@ -2030,9 +2035,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                     <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
                 </div>
-                <button class="st-account-dropdown-item" id="andstSettingsBtn">
-                <i class="fas fa-cog"></i> Settings
-                </button>
+
             </div>
 
         </div>
