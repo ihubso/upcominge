@@ -7,13 +7,14 @@
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/head/header-core.js" defer></script>
-<script src="/head/header-database.js" defer></script>
-<script src="/head/header-auth.js" defer></script>
-<script src="/head/header-dropdowns.js" defer></script>
-<script src="/head/header-search.js" defer></script>
-  <script src="/head/push-notifications.js" defer></script><script src="/head/header-init.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/head/header-core.js" defer></script>
+    <script src="/head/header-database.js" defer></script>
+    <script src="/head/header-auth.js" defer></script>
+    <script src="/head/header-dropdowns.js" defer></script>
+    <script src="/head/header-search.js" defer></script>
+    <script src="/head/push-notifications.js" defer></script>
+    <script src="/head/header-init.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -287,6 +288,45 @@
             font-size: 13px;
         }
 
+        /* Business Info Display */
+        .business-contact-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 12px 0;
+        }
+
+        .business-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #eef2f6;
+        }
+
+        .business-contact-item i {
+            color: #6C3CE1;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .business-contact-item .label {
+            font-size: 12px;
+            color: #94A3B8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .business-contact-item .value {
+            font-size: 14px;
+            color: #0F172A;
+            font-weight: 500;
+        }
+
         /* ----- Accept Button ----- */
         .accept-section {
             background: white;
@@ -378,6 +418,21 @@
         .toast-msg.error { background: #EF4444; }
         .toast-msg.info { background: #3B82F6; }
 
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(108, 60, 225, 0.2);
+            border-top-color: #6C3CE1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @keyframes toastUp {
             from { transform: translateX(-50%) translateY(20px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
@@ -439,6 +494,10 @@
                 flex: 1;
                 justify-content: center;
             }
+
+            .business-contact-info {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 480px) {
@@ -499,20 +558,20 @@
             <div class="hero-icon">
                 <i class="fas fa-file-contract"></i>
             </div>
-            <h1>Terms &amp; Conditions</h1>
-            <p>
+            <h1 id="companyName">Terms &amp; Conditions</h1>
+            <p id="companyTagline">
                 Please read these terms and conditions carefully before using our platform.
                 By accessing or using our services, you agree to be bound by these terms.
             </p>
             <span class="hero-badge">
-                <i class="fas fa-check-circle"></i> Effective January 2025
+                <i class="fas fa-check-circle"></i> <span id="effectiveDate">Effective January 2025</span>
             </span>
         </div>
 
         <!-- Last Updated -->
         <div class="last-updated">
             <i class="fas fa-clock"></i>
-            <span>Last Updated: <strong>January 20, 2025</strong></span>
+            <span>Last Updated: <strong id="lastUpdatedDate">January 20, 2025</strong></span>
         </div>
 
         <!-- Table of Contents -->
@@ -546,9 +605,7 @@
                 <a href="#section-9" class="toc-item">
                     <span class="toc-number">9.</span> Limitation of Liability
                 </a>
-                <a href="#section-10" class="toc-item">
-                    <span class="toc-number">10.</span> Governing Law
-                </a>
+        
                 <a href="#section-11" class="toc-item">
                     <span class="toc-number">11.</span> Changes to Terms
                 </a>
@@ -569,7 +626,7 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <p>
-                    By using the Sucess Technology platform, you agree to comply with and be bound by these Terms &amp; Conditions.
+                    By using the <span id="businessName1">Sucess Technology</span> platform, you agree to comply with and be bound by these Terms &amp; Conditions.
                     If you do not agree to these terms, please do not use our services.
                 </p>
                 <ul>
@@ -664,7 +721,7 @@
                     Please refer to our Return Policy for detailed information.
                 </p>
                 <ul>
-                    <li>Returns must be initiated within 10 business days of delivery.</li>
+                    <li>Returns must be initiated within 7 business days of delivery.</li>
                     <li>Items must be returned in their original packaging and condition.</li>
                     <li>Refunds are processed to the original payment method.</li>
                     <li>Some items are not eligible for return (see Return Policy).</li>
@@ -706,7 +763,7 @@
                     <i class="fas fa-copyright"></i>
                 </div>
                 <p>
-                    All content on our platform, including text, images, logos, and software, is the property of Sucess Technology
+                    All content on our platform, including text, images, logos, and software, is the property of <span id="businessName7">Sucess Technology</span>
                     and is protected by copyright and intellectual property laws.
                 </p>
                 <ul>
@@ -737,10 +794,6 @@
                 </ul>
                 <div class="highlight-box">
                     <span class="box-label">🔒 Your Privacy Matters</span>
-                    <p>
-                        We are committed to protecting your privacy and ensuring your data is handled securely.
-                        <a href="privacy-policy.html" style="color:#6C3CE1;font-weight:600;">Read our full Privacy Policy</a>.
-                    </p>
                 </div>
             </div>
 
@@ -752,7 +805,7 @@
                     <i class="fas fa-gavel"></i>
                 </div>
                 <p>
-                    Sucess Technology is not liable for any damages arising from the use of our platform or products,
+                    <span id="businessName9">Sucess Technology</span> is not liable for any damages arising from the use of our platform or products,
                     to the fullest extent permitted by law.
                 </p>
                 <ul>
@@ -764,24 +817,7 @@
                 </ul>
             </div>
 
-            <!-- Section 10 -->
-            <div class="term-section" id="section-10">
-                <div class="section-header">
-                    <span class="section-number">10</span>
-                    <h3>Governing Law</h3>
-                    <i class="fas fa-balance-scale"></i>
-                </div>
-                <p>
-                    These Terms &amp; Conditions are governed by and construed in accordance with the laws of the Republic of Cameroon.
-                    Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the courts of Cameroon.
-                </p>
-                <ul>
-                    <li>All disputes shall be resolved in accordance with Cameroonian law.</li>
-                    <li>You agree to submit to the jurisdiction of the courts of Cameroon.</li>
-                    <li>These terms shall not be governed by the United Nations Convention on Contracts for the International Sale of Goods.</li>
-                </ul>
-            </div>
-
+    
             <!-- Section 11 -->
             <div class="term-section" id="section-11">
                 <div class="section-header">
@@ -801,7 +837,7 @@
                 </ul>
             </div>
 
-            <!-- Section 12 -->
+            <!-- Section 12 - Contact Us with Dynamic Business Info -->
             <div class="term-section" id="section-12" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
                 <div class="section-header">
                     <span class="section-number">12</span>
@@ -812,12 +848,41 @@
                     If you have any questions, concerns, or comments about these Terms &amp; Conditions,
                     please feel free to contact us.
                 </p>
-                <ul>
-                    <li><strong>Email:</strong> support@sucesstechnology.com</li>
-                    <li><strong>Phone:</strong> +237 6XX XXX XXX</li>
-                    <li><strong>Address:</strong> Douala, Cameroon</li>
-                    <li><strong>Business Hours:</strong> Monday - Friday, 8:00 AM - 6:00 PM</li>
-                </ul>
+
+                <!-- Dynamic Business Contact Info -->
+                <div id="businessContactInfo">
+                    <div class="business-contact-info">
+                        <div class="business-contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <div class="label">Email</div>
+                                <div class="value" id="contactEmail">support@sucesstechnology.com</div>
+                            </div>
+                        </div>
+                        <div class="business-contact-item">
+                            <i class="fas fa-phone"></i>
+                            <div>
+                                <div class="label">Phone</div>
+                                <div class="value" id="contactPhone">+237 6XX XXX XXX</div>
+                            </div>
+                        </div>
+                        <div class="business-contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <div class="label">Address</div>
+                                <div class="value" id="contactAddress">Douala, Cameroon</div>
+                            </div>
+                        </div>
+                        <div class="business-contact-item">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <div class="label">Business Hours</div>
+                                <div class="value" id="contactHours">Monday - Friday, 8:00 AM - 6:00 PM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="highlight-box">
                     <span class="box-label">📞 We're Here to Help</span>
                     <p>
@@ -852,11 +917,14 @@
          ============================================ -->
     <script>
         // ============================================================
-        //  TERMS & CONDITIONS PAGE
+        //  TERMS & CONDITIONS PAGE WITH BUSINESS INFO INTEGRATION
         // ============================================================
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('📄 Terms & Conditions page loaded');
+
+            // --- Fetch and render business info ---
+            fetchBusinessInfo();
 
             // --- Smooth scroll for TOC links ---
             document.querySelectorAll('.toc-item').forEach(link => {
@@ -886,7 +954,6 @@
                 document.getElementById('declineBtn').style.opacity = '0.5';
                 document.getElementById('declineBtn').disabled = true;
 
-                // Store acceptance in localStorage
                 localStorage.setItem('st_terms_accepted', 'true');
                 localStorage.setItem('st_terms_accepted_date', new Date().toISOString());
             });
@@ -947,7 +1014,6 @@
                 observer.observe(section);
             });
 
-            // Trigger initial animations
             setTimeout(() => {
                 sections.forEach(section => {
                     section.style.opacity = '1';
@@ -957,6 +1023,157 @@
 
             console.log('✅ Terms & Conditions page ready');
         });
+
+        // ============================================================
+        //  FETCH BUSINESS INFO FROM SUPABASE
+        // ============================================================
+
+        async function fetchBusinessInfo() {
+            console.log('📡 Fetching business info...');
+
+            try {
+                // Get Supabase client - adjust this based on your setup
+                const supabase = window.supabase || getSupabaseClient();
+
+                if (!supabase) {
+                    console.warn('⚠️ Supabase not available, using fallback data');
+                    showFallbackData();
+                    return;
+                }
+
+                // Fetch from business_info
+                const { data: businessData, error: businessError } = await supabase
+                    .from('business_info')
+                    .select('*')
+                    .eq('id', 1)
+                    .single();
+
+                if (businessError) {
+                    console.warn('⚠️ Business info fetch error:', businessError.message);
+                    // Still try contact_info
+                }
+
+                // Fetch from contact_info
+                const { data: contactData, error: contactError } = await supabase
+                    .from('contact_info')
+                    .select('*')
+                    .eq('id', 1)
+                    .single();
+
+                if (contactError) {
+                    console.warn('⚠️ Contact info fetch error:', contactError.message);
+                }
+
+                // Combine data (contact_info takes precedence for overlapping fields)
+                const combinedData = {
+                    ...(businessData || {}),
+                    ...(contactData || {})
+                };
+
+                if (combinedData && Object.keys(combinedData).length > 0) {
+                    renderBusinessInfo(combinedData);
+                } else {
+                    showFallbackData();
+                }
+
+            } catch (err) {
+                console.error('❌ Error fetching business info:', err);
+                showFallbackData();
+            }
+        }
+
+        // ============================================================
+        //  RENDER BUSINESS INFO
+        // ============================================================
+
+        function renderBusinessInfo(data) {
+            console.log('✅ Rendering business info:', data);
+
+            // Company name
+            const companyName = data.name || data.company_name || 'Sucess Technology';
+            document.getElementById('companyName').textContent = `Terms & Conditions · ${companyName}`;
+            document.querySelectorAll('#businessName1, #businessName7, #businessName9').forEach(el => {
+                el.textContent = companyName;
+            });
+
+            // Tagline / description
+            if (data.description) {
+                document.getElementById('companyTagline').textContent = data.description;
+            }
+
+            // Effective date
+            if (data.established_date || data.created_at) {
+                const date = new Date(data.established_date || data.created_at);
+                if (!isNaN(date)) {
+                    document.getElementById('effectiveDate').textContent = `Effective ${date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+                }
+            }
+
+            // Last updated
+            if (data.updated_at) {
+                const date = new Date(data.updated_at);
+                if (!isNaN(date)) {
+                    document.getElementById('lastUpdatedDate').textContent = date.toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                }
+            }
+
+            // Contact Email
+            if (data.email) {
+                document.getElementById('contactEmail').textContent = data.email;
+            }
+
+            // Contact Phone
+            if (data.phone || data.phone_number) {
+                document.getElementById('contactPhone').textContent = data.phone || data.phone_number;
+            }
+
+            // Address
+            const addressParts = [];
+            if (data.address) addressParts.push(data.address);
+            if (data.city) addressParts.push(data.city);
+            if (data.country) addressParts.push(data.country);
+            if (addressParts.length > 0) {
+                document.getElementById('contactAddress').textContent = addressParts.join(', ');
+            }
+
+            // Business Hours
+            if (data.hours || data.business_hours) {
+                document.getElementById('contactHours').textContent = data.hours || data.business_hours;
+            }
+
+            // Governing Law - Country
+            if (data.country) {
+                document.getElementById('governingCountry').textContent = `the ${data.country}`;
+                document.getElementById('jurisdictionCountry').textContent = data.country;
+                document.getElementById('lawCountry').textContent = data.country;
+                document.getElementById('courtCountry').textContent = data.country;
+            }
+
+            // Store in session for other pages
+            try {
+                sessionStorage.setItem('st_business_info', JSON.stringify(data));
+            } catch (e) { /* ignore */ }
+        }
+
+        // ============================================================
+        //  FALLBACK DATA
+        // ============================================================
+
+        function showFallbackData() {
+            console.log('📋 Using fallback business data');
+            // All default values are already in the HTML
+            // Just make sure company name is consistent
+            document.getElementById('companyName').textContent = 'Terms & Conditions · Sucess Technology';
+            document.querySelectorAll('#businessName1, #businessName7, #businessName9').forEach(el => {
+                el.textContent = 'Sucess Technology';
+            });
+        }
+
+ 
     </script>
 </body>
 </html>
