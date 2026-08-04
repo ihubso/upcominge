@@ -153,12 +153,21 @@ module.exports = async (req, res) => {
     const productBrand = escapeHtml(productData.brand || '');
     const productCategory = escapeHtml(productData.category || '');
 
-    // Generate HTML with OG tags and responsive modern layout
-    const html = `<!DOCTYPE html>
+    // ============================================
+    // DETECT IF SOCIAL MEDIA BOT / CRAWLER
+    // ============================================
+    const userAgent = req.headers['user-agent'] || '';
+    const isBot = /facebook|twitter|whatsapp|telegram|linkedin|slack|discord|pinterest|reddit|instagram|googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|facebot|twitterbot/i.test(userAgent);
+
+    // ============================================
+    // IF BOT: Return rich HTML with OG tags
+    // ============================================
+    if (isBot) {
+      const botHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${productName} · Sucess Technology</title>
     
     <!-- ===== OPEN GRAPH META TAGS ===== -->
@@ -187,425 +196,77 @@ module.exports = async (req, res) => {
     <link rel="canonical" href="https://upcominge.vercel.app/item?product=${product}" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     
-    <style>
-        :root {
-            --primary: #e60012;
-            --primary-hover: #cc0010;
-            --bg-gradient: linear-gradient(135deg, #090d16 0%, #111827 100%);
-            --card-bg: rgba(255, 255, 255, 0.98);
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #f1f5f9;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg-gradient);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px 16px;
-        }
-
-        .container {
-            max-width: 1100px;
-            width: 100%;
-            background: var(--card-bg);
-            border-radius: 32px;
-            overflow: hidden;
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
-            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .product-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            min-height: 600px;
-        }
-
-        /* Image Section */
-        .product-image-section {
-            background: radial-gradient(circle at center, #ffffff 0%, #f8fafc 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            position: relative;
-            overflow: hidden;
-            border-right: 1px solid var(--border-color);
-        }
-
-        .product-image-section img {
-            max-width: 100%;
-            max-height: 450px;
-            width: 100%;
-            object-fit: contain;
-            border-radius: 16px;
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            z-index: 1;
-        }
-
-        .product-image-section img:hover {
-            transform: scale(1.04);
-        }
-
-        .deal-badge {
-            position: absolute;
-            top: 24px;
-            left: 24px;
-            background: linear-gradient(135deg, #e60012, #ff1744);
-            color: white;
-            padding: 8px 18px;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 13px;
-            letter-spacing: 0.5px;
-            box-shadow: 0 8px 20px rgba(230, 0, 18, 0.3);
-            z-index: 2;
-        }
-
-        /* Info Section */
-        .product-info-section {
-            padding: 48px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            background: #ffffff;
-        }
-
-        .info-top {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .breadcrumb {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .breadcrumb span {
-            color: var(--text-main);
-        }
-
-        .brand {
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--primary);
-            margin-bottom: 8px;
-            display: inline-block;
-            padding: 4px 12px;
-            background: rgba(230, 0, 18, 0.06);
-            border-radius: 20px;
-            width: fit-content;
-        }
-
-        .name {
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--text-main);
-            margin-bottom: 12px;
-            line-height: 1.15;
-            letter-spacing: -0.5px;
-        }
-
-        .rating-section {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .stars {
-            color: #f59e0b;
-            font-size: 15px;
-            letter-spacing: 1px;
-        }
-
-        .rating-text {
-            font-size: 13px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .price-section {
-            margin-bottom: 16px;
-            display: flex;
-            align-items: baseline;
-            gap: 12px;
-        }
-
-        .price {
-            font-size: 36px;
-            font-weight: 800;
-            color: var(--primary);
-            letter-spacing: -0.5px;
-        }
-
-        .price .original {
-            font-size: 20px;
-            color: var(--text-muted);
-            text-decoration: line-through;
-            font-weight: 400;
-        }
-
-        .stock {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            background: ${productData.stock > 0 ? '#dcfce7' : '#fee2e2'};
-            color: ${productData.stock > 0 ? '#166534' : '#991b1b'};
-            width: fit-content;
-        }
-
-        .description {
-            color: #475569;
-            line-height: 1.6;
-            margin-bottom: 24px;
-            font-size: 15px;
-        }
-
-        /* Action Buttons */
-        .action-buttons {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .btn-primary, .btn-secondary {
-            flex: 1;
-            padding: 14px 24px;
-            border-radius: 14px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #e60012, #ff1744);
-            color: white;
-            border: none;
-            box-shadow: 0 6px 20px rgba(230, 0, 18, 0.25);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(230, 0, 18, 0.35);
-        }
-
-        .btn-secondary {
-            background: #f1f5f9;
-            color: var(--text-main);
-            border: 1px solid #e2e8f0;
-        }
-
-        .btn-secondary:hover {
-            background: #e2e8f0;
-            transform: translateY(-2px);
-        }
-
-        /* Specs Grid */
-        .specs-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px 20px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .spec-item .label {
-            color: var(--text-muted);
-            font-weight: 500;
-            display: block;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 2px;
-        }
-
-        .spec-item .value {
-            color: var(--text-main);
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        /* Footer Link */
-        .footer-link {
-            text-align: center;
-            padding: 16px;
-            background: #f8fafc;
-            border-top: 1px solid var(--border-color);
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .footer-link a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 700;
-            transition: color 0.2s;
-        }
-
-        .footer-link a:hover {
-            text-decoration: underline;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 900px) {
-            .product-grid {
-                grid-template-columns: 1fr;
-            }
-            .product-image-section {
-                min-height: 320px;
-                padding: 30px;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-            }
-            .product-image-section img {
-                max-height: 300px;
-            }
-            .product-info-section {
-                padding: 32px 24px;
-            }
-            .name {
-                font-size: 26px;
-            }
-            .price {
-                font-size: 30px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 0;
-            }
-            .container {
-                border-radius: 0;
-                min-height: 100vh;
-                box-shadow: none;
-            }
-            .product-info-section {
-                padding: 24px 16px;
-            }
-            .action-buttons {
-                flex-direction: column;
-            }
-            .specs-grid {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-        }
-    </style>
+    <!-- Redirect to full page after 0.1s (for social preview) -->
+    <meta http-equiv="refresh" content="0; url=/item/?product=${product}" />
 </head>
 <body>
-    <div class="container">
-        <div class="product-grid">
-            <div class="product-image-section">
-                <img src="${imageUrl}" alt="${productName}" 
-                     onerror="this.src='https://placehold.co/600x400/0f172a/ffffff?text=No+Image'" />
-                ${dealDiscount > 0 ? `<div class="deal-badge">🔥 -${dealDiscount}% OFF</div>` : ''}
-            </div>
-            
-            <div class="product-info-section">
-                <div class="info-top">
-                    <div class="breadcrumb">🏠 / <span>${productCategory || 'Products'}</span></div>
-                    ${productBrand ? `<div class="brand">${productBrand}</div>` : ''}
-                    <h1 class="name">${productName}</h1>
-                    
-                    <div class="rating-section">
-                        <span class="stars">★★★★★</span>
-                        <span class="rating-text">4.8 (124 reviews)</span>
-                    </div>
-                    
-                    <div class="price-section">
-                        <span class="price">
-                            ${currency} ${discountedPrice.toFixed(2)}
-                            ${dealDiscount > 0 ? `<span class="original">${currency} ${price.toFixed(2)}</span>` : ''}
-                        </span>
-                    </div>
-                    
-                    <div class="stock">${productData.stock > 0 ? '✅ ' + productData.stock + ' available' : '❌ Out of Stock'}</div>
-                    
-                    ${productData.description ? `<p class="description">${productDescription}</p>` : ''}
-                    
-                    <div class="action-buttons">
-                        <a href="/item/?product=${product}" class="btn-primary">🛒 Add to Cart</a>
-                        <a href="/item/?product=${product}" class="btn-secondary">❤️ Wishlist</a>
-                    </div>
-                    
-                    <div class="specs-grid">
-                        ${productCategory ? `
-                            <div class="spec-item">
-                                <span class="label">Category</span>
-                                <span class="value">${productCategory}</span>
-                            </div>
-                        ` : ''}
-                        ${productBrand ? `
-                            <div class="spec-item">
-                                <span class="label">Brand</span>
-                                <span class="value">${productBrand}</span>
-                            </div>
-                        ` : ''}
-                        ${productData.cpu ? `
-                            <div class="spec-item">
-                                <span class="label">Processor</span>
-                                <span class="value">${escapeHtml(productData.cpu)}</span>
-                            </div>
-                        ` : ''}
-                        ${productData.os ? `
-                            <div class="spec-item">
-                                <span class="label">OS</span>
-                                <span class="value">${escapeHtml(productData.os)}</span>
-                            </div>
-                        ` : ''}
-                        ${productData.deliveryEstimate ? `
-                            <div class="spec-item">
-                                <span class="label">Delivery</span>
-                                <span class="value">${escapeHtml(productData.deliveryEstimate)}</span>
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="footer-link">
-            👉 <a href="/item/?product=${product}">View full interactive product experience</a>
+    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#090d16;color:#fff;font-family:sans-serif;padding:20px;">
+        <div style="text-align:center;">
+            <p style="font-size:18px;font-weight:600;margin-bottom:8px;">${productName}</p>
+            <p style="color:#94a3b8;font-size:14px;">Redirecting to product page...</p>
         </div>
     </div>
 </body>
 </html>`;
+      
+      res.setHeader('Content-Type', 'text/html');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      return res.status(200).send(botHtml);
+    }
 
-    // Send response
-    res.setHeader('Content-Type', 'text/html');
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-    res.status(200).send(html);
+    // ============================================
+    // IF HUMAN: Redirect to the full product page
+    // ============================================
+    // Redirect to the main product page
+    const redirectUrl = `/item/?product=${product}`;
+    
+    // Use 302 redirect (temporary) so search engines still index the item page
+    res.setHeader('Location', redirectUrl);
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.status(302).send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Redirecting to ${productName}...</title>
+          <meta http-equiv="refresh" content="0; url=${redirectUrl}">
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              background: #090d16;
+              color: #f8fafc;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+              flex-direction: column;
+              gap: 12px;
+              padding: 20px;
+            }
+            .spinner {
+              width: 48px;
+              height: 48px;
+              border: 4px solid rgba(255,255,255,0.1);
+              border-top: 4px solid #e60012;
+              border-radius: 50%;
+              animation: spin 0.8s linear infinite;
+            }
+            @keyframes spin {
+              to { transform: rotate(360deg); }
+            }
+            p { color: #94a3b8; font-size: 15px; }
+            a { color: #e60012; text-decoration: none; font-weight: 600; }
+            a:hover { text-decoration: underline; }
+          </style>
+        </head>
+        <body>
+          <div class="spinner"></div>
+          <p>Redirecting to <strong>${productName}</strong>...</p>
+          <p style="font-size:13px;">If you are not redirected, <a href="${redirectUrl}">click here</a>.</p>
+        </body>
+      </html>
+    `);
 
   } catch (error) {
     console.error('Server error:', error);

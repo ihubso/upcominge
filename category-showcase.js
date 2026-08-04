@@ -3,23 +3,177 @@
  * CATEGORY SHOWCASE - Smartphones & Tablets Style
  * Displays products from any category with modern layout
  * Includes countdown timer and product grid
+ * NOW ONLY USES Supabase CONFIG - NO URL PARAMETERS
  * ============================================================
  */
 
 (function() {
     'use strict';
 
-    const showcaseCONFIG = {
+    // ============================================================
+    // 1. DEFAULT CONFIG (Hardcoded Fallback)
+    // ============================================================
+
+    const DEFAULT_CONFIG = {
+        filterType: 'category',
+        filterValue: 'smartphone',
+        title: 'Smartphones & Tablets',
+        subtitle: 'Hurry! Take advantage of discounts of up to 50% on our collection.',
+        badge: '🔥 Limited Time Offer',
+        countdownHours: 24,
+        viewAllLink: '/category/?category=smartphone',
+        ctaText: 'Shop Now →',
+        ctaSecondaryText: 'View All',
+        showHero: true,
         maxProducts: 8,
-        countdownTarget: null // Will be set to 24 hours from now
+        heroImages: [
+            'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200&q=80',
+            'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1200&q=80',
+            'https://images.unsplash.com/photo-1517994112540-009c47ea476b?w=1200&q=80',
+            'https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=1200&q=80'
+        ]
     };
 
+    let cachedConfig = null;
+    let cachedCategories = [];
+    let cachedBrands = [];
+   
+
 
     // ============================================================
-    // 2. FETCH PRODUCTS
+    // 2.5 FETCH DISTINCT CATEGORIES AND BRANDS
     // ============================================================
 
-    async function fetchProductsByCategoryOrBrand(filterType, filterValue) {
+    async function fetchDistinctCategories() {
+        if (cachedCategories.length > 0) return cachedCategories;
+
+        const client = getSupabaseClient();
+        if (!client) return [];
+
+        try {
+            const { data, error } = await client
+                .from('products')
+                .select('category')
+                .not('category', 'is', null)
+                .not('category', 'eq', '');
+
+            if (error) throw error;
+
+            const categories = [...new Set(data.map(item => item.category))].sort();
+            cachedCategories = categories;
+            return categories;
+        } catch (err) {
+            console.error('❌ Error fetching categories:', err.message);
+            return [];
+        }
+    }
+
+    async function fetchDistinctBrands() {
+        if (cachedBrands.length > 0) return cachedBrands;
+
+        const client = getSupabaseClient();
+        if (!client) return [];
+
+        try {
+            const { data, error } = await client
+                .from('products')
+                .select('brand')
+                .not('brand', 'is', null)
+                .not('brand', 'eq', '');
+
+            if (error) throw error;
+
+            const brands = [...new Set(data.map(item => item.brand))].sort();
+            cachedBrands = brands;
+            return brands;
+        } catch (err) {
+            console.error('❌ Error fetching brands:', err.message);
+            return [];
+        }
+    }
+
+    // ============================================================
+    // 3. FETCH CONFIG FROM SUPABASE (ONLY SOURCE OF TRUTH)
+    // ============================================================
+
+    async function fetchShowcaseConfig() {
+        if (cachedConfig) return cachedConfig;
+
+        const client = getSupabaseClient();
+        if (!client) {
+            console.warn('⚠️ Supabase not available, using default config');
+            cachedConfig = DEFAULT_CONFIG;
+            return DEFAULT_CONFIG;
+        }
+
+        try {
+            const { data, error } = await client
+                .from('category_showcase_config')
+                .select('*')
+                .eq('id', 1)
+                .single();
+
+            if (error) {
+                console.warn('⚠️ No config found in Supabase, using default:', error.message);
+                cachedConfig = DEFAULT_CONFIG;
+                return DEFAULT_CONFIG;
+            }
+
+            if (!data) {
+                console.warn('⚠️ No config data, using default');
+                cachedConfig = DEFAULT_CONFIG;
+                return DEFAULT_CONFIG;
+            }
+
+            let heroImages = DEFAULT_CONFIG.heroImages;
+            if (data.hero_images) {
+                if (Array.isArray(data.hero_images)) {
+                    heroImages = data.hero_images;
+                } else if (typeof data.hero_images === 'string') {
+                    try {
+                        heroImages = JSON.parse(data.hero_images);
+                        if (!Array.isArray(heroImages)) {
+                            heroImages = [data.hero_images];
+                        }
+                    } catch (parseError) {
+                        heroImages = [data.hero_images];
+                    }
+                }
+            }
+
+            const config = {
+                ...DEFAULT_CONFIG,
+                filterType: data.filter_type || DEFAULT_CONFIG.filterType,
+                filterValue: data.filter_value || DEFAULT_CONFIG.filterValue,
+                title: data.title || DEFAULT_CONFIG.title,
+                subtitle: data.subtitle || DEFAULT_CONFIG.subtitle,
+                badge: data.badge || DEFAULT_CONFIG.badge,
+                countdownHours: data.countdown_hours || DEFAULT_CONFIG.countdownHours,
+                viewAllLink: data.view_all_link || DEFAULT_CONFIG.viewAllLink,
+                ctaText: data.cta_text || DEFAULT_CONFIG.ctaText,
+                ctaSecondaryText: data.cta_secondary_text || DEFAULT_CONFIG.ctaSecondaryText,
+                showHero: data.show_hero !== undefined ? data.show_hero : DEFAULT_CONFIG.showHero,
+                maxProducts: data.max_products || DEFAULT_CONFIG.maxProducts,
+                heroImages
+            };
+
+            cachedConfig = config;
+            console.log('✅ Category Showcase config loaded from Supabase');
+            console.log(`📋 Filter: ${config.filterType} = "${config.filterValue}"`);
+            return config;
+
+        } catch (err) {
+            console.error('❌ Error fetching config:', err);
+            cachedConfig = DEFAULT_CONFIG;
+            return DEFAULT_CONFIG;
+        }
+    }
+
+    // ============================================================
+    // 4. FETCH PRODUCTS BASED ON CONFIG
+    // ============================================================
+
+    async function fetchProductsByCategoryOrBrand(filterType, filterValue, maxProducts = 8) {
         const client = getSupabaseClient();
         if (!client) return [];
 
@@ -28,19 +182,26 @@
                 .from('products')
                 .select('*');
 
-            if (filterType === 'category') {
+            // Filter based on config
+            if (filterType === 'category' && filterValue) {
                 query = query.eq('category', filterValue);
-            } else if (filterType === 'brand') {
+                console.log(`🔍 Filtering by category: "${filterValue}"`);
+            } else if (filterType === 'brand' && filterValue) {
                 query = query.eq('brand', filterValue);
+                console.log(`🔍 Filtering by brand: "${filterValue}"`);
             } else if (filterType === 'deals') {
                 query = query.eq('isDeal', true);
+                console.log(`🔍 Filtering by deals`);
+            } else if (filterType === 'all' || filterType === '') {
+                query = query.order('created_at', { ascending: false });
+                console.log(`🔍 Showing all latest products`);
             } else {
-                query = query.order('created_at', { ascending: false }).limit(showcaseCONFIG.maxProducts);
+                query = query.order('created_at', { ascending: false });
             }
 
             const { data, error } = await query
                 .order('created_at', { ascending: false })
-                .limit(showcaseCONFIG.maxProducts);
+                .limit(maxProducts);
 
             if (error) throw error;
 
@@ -54,6 +215,7 @@
                 return p;
             });
 
+            console.log(`✅ Found ${products.length} products matching filter`);
             return products;
 
         } catch (err) {
@@ -63,7 +225,7 @@
     }
 
     // ============================================================
-    // 3. FETCH RANDOM PRODUCT IMAGES FOR HERO
+    // 5. FETCH RANDOM PRODUCT IMAGES FOR HERO
     // ============================================================
 
     async function fetchRandomProductImages(count = 5) {
@@ -79,10 +241,9 @@
 
             if (error) throw error;
 
-            // Shuffle and pick random images
             const shuffled = shuffleArray(data || []);
             const selected = shuffled.slice(0, count);
-            return selected.map(p => p.image);
+            return selected.map(p => resolveProductImageUrl(p.image));
         } catch (err) {
             console.error('❌ Error fetching hero images:', err.message);
             return [];
@@ -90,7 +251,7 @@
     }
 
     // ============================================================
-    // 4. SHUFFLE ARRAY
+    // 6. SHUFFLE ARRAY
     // ============================================================
 
     function shuffleArray(array) {
@@ -102,7 +263,48 @@
     }
 
     // ============================================================
-    // 5. COUNTDOWN TIMER
+    // 6.1. RESOLVE PRODUCT IMAGE URL
+    // ============================================================
+
+    function resolveProductImageUrl(image, placeholder = 'https://placehold.co/300x300/6C3CE1/FFFFFF?text=Product') {
+        if (!image) return placeholder;
+
+        const src = String(image).trim();
+        if (!src) return placeholder;
+
+        if (/^(https?:|data:|blob:)/i.test(src)) return src;
+        if (src.startsWith('/')) return src;
+        if (src.includes('supabase.co/storage/v1/object/public')) return src;
+
+        const client = getSupabaseClient();
+        if (!client) return placeholder;
+
+        let objectPath = src;
+        if (objectPath.startsWith('product-images/')) {
+            objectPath = objectPath.slice('product-images/'.length);
+        }
+        if (objectPath.startsWith('public/')) {
+            objectPath = objectPath.slice('public/'.length);
+        }
+        if (objectPath.startsWith('/')) {
+            objectPath = objectPath.slice(1);
+        }
+
+        if (!objectPath.includes('/')) {
+            objectPath = `products/${objectPath}`;
+        }
+
+        const { data, error } = client.storage.from('product-images').getPublicUrl(objectPath);
+        if (error || !data?.publicUrl) {
+            console.warn('⚠️ Unable to build Supabase public URL for image:', objectPath, error?.message || 'unknown error');
+            return placeholder;
+        }
+
+        return data.publicUrl;
+    }
+
+    // ============================================================
+    // 7. COUNTDOWN TIMER
     // ============================================================
 
     function startCountdown(targetDate, elementId = 'countdownTimer') {
@@ -150,20 +352,18 @@
     }
 
     // ============================================================
-    // 6. HERO SLIDER (Multi-image Background)
+    // 8. HERO SLIDER (Multi-image Background)
     // ============================================================
 
     function initHeroSlider(images, containerId = 'heroSliderContainer') {
         const container = document.getElementById(containerId);
         if (!container || !images || images.length === 0) return;
 
-        // Clear existing slides
         const slidesContainer = container.querySelector('.hero-slides');
         if (!slidesContainer) return;
 
         slidesContainer.innerHTML = '';
 
-        // Add slides
         images.forEach((img, index) => {
             const slide = document.createElement('div');
             slide.className = `hero-slide ${index === 0 ? 'active' : ''}`;
@@ -171,7 +371,6 @@
             slidesContainer.appendChild(slide);
         });
 
-        // Auto-rotate
         let currentIndex = 0;
         const totalSlides = images.length;
 
@@ -180,11 +379,11 @@
             slides.forEach(s => s.classList.remove('active'));
             currentIndex = (currentIndex + 1) % totalSlides;
             slides[currentIndex].classList.add('active');
-        }, 4000);
+        }, 2000);
     }
 
     // ============================================================
-    // 7. RENDER PRODUCTS
+    // 9. RENDER PRODUCTS
     // ============================================================
 
     function renderProducts(products, containerId = 'categoryProducts', title = '') {
@@ -197,7 +396,8 @@
         if (!products || products.length === 0) {
             container.innerHTML = `
                 <div class="category-empty">
-                    <p>No products available in this category</p>
+                    <p>No products available matching the selected filter</p>
+                    <p style="font-size:13px;margin-top:8px;color:#94A3B8;">Try changing the filter in the admin settings</p>
                 </div>
             `;
             return;
@@ -205,7 +405,7 @@
 
         let html = '';
         products.forEach((product, index) => {
-            const image = product.image || product.images?.[0] || 'https://placehold.co/300x300/6C3CE1/FFFFFF?text=Product';
+            const image = resolveProductImageUrl(product.image || product.images?.[0], 'https://placehold.co/300x300/6C3CE1/FFFFFF?text=Product');
             const price = product.price || 0;
             const originalPrice = product.originalPrice || price;
             const discount = product.discount || 0;
@@ -221,7 +421,6 @@
 
             const starsHtml = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
 
-            // Badge
             let badge = '';
             if (isDeal && discountPercent > 0) {
                 badge = `<span class="category-badge deal">-${discountPercent}%</span>`;
@@ -262,7 +461,7 @@
     }
 
     // ============================================================
-    // 8. FORMAT PRICE
+    // 10. FORMAT PRICE
     // ============================================================
 
     function formatPrice(price) {
@@ -272,64 +471,6 @@
             return (price / 1000).toFixed(0) + 'K FCFA';
         }
         return price.toFixed(0) + ' FCFA';
-    }
-
-    // ============================================================
-    // 10. TOAST NOTIFICATION
-    // ============================================================
-
-    function showCategoryToast(message, type = 'success') {
-        const existing = document.querySelector('.category-toast');
-        if (existing) existing.remove();
-
-        const colors = {
-            success: '#10B981',
-            error: '#EF4444',
-            info: '#3B82F6',
-            warning: '#F59E0B'
-        };
-
-        const toast = document.createElement('div');
-        toast.className = 'category-toast';
-        toast.style.cssText = `
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 14px 24px;
-            background: ${colors[type] || colors.success};
-            color: white;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 14px;
-            z-index: 30000;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            max-width: 90%;
-            text-align: center;
-            animation: categoryToastUp 0.3s ease;
-            font-family: 'Inter', sans-serif;
-        `;
-        toast.textContent = message;
-        document.body.appendChild(toast);
-
-        if (!document.getElementById('categoryToastStyle')) {
-            const style = document.createElement('style');
-            style.id = 'categoryToastStyle';
-            style.textContent = `
-                @keyframes categoryToastUp {
-                    from { transform: translateX(-50%) translateY(20px); opacity: 0; }
-                    to { transform: translateX(-50%) translateY(0); opacity: 1; }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateX(-50%) translateY(-20px)';
-            toast.style.transition = 'all 0.3s ease';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
     }
 
     // ============================================================
@@ -353,7 +494,6 @@
                 padding: 0 24px;
             }
 
-            /* ----- Hero Banner with Slider ----- */
             .category-hero {
                 border-radius: 20px;
                 padding: 40px 48px;
@@ -543,14 +683,12 @@
                 transform: translateY(-2px);
             }
 
-            /* ----- Products Grid ----- */
             .category-products-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
                 gap: 20px;
             }
 
-            /* ----- Product Card ----- */
             .category-product-card {
                 background: white;
                 border-radius: 16px;
@@ -676,35 +814,24 @@
                 text-decoration: line-through;
             }
 
-            .category-add-btn {
-                width: 100%;
-                padding: 9px 14px;
-                background: linear-gradient(135deg, #0F172A, #1E293B);
-                color: white;
-                border: none;
-                border-radius: 10px;
-                font-weight: 600;
-                font-size: 13px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                font-family: inherit;
-                display: flex;
+            .st-btn-view {
+                display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                gap: 6px;
-            }
-
-            .category-add-btn:hover {
-                background: linear-gradient(135deg, #7C3AED, #6D28D9);
-                transform: scale(1.02);
-                box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
-            }
-
-            .category-add-btn i {
+                padding: 6px 12px;
+                background: #f1f5f9;
+                color: #475569;
+                border-radius: 8px;
+                text-decoration: none;
+                transition: all 0.2s ease;
                 font-size: 13px;
             }
 
-            /* ----- Empty State ----- */
+            .st-btn-view:hover {
+                background: #7C3AED;
+                color: white;
+            }
+
             .category-empty {
                 text-align: center;
                 padding: 60px 20px;
@@ -712,7 +839,6 @@
                 grid-column: 1 / -1;
             }
 
-            /* ----- Responsive ----- */
             @media (max-width: 768px) {
                 .category-showcase {
                     padding: 0 16px;
@@ -819,18 +945,13 @@
                 .category-product-price .original-price {
                     font-size: 11px;
                 }
-
-                .category-add-btn {
-                    font-size: 11px;
-                    padding: 7px 10px;
-                }
             }
         `;
         document.head.appendChild(style);
     }
 
     // ============================================================
-    // 12. MAIN INITIALIZATION
+    // 12. MAIN INITIALIZATION - ONLY USES SUPABASE CONFIG
     // ============================================================
 
     async function initCategoryShowcase(containerId = 'categoryShowcase', options = {}) {
@@ -842,17 +963,35 @@
             return;
         }
 
-        // Parse options
-        const filterType = options.filterType || 'category';
-        const filterValue = options.filterValue || 'smartphone';
-        const title = options.title || 'Smartphones & Tablets';
-        const subtitle = options.subtitle || 'Hurry! Take advantage of discounts of up to 50% on our collection.';
-        const badge = options.badge || '🔥 Limited Time Offer';
-        const countdownHours = options.countdownHours || 24;
-        const viewAllLink = options.viewAllLink || '/category/?category=' + encodeURIComponent(filterValue);
-        const ctaText = options.ctaText || 'Shop Now →';
-        const ctaSecondaryText = options.ctaSecondaryText || 'View All';
-        const showHero = options.showHero !== false;
+        // Fetch config from Supabase ONLY
+        const config = await fetchShowcaseConfig();
+
+        // Fetch distinct categories and brands from Supabase (for validation)
+        const [categories, brands] = await Promise.all([
+            fetchDistinctCategories(),
+            fetchDistinctBrands()
+        ]);
+
+        console.log(`📋 Found ${categories.length} categories and ${brands.length} brands in Supabase`);
+
+        // Use ONLY the config from Supabase - no URL params, no options override
+        const finalConfig = {
+            ...config,
+            filterType: config.filterType,
+            filterValue: config.filterValue,
+            title: config.title,
+            subtitle: config.subtitle,
+            badge: config.badge,
+            countdownHours: config.countdownHours,
+            viewAllLink: config.viewAllLink,
+            ctaText: config.ctaText,
+            ctaSecondaryText: config.ctaSecondaryText,
+            showHero: config.showHero,
+            maxProducts: config.maxProducts,
+            heroImages: config.heroImages
+        };
+
+        console.log(`🎯 Using config: ${finalConfig.filterType} = "${finalConfig.filterValue}"`);
 
         // Show loading
         container.innerHTML = `
@@ -870,29 +1009,64 @@
         `;
 
         try {
-            // Fetch products
+            // Fetch products based on config
             let products = [];
             let heroImages = [];
 
-            if (filterType === 'category' || filterType === 'brand' || filterType === 'deals') {
-                products = await fetchProductsByCategoryOrBrand(filterType, filterValue);
-            } else {
-                // Random products
-                const allProducts = await fetchProductsByCategoryOrBrand('all', '');
-                products = allProducts.slice(0, showcaseCONFIG.maxProducts);
+            const filterType = finalConfig.filterType;
+            const filterValue = finalConfig.filterValue;
+
+            // Validate that the filter value exists in the fetched data
+            let isValidFilter = false;
+            if (filterType === 'category') {
+                isValidFilter = categories.includes(filterValue);
+                if (!isValidFilter) {
+                    console.warn(`⚠️ Category "${filterValue}" not found in products. Using fallback.`);
+                }
+            } else if (filterType === 'brand') {
+                isValidFilter = brands.includes(filterValue);
+                if (!isValidFilter) {
+                    console.warn(`⚠️ Brand "${filterValue}" not found in products. Using fallback.`);
+                }
+            } else if (filterType === 'deals' || filterType === 'all') {
+                isValidFilter = true;
             }
 
-            // Fetch random product images for hero (up to 6 images)
-            const randomImages = await fetchRandomProductImages(6);
-            heroImages = randomImages.length > 0 ? randomImages : [
-                'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200&q=80',
-                'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1200&q=80',
-                'https://images.unsplash.com/photo-1517994112540-009c47ea476b?w=1200&q=80',
-                'https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=1200&q=80'
-            ];
+            // If filter is invalid, use first available category or brand as fallback
+            let effectiveFilterType = filterType;
+            let effectiveFilterValue = filterValue;
+
+            if (!isValidFilter && filterType !== 'deals' && filterType !== 'all') {
+                if (filterType === 'category' && categories.length > 0) {
+                    effectiveFilterValue = categories[0];
+                    console.log(`🔄 Using fallback category: "${effectiveFilterValue}"`);
+                } else if (filterType === 'brand' && brands.length > 0) {
+                    effectiveFilterValue = brands[0];
+                    console.log(`🔄 Using fallback brand: "${effectiveFilterValue}"`);
+                }
+            }
+
+            // Fetch products with the (possibly fallback) filter
+            if (filterType === 'category' || filterType === 'brand' || filterType === 'deals' || filterType === 'all') {
+                products = await fetchProductsByCategoryOrBrand(
+                    effectiveFilterType, 
+                    effectiveFilterValue, 
+                    finalConfig.maxProducts
+                );
+            } else {
+                products = await fetchProductsByCategoryOrBrand('all', '', finalConfig.maxProducts);
+            }
+
+            // Use configured hero images or fetch random ones
+            if (finalConfig.heroImages && finalConfig.heroImages.length > 0) {
+                heroImages = finalConfig.heroImages;
+            } else {
+                const randomImages = await fetchRandomProductImages(6);
+                heroImages = randomImages.length > 0 ? randomImages : DEFAULT_CONFIG.heroImages;
+            }
 
             // Set countdown target
-            const targetDate = new Date().getTime() + (countdownHours * 60 * 60 * 1000);
+            const targetDate = new Date().getTime() + (finalConfig.countdownHours * 60 * 60 * 1000);
 
             // Build hero slides HTML
             let slidesHtml = heroImages.map((img, index) => `
@@ -904,7 +1078,7 @@
                 <div class="category-showcase">
             `;
 
-            if (showHero) {
+            if (finalConfig.showHero) {
                 html += `
                     <div class="category-hero">
                         <div class="hero-slider-container">
@@ -914,18 +1088,18 @@
                         </div>
                         <div class="hero-overlay"></div>
                         <div class="hero-content">
-                            ${badge ? `<span class="hero-badge">${badge}</span>` : ''}
-                            <h2>${title}</h2>
-                            <p>${subtitle}</p>
+                            ${finalConfig.badge ? `<span class="hero-badge">${finalConfig.badge}</span>` : ''}
+                            <h2>${finalConfig.title}</h2>
+                            <p>${finalConfig.subtitle}</p>
                             <div class="countdown-timer" id="countdownTimer">
                                 <!-- Will be populated by JavaScript -->
                             </div>
                             <div class="hero-actions">
-                                <a href="${viewAllLink}" class="hero-btn">
-                                    ${ctaText}
+                                <a href="${finalConfig.viewAllLink}" class="hero-btn">
+                                    ${finalConfig.ctaText}
                                 </a>
-                                <a href="${viewAllLink}" class="hero-btn-secondary">
-                                    ${ctaSecondaryText}
+                                <a href="${finalConfig.viewAllLink}" class="hero-btn-secondary">
+                                    ${finalConfig.ctaSecondaryText}
                                 </a>
                             </div>
                         </div>
@@ -943,16 +1117,16 @@
             container.innerHTML = html;
 
             // Start countdown
-            if (showHero) {
+            if (finalConfig.showHero) {
                 startCountdown(targetDate, 'countdownTimer');
+                initHeroSlider(heroImages, containerId);
             }
 
             // Render products
-            renderProducts(products, 'categoryProducts', title);
+            renderProducts(products, 'categoryProducts', finalConfig.title);
 
-       
-
-            console.log(`✅ Category Showcase initialized: ${products.length} products, filter: ${filterType}=${filterValue}, ${heroImages.length} hero images`);
+            console.log(`✅ Category Showcase initialized: ${products.length} products, filter: ${effectiveFilterType}=${effectiveFilterValue}, ${heroImages.length} hero images`);
+            console.log(`📋 Config source: Supabase category_showcase_config (id=1)`);
 
         } catch (err) {
             console.error('❌ Error initializing category showcase:', err);
@@ -971,76 +1145,19 @@
     }
 
     // ============================================================
-    // 13. AUTO-DETECT CATEGORY FROM URL
-    // ============================================================
-
-    function detectCategoryFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        const category = params.get('category');
-        const brand = params.get('brand');
-        const type = params.get('type');
-
-        if (category) {
-            return { filterType: 'category', filterValue: category };
-        } else if (brand) {
-            return { filterType: 'brand', filterValue: brand };
-        } else if (type === 'deals') {
-            return { filterType: 'deals', filterValue: '' };
-        }
-        return null;
-    }
-
-    // ============================================================
-    // 14. EXPOSE GLOBALLY
-    // ============================================================
-
-    window.CategoryShowcase = {
-        init: initCategoryShowcase,
-        fetchProducts: fetchProductsByCategoryOrBrand,
-        renderProducts: renderProducts,
-        startCountdown: startCountdown,
-        detectCategory: detectCategoryFromUrl,
-        fetchHeroImages: fetchRandomProductImages
-    };
-
-    // ============================================================
-    // 15. AUTO-INITIALIZE ON DOM READY
+    // 13. AUTO-INITIALIZE ON DOM READY - NO URL PARAMETERS
     // ============================================================
 
     document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById('categoryShowcase');
         if (!container) return;
 
-        // Check for data attributes
-        const filterType = container.dataset.filterType || 'category';
-        const filterValue = container.dataset.filterValue || 'smartphone';
-        const title = container.dataset.title || 'Smartphones & Tablets';
-        const subtitle = container.dataset.subtitle || 'Hurry! Take advantage of discounts of up to 50% on our collection.';
-        const badge = container.dataset.badge || '🔥 Limited Time Offer';
-        const countdownHours = parseInt(container.dataset.countdownHours) || 24;
-        const viewAllLink = container.dataset.viewAllLink || '/category/?category=' + encodeURIComponent(filterValue);
-        const ctaText = container.dataset.ctaText || 'Shop Now →';
-        const ctaSecondaryText = container.dataset.ctaSecondaryText || 'View All';
-        const showHero = container.dataset.showHero !== 'false';
-
-        // Auto-detect from URL if available
-        const detected = detectCategoryFromUrl();
-        const finalFilterType = detected?.filterType || filterType;
-        const finalFilterValue = detected?.filterValue || filterValue;
-
-        initCategoryShowcase('categoryShowcase', {
-            filterType: finalFilterType,
-            filterValue: finalFilterValue,
-            title: title,
-            subtitle: subtitle,
-            badge: badge,
-            countdownHours: countdownHours,
-            viewAllLink: viewAllLink,
-            ctaText: ctaText,
-            ctaSecondaryText: ctaSecondaryText,
-            showHero: showHero
-        });
+        console.log('🚀 Initializing Category Showcase from Supabase config ONLY...');
+        
+        // Initialize with NO options - only Supabase config will be used
+        initCategoryShowcase('categoryShowcase', {});
     });
 
-    console.log('✅ Category Showcase Component Loaded');
+    console.log('✅ Category Showcase Component Loaded - Supabase Config ONLY');
+    console.log('📌 URL parameters are IGNORED - only category_showcase_config (id=1) is used');
 })();
