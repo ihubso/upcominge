@@ -7,7 +7,7 @@
 // ============================================
 
 // Version number = Cache name - Changing version creates new cache
-const CACHE_NAME = 'success-technology-v3.1.21'; // Increment this to create new cache
+const CACHE_NAME = 'success-technology-v3.1.25'; // Increment this to create new cache
 
 // Assets to cache on install
 const ASSETS_TO_CACHE = [

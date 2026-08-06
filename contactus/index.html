@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-    <title>Contact & Locate Us · Sucess Technology</title>
+    <title data-translate="contact_page_title">Contact & Locate Us · Sucess Technology</title>
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
   <script src="/head/header-core.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
@@ -774,7 +776,7 @@
         <!-- Loading State -->
         <div id="contactLoading" class="contact-loading">
             <div class="spinner"></div>
-            <span style="color:#94A3B8;font-weight:500;">Loading contact information...</span>
+            <span style="color:#94A3B8;font-weight:500;" data-translate="loading_info">Loading contact information...</span>
         </div>
 
         <!-- Content (hidden initially) -->
@@ -786,23 +788,23 @@
                     <div class="hero-icon">
                         <i class="fas fa-map-pin"></i>
                     </div>
-                    <h1>Contact <span id="heroShopName">Sucess Technology</span></h1>
-                    <p class="hero-description" id="heroDescription">
+                    <h1><span data-translate="contact_title">Contact</span> <span id="heroShopName">Sucess Technology</span></h1>
+                    <p class="hero-description" id="heroDescription" data-translate="hero_description">
                         We're here to help you with any questions or concerns. Reach out to us through any of the channels below.
                     </p>
                     <div class="hero-location" id="heroLocation">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span id="heroLocationText">Loading address...</span>
+                        <span id="heroLocationText" data-translate="loading_address">Loading address...</span>
                     </div>
                     <div class="hero-hours" id="heroHours">
                         <i class="fas fa-clock"></i>
-                        <span id="heroHoursText">Loading hours...</span>
+                        <span id="heroHoursText" data-translate="loading_hours">Loading hours...</span>
                     </div>
                 </div>
                 <div class="hero-right" id="heroImageContainer">
                     <div class="shop-photo-placeholder" id="shopPhotoPlaceholder">
                         <i class="fas fa-store"></i>
-                        <span>Shop Photo</span>
+                        <span data-translate="shop_photo">Shop Photo</span>
                     </div>
                     <img id="heroShopImage" style="display:none;" alt="Shop Photo" />
                 </div>
@@ -816,10 +818,10 @@
                     <div class="info-card">
                         <div class="card-icon"><i class="fas fa-map-marker-alt"></i></div>
                         <div class="card-content">
-                            <div class="card-label">Location</div>
-                            <div class="card-value" id="contactAddress">Loading address...</div>
+                            <div class="card-label" data-translate="location_label">Location</div>
+                            <div class="card-value" id="contactAddress" data-translate="loading_address">Loading address...</div>
                         </div>
-                        <a href="#" id="mapLinkBtn" target="_blank" class="card-badge open" style="background:#6C3CE1;color:white;padding:6px 14px;border-radius:20px;font-size:12px;text-decoration:none;">
+                        <a href="#" id="mapLinkBtn" target="_blank" class="card-badge open" style="background:#6C3CE1;color:white;padding:6px 14px;border-radius:20px;font-size:12px;text-decoration:none;" data-translate="map">
                             <i class="fas fa-external-link-alt"></i> Map
                         </a>
                     </div>
@@ -828,12 +830,12 @@
                     <div class="info-card">
                         <div class="card-icon"><i class="fas fa-phone"></i></div>
                         <div class="card-content">
-                            <div class="card-label">Phone</div>
+                            <div class="card-label" data-translate="phone_label">Phone</div>
                             <div class="card-value">
-                                <a href="#" id="contactPhoneLink">Loading...</a>
+                                <a href="#" id="contactPhoneLink" data-translate="loading">Loading...</a>
                             </div>
                         </div>
-                        <a href="#" id="whatsappBtn" target="_blank" class="card-badge" style="background:#25D366;color:white;padding:6px 14px;border-radius:20px;font-size:12px;text-decoration:none;">
+                        <a href="#" id="whatsappBtn" target="_blank" class="card-badge" style="background:#25D366;color:white;padding:6px 14px;border-radius:20px;font-size:12px;text-decoration:none;" data-translate="whatsapp">
                             <i class="fab fa-whatsapp"></i> WhatsApp
                         </a>
                     </div>
@@ -842,12 +844,12 @@
                     <div class="info-card">
                         <div class="card-icon"><i class="fas fa-envelope"></i></div>
                         <div class="card-content">
-                            <div class="card-label">Email</div>
+                            <div class="card-label" data-translate="email_label">Email</div>
                             <div class="card-value">
-                                <a href="#" id="contactEmailLink">Loading...</a>
+                                <a href="#" id="contactEmailLink" data-translate="loading">Loading...</a>
                             </div>
                         </div>
-                        <a href="#" id="emailBtn" class="card-badge" style="background:#3B82F6;color:white;padding:6px 14px;border-radius:20px;font-size:12px;text-decoration:none;">
+                        <a href="#" id="emailBtn" class="card-badge" style="background:#3B82F6;color:white;padding:6px 14px;border-radius:20px;font-size:12px;text-decoration:none;" data-translate="send">
                             <i class="fas fa-paper-plane"></i> Send
                         </a>
                     </div>
@@ -856,17 +858,17 @@
                     <div class="info-card">
                         <div class="card-icon"><i class="fas fa-clock"></i></div>
                         <div class="card-content">
-                            <div class="card-label">Business Hours</div>
-                            <div class="card-value" id="contactHours">Loading...</div>
+                            <div class="card-label" data-translate="hours_label">Business Hours</div>
+                            <div class="card-value" id="contactHours" data-translate="loading">Loading...</div>
                         </div>
-                        <span class="card-badge open" id="openBadge">🟢 Open Now</span>
+                        <span class="card-badge open" id="openBadge" data-translate="open_now">🟢 Open Now</span>
                     </div>
 
                     <!-- Store Name Card -->
                     <div class="info-card">
                         <div class="card-icon"><i class="fas fa-store"></i></div>
                         <div class="card-content">
-                            <div class="card-label">Store</div>
+                            <div class="card-label" data-translate="store_label">Store</div>
                             <div class="card-value" id="contactShopName" style="font-size:18px;font-weight:800;color:#6C3CE1;">Sucess Technology</div>
                         </div>
                     </div>
@@ -876,10 +878,10 @@
                 <div class="map-card">
                     <div class="map-placeholder">
                         <span class="map-icon"><i class="fas fa-map-marked-alt"></i></span>
-                        <h3 style="font-size:18px;font-weight:700;color:#0F172A;margin-bottom:4px;">Find Us Here</h3>
-                        <p class="map-address" id="mapAddress">Loading address...</p>
-                        <p class="map-coords" id="mapCoords">📍 Loading coordinates...</p>
-                        <a href="#" id="mapDirectionsBtn" target="_blank" class="map-btn">
+                        <h3 style="font-size:18px;font-weight:700;color:#0F172A;margin-bottom:4px;" data-translate="find_us">Find Us Here</h3>
+                        <p class="map-address" id="mapAddress" data-translate="loading_address">Loading address...</p>
+                        <p class="map-coords" id="mapCoords" data-translate="loading_coords">📍 Loading coordinates...</p>
+                        <a href="#" id="mapDirectionsBtn" target="_blank" class="map-btn" data-translate="open_maps">
                             <i class="fas fa-directions"></i> Open in Google Maps
                         </a>
                     </div>
@@ -890,25 +892,25 @@
             <div id="descriptionCard" class="description-card hidden">
                 <div class="desc-icon"><i class="fas fa-info-circle"></i></div>
                 <div class="desc-content">
-                    <p id="contactDescription">Additional information about the store.</p>
+                    <p id="contactDescription" data-translate="store_description">Additional information about the store.</p>
                 </div>
             </div>
 
             <!-- Quick Actions -->
             <div class="quick-actions">
-                <a href="#" id="directionsAction" target="_blank" class="quick-action">
+                <a href="#" id="directionsAction" target="_blank" class="quick-action" data-translate="get_directions">
                     <span class="qa-icon">🧭</span>
                     <span class="qa-label">Get Directions</span>
                 </a>
-                <a href="#" id="callAction" class="quick-action">
+                <a href="#" id="callAction" class="quick-action" data-translate="call_store">
                     <span class="qa-icon">📞</span>
                     <span class="qa-label">Call Store</span>
                 </a>
-                <button onclick="shareLocation()" class="quick-action" style="background:white;border:1px solid #f0f0f0;cursor:pointer;">
+                <button onclick="shareLocation()" class="quick-action" style="background:white;border:1px solid #f0f0f0;cursor:pointer;" data-translate="share_location">
                     <span class="qa-icon">📤</span>
                     <span class="qa-label">Share Location</span>
                 </button>
-                <a href="/product/" class="quick-action">
+                <a href="/product/" class="quick-action" data-translate="browse_products">
                     <span class="qa-icon">🛍️</span>
                     <span class="qa-label">Browse Products</span>
                 </a>
@@ -917,7 +919,7 @@
             <!-- Social Links -->
             <div class="social-section">
                 <div class="social-text">
-                    <i class="fas fa-share-alt"></i> Connect with us on social media
+                    <i class="fas fa-share-alt"></i> <span data-translate="connect_social">Connect with us on social media</span>
                 </div>
                 <div class="social-links" id="socialLinks">
                     <!-- Populated by JavaScript -->
@@ -926,13 +928,13 @@
 
             <!-- CTA Section -->
             <div class="cta-section">
-                <h2>Ready to Visit Us?</h2>
-                <p>Come experience our products in person. We're excited to serve you!</p>
+                <h2 data-translate="ready_to_visit">Ready to Visit Us?</h2>
+                <p data-translate="visit_us_text">Come experience our products in person. We're excited to serve you!</p>
                 <div class="cta-buttons">
-                    <a href="#" id="ctaDirectionsBtn" target="_blank" class="btn-primary-cta">
+                    <a href="#" id="ctaDirectionsBtn" target="_blank" class="btn-primary-cta" data-translate="get_directions_cta">
                         <i class="fas fa-directions"></i> Get Directions
                     </a>
-                    <a href="#" id="ctaCallBtn" class="btn-secondary-cta">
+                    <a href="#" id="ctaCallBtn" class="btn-secondary-cta" data-translate="call_us_now">
                         <i class="fas fa-phone"></i> Call Us Now
                     </a>
                 </div>
@@ -990,6 +992,15 @@
                 }
             };
         })();
+
+        // Helper translation function for dynamic content
+        function t(key, fallback) {
+            if (window.Translations && window.Translations.translate) {
+                const result = window.Translations.translate(key);
+                if (result && result !== key) return result;
+            }
+            return fallback || key;
+        }
 
         // ============================================================
         //  CONTACT PAGE - Fetches from Supabase business_info & contact_info
@@ -1092,7 +1103,7 @@
             elements.contactShopName.textContent = shopName;
 
             // Description
-            const description = info.description || 'Your trusted partner for premium technology products and exceptional service.';
+            const description = info.description || t('default_description', 'Your trusted partner for premium technology products and exceptional service.');
             elements.heroDescription.textContent = description;
             elements.contactDescription.textContent = description;
 
@@ -1102,13 +1113,13 @@
             }
 
             // Address
-            const address = info.address || 'Douala, Cameroon';
+            const address = info.address || t('default_address', 'Douala, Cameroon');
             elements.contactAddress.textContent = address;
             elements.heroLocationText.textContent = address;
             elements.mapAddress.textContent = address;
 
             // Phone
-            const phone = info.phone || ' ';
+            const phone = info.phone || t('default_phone', ' ');
             const phoneClean = phone.replace(/\s/g, '');
             const phoneDigits = phone.replace(/\D/g, '');
             
@@ -1125,13 +1136,13 @@
             }
 
             // Email
-            const email = info.email || 'info@sucesstechnology.com';
+            const email = info.email || t('default_email', 'info@sucesstechnology.com');
             elements.contactEmailLink.textContent = email;
             elements.contactEmailLink.href = `mailto:${email}`;
             elements.emailBtn.href = `mailto:${email}`;
 
             // Hours
-            const hoursText = info.hours || 'Mon - Fri: 7:00 AM - 8:00 PM\nSun: Closed';
+            const hoursText = info.hours || t('default_hours', 'Mon - Fri: 7:00 AM - 8:00 PM\nSun: Closed');
             const hoursDisplay = hoursText.replace(/\\n/g, '\n');
             elements.contactHours.textContent = hoursDisplay;
             elements.heroHoursText.textContent = hoursDisplay;
@@ -1140,17 +1151,16 @@
             const isOpen = checkIfOpen(hoursText);
             const badge = elements.openBadge;
             if (isOpen) {
-                badge.textContent = '🟢 Open Now';
+                badge.textContent = t('open_now', '🟢 Open Now');
                 badge.className = 'card-badge open';
             } else {
-                badge.textContent = '🔴 Closed';
+                badge.textContent = t('closed', '🔴 Closed');
                 badge.className = 'card-badge closed';
             }
 
             // Coordinates
             let lat = info.latitude || '4.051056';
             let lng = info.longitude || '9.767869';
-            // Handle if they're strings
             if (typeof lat === 'string') lat = parseFloat(lat);
             if (typeof lng === 'string') lng = parseFloat(lng);
             
@@ -1178,7 +1188,7 @@
             renderSocialLinks(info);
 
             // Update page title
-            document.title = `Contact & Locate Us · ${shopName}`;
+            document.title = `${t('contact_title', 'Contact')} & ${t('locate_us', 'Locate Us')} · ${shopName}`;
 
             console.log('✅ Contact info loaded successfully');
         }
@@ -1281,7 +1291,7 @@
 
             if (socialItems.length === 0) {
                 container.innerHTML = `
-                    <span style="color:#94A3B8;font-size:14px;">No social links available</span>
+                    <span style="color:#94A3B8;font-size:14px;" data-translate="no_social">No social links available</span>
                 `;
                 return;
             }
@@ -1298,21 +1308,21 @@
         // ============================================================
 
         function shareLocation() {
-            const address = elements.contactAddress?.textContent || 'Our Store';
+            const address = elements.contactAddress?.textContent || t('our_store', 'Our Store');
             const mapsUrl = elements.mapDirectionsBtn?.href || window.location.href;
 
             if (navigator.share) {
                 navigator.share({
-                    title: 'Visit Our Store',
-                    text: `Find us at: ${address}`,
+                    title: t('visit_our_store', 'Visit Our Store'),
+                    text: `${t('find_us_at', 'Find us at')}: ${address}`,
                     url: mapsUrl
                 }).catch(() => {
                     navigator.clipboard.writeText(mapsUrl);
-                    showToast('📍 Location link copied!');
+                    showToast('📍 ' + t('location_copied', 'Location link copied!'));
                 });
             } else {
                 navigator.clipboard.writeText(mapsUrl);
-                showToast('📍 Location link copied!');
+                showToast('📍 ' + t('location_copied', 'Location link copied!'));
             }
         }
 
@@ -1326,7 +1336,7 @@
                 email: 'info@sucesstechnology.com',
                 phone: '+237 6XX XXX XXX',
                 address: 'Douala, Cameroon',
-                description: 'Your trusted partner for premium technology products and exceptional service.',
+                description: t('default_description', 'Your trusted partner for premium technology products and exceptional service.'),
                 hours: 'Mon - Fri: 7:00 AM - 8:00 PM\nSun: Closed',
                 latitude: '4.051056',
                 longitude: '9.767869',
@@ -1365,10 +1375,8 @@
         // ============================================================
 
         function setupSafeAnchorHandlers() {
-            // Only handle internal anchor links (#)
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 const href = anchor.getAttribute('href');
-                // Only process if it's a valid internal ID (starts with # and has more than just #)
                 if (href && href !== '#' && href.length > 1) {
                     anchor.addEventListener('click', function(e) {
                         const targetId = this.getAttribute('href');
@@ -1382,9 +1390,7 @@
                                         block: 'start'
                                     });
                                 }
-                            } catch(e) {
-                                // Silently fail - not a valid selector
-                            }
+                            } catch(e) {}
                         }
                     });
                 }
@@ -1398,10 +1404,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('📄 Contact page loading...');
 
-            // Fetch business info
             fetchBusinessInfo();
-
-            // Setup safe anchor handlers
             setupSafeAnchorHandlers();
 
             console.log('✅ Contact page ready');

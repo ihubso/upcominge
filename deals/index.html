@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-    <title>🔥 Deals & Offers · Sucess Technology</title>
+    <title data-translate="deals_page_title">🔥 Deals & Offers · Sucess Technology</title>
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
   <script src="/head/header-core.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
@@ -1269,49 +1271,49 @@
             <!-- Hero Content -->
             <div class="hero-content" id="heroContent" style="display:none;">
                 <div class="hero-badge">
-                    <i class="fas fa-fire"></i> Limited Time Offers
+                    <i class="fas fa-fire"></i> <span data-translate="limited_time_offers">Limited Time Offers</span>
                 </div>
-                <h1>🔥 Mega <span>Deals</span> of the Day</h1>
-                <p>Grab the best offers on premium products. Discounts up to <strong style="color:#EF4444;">70%</strong> on selected items. Hurry, these deals won't last!</p>
+                <h1>🔥 <span data-translate="mega_deals">Mega</span> <span data-translate="deals_of_day">Deals</span> <span data-translate="of_the_day">of the Day</span></h1>
+                <p data-translate="hero_description">Grab the best offers on premium products. Discounts up to <strong style="color:#EF4444;">70%</strong> on selected items. Hurry, these deals won't last!</p>
 
                 <div class="hero-stats">
                     <div class="stat-item">
                         <span class="stat-number" id="totalDeals">0</span>
-                        <span class="stat-label">Active Deals</span>
+                        <span class="stat-label" data-translate="active_deals">Active Deals</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-number" id="totalSavings">0%</span>
-                        <span class="stat-label">Max Savings</span>
+                        <span class="stat-label" data-translate="max_savings">Max Savings</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-number" id="totalItems">0</span>
-                        <span class="stat-label">Items On Sale</span>
+                        <span class="stat-label" data-translate="items_on_sale">Items On Sale</span>
                     </div>
                 </div>
 
                 <div class="hero-countdown" id="heroCountdown">
                     <div class="cd-unit">
                         <span class="cd-number" id="cdDays">00</span>
-                        <span class="cd-label">Days</span>
+                        <span class="cd-label" data-translate="days">Days</span>
                     </div>
                     <span class="cd-separator">:</span>
                     <div class="cd-unit">
                         <span class="cd-number" id="cdHours">00</span>
-                        <span class="cd-label">Hours</span>
+                        <span class="cd-label" data-translate="hours">Hours</span>
                     </div>
                     <span class="cd-separator">:</span>
                     <div class="cd-unit">
                         <span class="cd-number" id="cdMinutes">00</span>
-                        <span class="cd-label">Minutes</span>
+                        <span class="cd-label" data-translate="minutes">Minutes</span>
                     </div>
                     <span class="cd-separator">:</span>
                     <div class="cd-unit">
                         <span class="cd-number" id="cdSeconds">00</span>
-                        <span class="cd-label">Seconds</span>
+                        <span class="cd-label" data-translate="seconds">Seconds</span>
                     </div>
                 </div>
 
-                <a href="#dealsGrid" class="hero-btn">
+                <a href="#dealsGrid" class="hero-btn" data-translate="explore_deals">
                     <i class="fas fa-bolt"></i> Explore Deals
                 </a>
             </div>
@@ -1320,15 +1322,15 @@
             <div class="floating-elements">
                 <div class="float-item">
                     <span class="float-icon">🔥</span>
-                    <span class="float-label">70% OFF</span>
+                    <span class="float-label" data-translate="percent_off">70% OFF</span>
                 </div>
                 <div class="float-item">
                     <span class="float-icon">⚡</span>
-                    <span class="float-label">Flash Sale</span>
+                    <span class="float-label" data-translate="flash_sale">Flash Sale</span>
                 </div>
                 <div class="float-item">
                     <span class="float-icon">🎯</span>
-                    <span class="float-label">Limited Stock</span>
+                    <span class="float-label" data-translate="limited_stock">Limited Stock</span>
                 </div>
             </div>
         </section>
@@ -1337,14 +1339,14 @@
         <div class="deals-container">
             <div class="deals-section-header">
                 <div>
-                    <h2><i class="fas fa-tags"></i> All Deals</h2>
-                    <span class="deals-subtitle">Handpicked offers just for you</span>
+                    <h2><i class="fas fa-tags"></i> <span data-translate="all_deals">All Deals</span></h2>
+                    <span class="deals-subtitle" data-translate="handpicked_offers">Handpicked offers just for you</span>
                 </div>
                 <div class="deals-filter" id="dealsFilter">
-                    <button class="active" data-filter="all">All</button>
-                    <button data-filter="mega">🔥 Mega</button>
-                    <button data-filter="hot">⚡ Hot</button>
-                    <button data-filter="new">✨ New</button>
+                    <button class="active" data-filter="all" data-translate="filter_all">All</button>
+                    <button data-filter="mega" data-translate="filter_mega">🔥 Mega</button>
+                    <button data-filter="hot" data-translate="filter_hot">⚡ Hot</button>
+                    <button data-filter="new" data-translate="filter_new">✨ New</button>
                 </div>
             </div>
 
@@ -1352,7 +1354,7 @@
             <div class="deals-grid" id="dealsGrid">
                 <!-- Product Skeletons -->
                 <div id="productSkeletons">
-                    ${Array(8).fill(0).map(() => `
+                    
                         <div class="deal-skeleton-card">
                             <div class="skeleton-image"></div>
                             <div class="skeleton-body">
@@ -1366,14 +1368,14 @@
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
+                   
                 </div>
             </div>
         </div>
     </main>
     <section class="relateted-section">
          <div class="related-section">
-            <h2><i class="fas fa-boxes"></i> You May Also Like</h2>
+            <h2><i class="fas fa-boxes"></i> <span data-translate="you_may_also_like">You May Also Like</span></h2>
             <div id="randomProducts"></div>
         </div>
 
@@ -1383,6 +1385,15 @@
          SCRIPTS
          ============================================ -->
     <script>
+
+        // Helper translation function for dynamic content
+        function t(key, fallback) {
+            if (window.Translations && window.Translations.translate) {
+                const result = window.Translations.translate(key);
+                if (result && result !== key) return result;
+            }
+            return fallback || key;
+        }
 
         // --- State ---
         let allDeals = [];
@@ -1618,9 +1629,9 @@
                 grid.innerHTML = `
                     <div class="deals-empty">
                         <div class="empty-icon"><i class="fas fa-tags"></i></div>
-                        <h2>No Deals Available</h2>
-                        <p>Check back soon for amazing offers!</p>
-                        <a href="/product/" style="display:inline-block;padding:12px 32px;background:#6C3CE1;color:white;border-radius:12px;text-decoration:none;font-weight:600;">
+                        <h2 data-translate="no_deals_title">No Deals Available</h2>
+                        <p data-translate="no_deals_sub">Check back soon for amazing offers!</p>
+                        <a href="/product/" style="display:inline-block;padding:12px 32px;background:#6C3CE1;color:white;border-radius:12px;text-decoration:none;font-weight:600;" data-translate="browse_products">
                             <i class="fas fa-store"></i> Browse Products
                         </a>
                     </div>
@@ -1654,7 +1665,7 @@
                             <img src="${image}" alt="${deal.name || 'Product'}" loading="lazy"
                                  onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'">
                             <div class="deal-badge-top">
-                                ${badge ? `<span class="deal-badge ${badge.class}">${badge.label}</span>` : ''}
+                                ${badge ? `<span class="deal-badge ${badge.class}" data-translate="badge_${badge.class}">${badge.label}</span>` : ''}
                             </div>
                             <span class="deal-discount-float">-${discount}%</span>
                             <button class="deal-wishlist ${isWished ? 'active' : ''}" 
@@ -1672,29 +1683,30 @@
                             <div class="deal-price-row">
                                 <span class="deal-current-price">FCFA ${formatPrice(currentPrice)}</span>
                                 <span class="deal-original-price">FCFA ${formatPrice(originalPrice)}</span>
-                                <span class="deal-savings">Save ${discount}%</span>
+                                <span class="deal-savings" data-translate="save_percent">Save ${discount}%</span>
                             </div>
                             <div class="deal-actions">
-                                <button class="deal-btn-view" onclick="event.stopPropagation(); window.location.href='/item/?product=${deal.id}'">
+                                <button class="deal-btn-view" onclick="event.stopPropagation(); window.location.href='/item/?product=${deal.id}'" data-translate="view_details">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
                             ${stock > 0 ? `
                                 <div class="deal-stock">
-                                    <span class="stock-text">${stock} left</span>
+                                    <span class="stock-text" data-translate="left_in_stock">${stock} left</span>
                                     <div class="stock-bar">
                                         <div class="stock-fill" style="width:${stockPercent}%"></div>
                                     </div>
                                 </div>
                             ` : `
                                 <div class="deal-stock">
-                                    <span class="stock-text" style="color:#EF4444;">Out of Stock</span>
+                                    <span class="stock-text" style="color:#EF4444;" data-translate="out_of_stock">Out of Stock</span>
                                 </div>
                             `}
                         </div>
                     </div>
                 `;
             }).join('');
+            translateUI();
         }
 
         // ============================================================
@@ -1706,10 +1718,10 @@
                 const index = wishlist.indexOf(productId);
                 if (index !== -1) {
                     wishlist.splice(index, 1);
-                    showToast('❤️ Removed from wishlist', 'info');
+                    showToast('❤️ ' + t('removed_from_wishlist', 'Removed from wishlist'), 'info');
                 } else {
                     wishlist.push(productId);
-                    showToast('❤️ Added to wishlist!');
+                    showToast('❤️ ' + t('added_to_wishlist', 'Added to wishlist!'));
                 }
 
                 localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
@@ -1729,7 +1741,7 @@
                 renderDeals(filteredDeals);
             } catch (err) {
                 console.error('❌ Wishlist error:', err);
-                showToast('❌ Failed to update wishlist', 'error');
+                showToast('❌ ' + t('wishlist_error', 'Failed to update wishlist'), 'error');
             }
         }
 

@@ -13,6 +13,8 @@
    <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 <script src="/head/header-core.js" defer></script>
+      <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
 <script src="/head/header-dropdowns.js" defer></script>
@@ -789,6 +791,63 @@
             color: #94A3B8;
             font-weight: 500;
         }
+        /* ===============================================
+   IMAGE ZOOM TOUCH FIXES
+   =============================================== */
+
+/* Prevent default touch behaviors on zoomed image */
+#imageZoomModal.active #zoomedImage,
+#imageZoomModal.active #zoomGalleryContainer,
+#imageZoomModal.active .zoom-nav-btn {
+    touch-action: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure image container doesn't trigger modal close on touch */
+#imageZoomModal.active .zoom-image-container {
+    touch-action: none !important;
+    pointer-events: auto !important;
+}
+
+/* Prevent text selection during zoom */
+#imageZoomModal.active {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Make zoom controls touch-friendly */
+#imageZoomModal.active .zoom-controls button {
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+/* Prevent scrolling while zooming */
+#imageZoomModal.active {
+    overscroll-behavior: none;
+    touch-action: none;
+}
+
+/* Smooth transitions for zoom */
+#zoomedImage {
+    will-change: transform;
+    transition: transform 0.2s ease;
+}
+
+/* Loading state */
+#zoomedImage.loading {
+    opacity: 0.5;
+}
+
+/* Gallery thumbnails touch improvements */
+#zoomGalleryContainer img {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
 
         @media (max-width: 768px) {
             .deals-section {
@@ -969,9 +1028,9 @@
         <!-- Product Not Found -->
         <div id="notFoundState" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
             <div class="text-6xl mb-4">🔍</div>
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">Product Not Found</h2>
-            <p class="text-gray-500 mb-6">We couldn't find the product you're looking for.</p>
-            <a href="index.html" class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full font-medium hover:bg-primaryHover transition-colors">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2" data-translate="product_not_found_title">Product Not Found</h2>
+            <p class="text-gray-500 mb-6" data-translate="product_not_found_sub">We couldn't find the product you're looking for.</p>
+            <a href="../" class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full font-medium hover:bg-primaryHover transition-colors" data-translate="return_to_store">
                 <i class="fas fa-arrow-left"></i> Return to Store
             </a>
         </div>
@@ -981,7 +1040,7 @@
             <div class="product-page-hero">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center gap-2 text-sm text-gray-500">
-                        <a href="index.html" class="hover:text-primary transition-colors">Home</a>
+                        <a href="../" class="hover:text-primary transition-colors" data-translate="home">Home</a>
                         <span>/</span>
                         <a href="#" class="hover:text-primary transition-colors" id="breadcrumbCategory"></a>
                         <span>/</span>
@@ -1012,39 +1071,39 @@
                         <h1 id="productName" class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight"></h1>
                         <div class="flex items-center gap-3 mt-3 mb-4">
                             <div id="productRating" class="star-rating"></div>
-                            <span id="reviewCount" class="text-sm text-gray-500">0 Reviews</span>
+                            <span id="reviewCount" class="text-sm text-gray-500" data-translate="reviews">0 Reviews</span>
                         </div>
                         <div id="dealInfo" class="mt-4 hidden">
-                            <p class="text-sm text-green-600 font-medium">🔥 Deal of the Day - Limited Time Offer!</p>
+                            <p class="text-sm text-green-600 font-medium" data-translate="deal_of_day">🔥 Deal of the Day - Limited Time Offer!</p>
                         </div>
                         <div id="priceSection" class="mb-6"></div>
                         <div id="descriptionSection" class="mb-6">
                             <p id="productDescription" class="text-gray-600 leading-relaxed"></p>
                         </div>
                         <div id="specsSection" class="bg-gray-50 rounded-2xl p-5 mb-6 border border-gray-100">
-                            <h4 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider">Specifications</h4>
+                            <h4 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider" data-translate="specifications">Specifications</h4>
                             <div id="specsGrid" class="grid grid-cols-2 gap-y-3 gap-x-6"></div>
                         </div>
                         <div id="variantsSection" class="mb-6 space-y-4"></div>
                         <div class="flex flex-wrap items-center gap-4 mb-6">
-                            <span class="text-sm font-medium text-gray-600">Quantity:</span>
+                            <span class="text-sm font-medium text-gray-600" data-translate="quantity">Quantity:</span>
                             <div class="qty-selector">
-                                <button onclick="decrementQty()" aria-label="Decrease quantity">−</button>
+                                <button onclick="decrementQty()" aria-label="Decrease quantity" data-translate="decrease">−</button>
                                 <input type="number" id="qtyInput" value="1" min="1" max="99" />
-                                <button onclick="incrementQty(99)" aria-label="Increase quantity">+</button>
+                                <button onclick="incrementQty(99)" aria-label="Increase quantity" data-translate="increase">+</button>
                             </div>
                             <span id="stockDisplay" class="text-xs text-gray-400"></span>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-4">
-                            <button id="addToCartBtn" class="flex-1 bg-black text-white py-4 rounded-xl font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
+                            <button id="addToCartBtn" class="flex-1 bg-black text-white py-4 rounded-xl font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2" data-translate="add_to_cart">
                                 <span class="add-to-cart-content">
                                     <i class="fas fa-shopping-cart"></i> Add to Cart
                                 </span>
                             </button>
-                            <button id="wishlistBtn" class="flex-1 bg-white border border-gray-200 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                            <button id="wishlistBtn" class="flex-1 bg-white border border-gray-200 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2" data-translate="wishlist">
                                 <i class="far fa-heart"></i> Wishlist
                             </button>
-                            <button id="shareBtn" class="flex-1 bg-white border border-gray-200 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                            <button id="shareBtn" class="flex-1 bg-white border border-gray-200 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2" data-translate="share">
                                 <i class="fas fa-share-alt"></i> Share
                             </button>
                         </div>
@@ -1055,8 +1114,8 @@
                 <!-- Deals Section -->
                 <div id="dealsSection" class="mt-12 pt-8 border-t border-gray-200 deals-section">
                     <div class="deals-header">
-                        <h2><i class="fas fa-bolt"></i> Special Deals</h2>
-                        <span class="deals-subtitle">🔥 Limited time offers</span>
+                        <h2><i class="fas fa-bolt"></i> <span data-translate="special_deals">Special Deals</span></h2>
+                        <span class="deals-subtitle" data-translate="limited_time_offers">🔥 Limited time offers</span>
                     </div>
                     <div id="dealsContainer"></div>
                 </div>
@@ -1065,18 +1124,18 @@
             <div id="reviewsSection" class="mt-12 pt-8 border-t border-gray-200">
                 <button id="reviewsToggleBtn" type="button" class="reviews-toggle text-left w-full mb-6 flex items-center justify-between" aria-expanded="false">
                     <span class="text-2xl font-bold flex items-center gap-2">
-                        ⭐ Customer Reviews (<span id="reviewCountLabel">0</span>)
+                        ⭐ <span data-translate="customer_reviews">Customer Reviews</span> (<span id="reviewCountLabel">0</span>)
                     </span>
                     <span id="reviewsToggleIcon" class="reviews-toggle-icon text-2xl transition-transform duration-300">▼</span>
                 </button>
                 <div id="reviewsContent" class="reviews-content hidden">
                     <div id="reviewsList" class="space-y-4 max-h-96 overflow-y-auto pr-2 mb-8"></div>
                     <div class="bg-gray-50 rounded-2xl p-6">
-                        <h4 class="font-bold mb-4">✏️ Write a Review</h4>
+                        <h4 class="font-bold mb-4" data-translate="write_review">✏️ Write a Review</h4>
                         <form id="reviewForm" class="space-y-4">
                             
                         <div class="space-y-3">
-                            <input type="text" id="reviewUserName" placeholder="Your name" class="w-full border border-gray-200 rounded-lg p-3 text-sm" />
+                            <input type="text" id="reviewUserName" placeholder="Your name" class="w-full border border-gray-200 rounded-lg p-3 text-sm" data-translate-placeholder="your_name" />
                             <select id="reviewRating" class="w-full border border-gray-200 rounded-lg p-3 text-sm">
                                 <option value="5">★★★★★ (5)</option>
                                 <option value="4">★★★★☆ (4)</option>
@@ -1084,8 +1143,8 @@
                                 <option value="2">★★☆☆☆ (2)</option>
                                 <option value="1">★☆☆☆☆ (1)</option>
                             </select>
-                            <textarea id="reviewComment" placeholder="Your review..." rows="3" class="w-full border border-gray-200 rounded-lg p-3 text-sm"></textarea>
-                            <button id="submitReviewBtn" class="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-primaryHover transition">
+                            <textarea id="reviewComment" placeholder="Your review..." rows="3" class="w-full border border-gray-200 rounded-lg p-3 text-sm" data-translate-placeholder="your_review"></textarea>
+                            <button id="submitReviewBtn" class="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-primaryHover transition" data-translate="submit_review">
                                 Submit Review
                             </button>
                         </div>
@@ -1096,7 +1155,7 @@
 
                 <!-- Related Products -->
                 <div id="relatedSection" class="mt-12 pt-8 border-t border-gray-200">
-                    <h3 class="text-2xl font-bold mb-6">🔄 You May Also Like</h3>
+                    <h3 class="text-2xl font-bold mb-6" data-translate="you_may_also_like">🔄 You May Also Like</h3>
                     <div id="relatedGrid" class="related-grid"></div>
                     <div id="relatedLoadMore" class="related-loadmore hidden">
                         <div class="loader-skeleton">
@@ -1114,7 +1173,7 @@
                             </div>
                             <div class="loading-text">
                                 <div class="mini-spinner"></div>
-                                <span>Loading more products...</span>
+                                <span data-translate="loading_more_products">Loading more products...</span>
                             </div>
                         </div>
                     </div>
@@ -1127,13 +1186,13 @@
     <footer class="bg-dark text-white py-12 mt-12">
         <div class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
-                <h4 class="font-bold mb-4">Products</h4>
-                <p class="text-slate-400 text-sm">Phone</p>
-                <p class="text-slate-400 text-sm">Tablet</p>
-                <p class="text-slate-400 text-sm">Audio</p>
+                <h4 class="font-bold mb-4" data-translate="footer_products">Products</h4>
+                <p class="text-slate-400 text-sm" data-translate="footer_phone">Phone</p>
+                <p class="text-slate-400 text-sm" data-translate="footer_tablet">Tablet</p>
+                <p class="text-slate-400 text-sm" data-translate="footer_audio">Audio</p>
             </div>
             <div>
-                <h4 class="font-bold mb-4">📱 Follow Us</h4>
+                <h4 class="font-bold mb-4" data-translate="footer_follow">📱 Follow Us</h4>
                 <div class="flex gap-4 mt-2">
                     <a id="facebookLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-facebook"></i></a>
                     <a id="instagramLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-instagram"></i></a>
@@ -1141,20 +1200,20 @@
                 </div>
             </div>
             <div>
-                <h4 class="font-bold mb-4">About</h4>
-                <p class="text-slate-400 text-sm">About Us</p>
-                <p class="text-slate-400 text-sm">Press</p>
-                <a href="/contactus" class="text-slate-400 text-sm block hover:text-primary transition-colors">📍 Locate Us</a>
+                <h4 class="font-bold mb-4" data-translate="footer_about">About</h4>
+                <p class="text-slate-400 text-sm" data-translate="about_us">About Us</p>
+                <p class="text-slate-400 text-sm" data-translate="press">Press</p>
+                <a href="/contactus" class="text-slate-400 text-sm block hover:text-primary transition-colors" data-translate="locate_us">📍 Locate Us</a>
             </div>
             <div>
-                <h4 class="font-bold mb-4">📞 Contact</h4>
+                <h4 class="font-bold mb-4" data-translate="footer_contact">📞 Contact</h4>
                 <p id="footerEmail" class="text-slate-400 text-sm"></p>
                 <p id="footerPhone" class="text-slate-400 text-sm"></p>
                 <p id="footerAddress" class="text-slate-400 text-sm"></p>
             </div>
         </div>
         <div class="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400 text-sm">
-            <p>&copy; 2024 Sucess Technology. All rights reserved.</p>
+            <p data-translate="copyright">&copy; 2024 Sucess Technology. All rights reserved.</p>
         </div>
     </footer>
 
@@ -1220,6 +1279,15 @@
         // ============================================================
         //  PRODUCT PAGE — Standalone Product Detail with Supabase
         // ============================================================
+
+        // Helper translation function for dynamic content
+        function t(key, fallback) {
+            if (window.Translations && window.Translations.translate) {
+                const result = window.Translations.translate(key);
+                if (result && result !== key) return result;
+            }
+            return fallback || key;
+        }
 
         let currentProduct = null;
         let currentProductId = null;
@@ -1383,7 +1451,7 @@
             if (!deals || deals.length === 0) {
                 container.innerHTML = `
                     <div style="text-align:center;padding:20px;color:#94A3B8;">
-                        <p style="font-size:14px;">No deals available right now</p>
+                        <p style="font-size:14px;" data-translate="no_deals_available">No deals available right now</p>
                     </div>
                 `;
                 return;
@@ -1425,7 +1493,7 @@
                                     <span class="deal-original-price">FCFA ${originalPrice.toFixed(2)}</span>
                                 </div>
                                 <div class="deal-card-actions">
-                                    <button class="deal-btn-cart" onclick="window.location.href='/item/?product=${deal.id}')">
+                                    <button class="deal-btn-cart" onclick="window.location.href='/item/?product=${deal.id}')" data-translate="view_details">
                                         <i class="fas fa-shopping-bag"></i> VIEW DETAILS
                                     </button>
                                 </div>
@@ -1704,11 +1772,11 @@ async function handleAddToCart(product) {
 
     btn.dataset.loading = 'true';
     btn.disabled = true;
-    btn.innerHTML = '<span class="add-to-cart-content"><span class="add-to-cart-spinner"></span> Adding...</span>';
+    btn.innerHTML = '<span class="add-to-cart-content"><span class="add-to-cart-spinner"></span> ' + t('adding', 'Adding...') + '</span>';
 
     try {
         if (product.stock !== undefined && qty > product.stock) {
-            showToast('⚠️ Only ' + product.stock + ' items available');
+            showToast('⚠️ ' + t('only_items_available', 'Only ') + product.stock + ' ' + t('items_available', 'items available'));
             return;
         }
 
@@ -1745,11 +1813,11 @@ async function handleAddToCart(product) {
     }
 
         await saveCart(cart);
-        showToast('✅ Added to cart!');
+        showToast('✅ ' + t('added_to_cart', 'Added to cart!'));
     } finally {
         btn.dataset.loading = 'false';
         btn.disabled = false;
-        btn.innerHTML = '<span class="add-to-cart-content"><i class="fas fa-shopping-cart"></i> Add to Cart</span>';
+        btn.innerHTML = '<span class="add-to-cart-content"><i class="fas fa-shopping-cart"></i> ' + t('add_to_cart', 'Add to Cart') + '</span>';
     }
 }
 
@@ -1761,27 +1829,27 @@ async function handleAddToCart(product) {
                 if (wish.includes(productId)) {
                     wish = wish.filter(id => id !== productId);
                     isWished = false;
-                    showToast('❤️ Removed from wishlist');
+                    showToast('❤️ ' + t('removed_from_wishlist', 'Removed from wishlist'));
                 } else {
                     wish.push(productId);
                     isWished = true;
-                    showToast('❤️ Added to wishlist!');
+                    showToast('❤️ ' + t('added_to_wishlist', 'Added to wishlist!'));
                 }
                 await saveWishlist(wish);
                 updateWishlistButton();
             } catch (e) {
                 console.error('Wishlist error:', e);
-                showToast('Error updating wishlist');
+                showToast(t('wishlist_error', 'Error updating wishlist'));
             }
         }
 
         function updateWishlistButton() {
             const btn = document.getElementById('wishlistBtn');
             if (isWished) {
-                btn.innerHTML = '<i class="fas fa-heart text-primary"></i> In Wishlist';
+                btn.innerHTML = '<i class="fas fa-heart text-primary"></i> ' + t('in_wishlist', 'In Wishlist');
                 btn.classList.add('border-primary', 'text-primary');
             } else {
-                btn.innerHTML = '<i class="far fa-heart"></i> Wishlist';
+                btn.innerHTML = '<i class="far fa-heart"></i> ' + t('wishlist', 'Wishlist');
                 btn.classList.remove('border-primary', 'text-primary');
             }
         }
@@ -1796,7 +1864,7 @@ async function handleAddToCart(product) {
             } else {
                 try {
                     await navigator.clipboard.writeText(url);
-                    showToast('Link copied to clipboard!');
+                    showToast(t('link_copied', 'Link copied to clipboard!'));
                 } catch (e) {
                     showToast('Share: ' + url);
                 }
@@ -1808,7 +1876,7 @@ async function handleAddToCart(product) {
             const reviews = getProductReviews(productId);
             const list = document.getElementById('reviewsList');
             if (!reviews.length) {
-                list.innerHTML = '<p class="text-gray-400 text-sm">No reviews yet. Be the first to review!</p>';
+                list.innerHTML = '<p class="text-gray-400 text-sm" data-translate="no_reviews_yet">No reviews yet. Be the first to review!</p>';
                 return;
             }
             list.innerHTML = reviews.map(r => `
@@ -1918,23 +1986,23 @@ async function handleSubmitReview(productId) {
 
     const userName = nameInput.value.trim();
     if (!userName) {
-        showToast('Please enter your name');
+        showToast(t('please_enter_name', 'Please enter your name'));
         return;
     }
     const rating = parseInt(ratingSelect.value);
     const comment = commentInput.value.trim();
     if (!comment) {
-        showToast('Please write a review');
+        showToast(t('please_write_review', 'Please write a review'));
         return;
     }
 
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="inline-flex items-center gap-2"><span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span> Submitting...</span>';
+    submitBtn.innerHTML = '<span class="inline-flex items-center gap-2"><span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span> ' + t('submitting', 'Submitting...') + '</span>';
 
     try {
         const client = getSupabaseClient();
         if (!client) {
-            showToast('⚠️ Offline mode: Review saved locally', 'warning');
+            showToast('⚠️ ' + t('offline_mode', 'Offline mode: Review saved locally'), 'warning');
             saveReviewLocally(productId, userName, rating, comment);
             return;
         }
@@ -1956,7 +2024,7 @@ async function handleSubmitReview(productId) {
 
         if (error) {
             console.error('❌ Supabase error:', error);
-            showToast('⚠️ Network error: Review saved locally', 'warning');
+            showToast('⚠️ ' + t('network_error', 'Network error: Review saved locally'), 'warning');
             saveReviewLocally(productId, userName, rating, comment);
             return;
         }
@@ -1965,15 +2033,15 @@ async function handleSubmitReview(productId) {
         saveReviewLocally(productId, userName, rating, comment);
 
         commentInput.value = '';
-        showToast('Thank you for your review! 🎉');
+        showToast(t('thank_you_review', 'Thank you for your review! 🎉'));
 
     } catch (e) {
         console.error('Review error:', e);
-        showToast('⚠️ Error saving review. Saved locally.', 'warning');
+        showToast('⚠️ ' + t('error_saving_review', 'Error saving review. Saved locally.'), 'warning');
         saveReviewLocally(productId, userName, rating, comment);
     } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = 'Submit Review';
+        submitBtn.innerHTML = t('submit_review', 'Submit Review');
     }
 }
 
@@ -2002,7 +2070,7 @@ function renderReviews(productId) {
     if (!list) return;
 
     if (reviews.length === 0) {
-        list.innerHTML = '<p class="text-gray-400 text-sm">No reviews yet. Be the first to review!</p>';
+        list.innerHTML = '<p class="text-gray-400 text-sm" data-translate="no_reviews_yet">No reviews yet. Be the first to review!</p>';
         return;
     }
 
@@ -2029,7 +2097,7 @@ function updateReviewUI(productId) {
     const labelEl = document.getElementById('reviewCountLabel');
 
     if (ratingEl) ratingEl.innerHTML = renderStars(avg);
-    if (countEl) countEl.textContent = `${count} Reviews`;
+    if (countEl) countEl.textContent = `${count} ${t('reviews', 'Reviews')}`;
     if (labelEl) labelEl.textContent = count;
 }
 
@@ -2066,7 +2134,7 @@ function showToast(message, type = 'success') {
             if (!container) return;
 
             if (!cart.length) {
-                container.innerHTML = '<div class="text-center py-8 text-gray-500">Cart empty</div>';
+                container.innerHTML = '<div class="text-center py-8 text-gray-500" data-translate="cart_empty">Cart empty</div>';
                 document.getElementById('cartTotal').innerText = '0.00';
                 return;
             }
@@ -2142,18 +2210,18 @@ window.clearCart = async function() {
     }
     
     await saveCart([]);
-    showToast('Cart cleared');
+    showToast(t('cart_cleared', 'Cart cleared'));
     await renderCart();
 };
 
         window.openCheckout = function() {
             const cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
             if (!cart.length) {
-                showToast('Cart empty');
+                showToast(t('cart_empty', 'Cart empty'));
                 return;
             }
             closeModal('cartModal');
-            showToast('🛒 Checkout coming soon!');
+            showToast('🛒 ' + t('checkout_coming', 'Checkout coming soon!'));
         };
 
         // --- Related Products ---
@@ -2198,7 +2266,7 @@ window.clearCart = async function() {
                     </div>
                     <div class="loading-text">
                         <div class="mini-spinner"></div>
-                        <span>Loading more products...</span>
+                        <span data-translate="loading_more_products">Loading more products...</span>
                     </div>
                 </div>
             `;
@@ -2316,7 +2384,7 @@ window.clearCart = async function() {
             const avg = getAverageRating(product.id);
             const count = getReviewCount(product.id);
             document.getElementById('productRating').innerHTML = renderStars(avg);
-            document.getElementById('reviewCount').textContent = `${count} Reviews`;
+            document.getElementById('reviewCount').textContent = `${count} ${t('reviews', 'Reviews')}`;
             document.getElementById('reviewCountLabel').textContent = count;
 
             let allImages = [product.image];
@@ -2355,14 +2423,14 @@ window.clearCart = async function() {
                 priceSection.innerHTML = `
                     <div class="flex items-center gap-3 mb-2">
                         <span class="text-2xl text-gray-400 line-through">FCFA ${originalPrice.toFixed(2)}</span>
-                        <span class="bg-primary text-white px-3 py-1 rounded-full text-sm font-bold">SAVE ${discount}%</span>
+                        <span class="bg-primary text-white px-3 py-1 rounded-full text-sm font-bold">${t('save', 'SAVE')} ${discount}%</span>
                     </div>
                     <div class="text-5xl font-bold text-primary">FCFA ${discountedPrice.toFixed(2)}</div>
                 `;
                 document.getElementById('dealBadgeOverlay').classList.remove('hidden');
-                document.getElementById('dealBadgeOverlay').textContent = `-${discount}% OFF`;
+                document.getElementById('dealBadgeOverlay').textContent = `-${discount}% ${t('off', 'OFF')}`;
                 document.getElementById('dealInfo').classList.remove('hidden');
-                document.getElementById('dealInfo').querySelector('p').textContent = `🔥 Deal of the Day - ${discount}% OFF!`;
+                document.getElementById('dealInfo').querySelector('p').textContent = `🔥 ${t('deal_of_day_text', 'Deal of the Day')} - ${discount}% ${t('off', 'OFF')}!`;
             } else {
                 priceSection.innerHTML = `
                     <div class="text-4xl font-light text-gray-900">FCFA ${originalPrice.toFixed(2)}</div>
@@ -2371,20 +2439,20 @@ window.clearCart = async function() {
                 document.getElementById('dealInfo').classList.add('hidden');
             }
 
-            document.getElementById('productDescription').textContent = product.description || 'No description available.';
+            document.getElementById('productDescription').textContent = product.description || t('no_description', 'No description available.');
 
             const specsGrid = document.getElementById('specsGrid');
             const specItems = [];
-            if (product.cpu) specItems.push({ label: 'Processor', value: product.cpu });
-            if (product.os) specItems.push({ label: 'Operating System', value: product.os });
-            if (product.specs) specItems.push({ label: 'Specifications', value: product.specs });
+            if (product.cpu) specItems.push({ label: t('processor', 'Processor'), value: product.cpu });
+            if (product.os) specItems.push({ label: t('operating_system', 'Operating System'), value: product.os });
+            if (product.specs) specItems.push({ label: t('specifications', 'Specifications'), value: product.specs });
             if (product.stock !== undefined) {
-                const stockText = product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock';
+                const stockText = product.stock > 0 ? `${t('in_stock', 'In Stock')} (${product.stock})` : t('out_of_stock', 'Out of Stock');
                 const stockColor = product.stock > 0 ? 'text-green-600' : 'text-red-600';
-                specItems.push({ label: 'Stock Status', value: `<span class="${stockColor} font-semibold">${stockText}</span>` });
+                specItems.push({ label: t('stock_status', 'Stock Status'), value: `<span class="${stockColor} font-semibold">${stockText}</span>` });
             }
             if (specItems.length === 0) {
-                specsGrid.innerHTML = '<p class="text-sm text-gray-400 col-span-2">No specifications available.</p>';
+                specsGrid.innerHTML = '<p class="text-sm text-gray-400 col-span-2" data-translate="no_specs">No specifications available.</p>';
             } else {
                 specsGrid.innerHTML = specItems.map(item =>
                     `<div><p class="text-xs text-gray-500">${item.label}</p><p class="font-semibold text-sm">${item.value}</p></div>`
@@ -2438,7 +2506,7 @@ window.clearCart = async function() {
 
             const stockDisplay = document.getElementById('stockDisplay');
             if (product.stock !== undefined) {
-                stockDisplay.textContent = product.stock > 0 ? `${product.stock} available` : 'Out of stock';
+                stockDisplay.textContent = product.stock > 0 ? `${product.stock} ${t('available', 'available')}` : t('out_of_stock', 'Out of stock');
                 stockDisplay.className = `text-xs ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`;
             } else {
                 stockDisplay.textContent = '';
@@ -2489,6 +2557,7 @@ window.clearCart = async function() {
                     window.STHeader.updateCounts();
                 }
             }
+            translateUI();
         }
 
         // --- Load Product ---

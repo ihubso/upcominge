@@ -231,7 +231,9 @@ async function signUpCustomer(email, password, name, phone = '', address = '', c
                 p_phone: phone || '',
                 p_address: address || '',
                 p_country: country || '',
-                p_password: password
+                p_password: password,
+                p_st_terms_accepted: 'true' ,
+                p_st_terms_accepted_date: new Date().toISOString()
             });
         
         if (error) {
@@ -240,6 +242,8 @@ async function signUpCustomer(email, password, name, phone = '', address = '', c
         }
         
         console.log('✅ Account created successfully for:', email);
+                        localStorage.setItem('st_terms_accepted', 'true');
+                localStorage.setItem('st_terms_accepted_date', new Date().toISOString());
         
         return { 
             id: id, 

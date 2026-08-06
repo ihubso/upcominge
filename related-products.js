@@ -1,4 +1,3 @@
-
 const ratletCONFIG = {
     batchSize: 8,
     maxProducts: 1000
@@ -90,8 +89,8 @@ function renderProductCards(products, container) {
         container.innerHTML = `
             <div style="text-align:center;padding:60px 20px;color:#94A3B8;grid-column:1/-1;">
                 <i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:16px;color:#E2E8F0;"></i>
-                <p style="font-size:16px;font-weight:500;">No products found</p>
-                <p style="font-size:14px;margin-top:4px;">Check back later for new arrivals</p>
+                <p style="font-size:16px;font-weight:500;" data-translate="no_products_found">No products found</p>
+                <p style="font-size:14px;margin-top:4px;" data-translate="check_back_later">Check back later for new arrivals</p>
             </div>
         `;
         return;
@@ -129,9 +128,9 @@ function renderProductCards(products, container) {
                 <div class="rp-card-image">
                     <img src="${image}" alt="${product.name || 'Product'}" loading="lazy" 
                          onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'">
-                    ${discountPercent > 0 ? `<span class="rp-deal-badge">-${discountPercent}%</span>` : ''}
-                    ${isNew && !discountPercent ? `<span class="rp-new-badge">✨ New</span>` : ''}
-                    ${isHot && !discountPercent && !isNew ? `<span class="rp-hot-badge">⚡ Hot</span>` : ''}
+                    ${discountPercent > 0 ? `<span class="rp-deal-badge" data-translate="badge_discount">-${discountPercent}%</span>` : ''}
+                    ${isNew && !discountPercent ? `<span class="rp-new-badge" data-translate="badge_new">✨ New</span>` : ''}
+                    ${isHot && !discountPercent && !isNew ? `<span class="rp-hot-badge" data-translate="badge_hot">⚡ Hot</span>` : ''}
                     <button class="rp-wishlist-btn ${isInWishlist ? 'active' : ''}" 
                             onclick="event.stopPropagation(); toggleRandomWishlist('${product.id}')" 
                             aria-label="Add to wishlist">
@@ -155,7 +154,7 @@ function renderProductCards(products, container) {
                     ` : ''}
                     </div>
                     <div class="rp-card-actions">
-                        <a href="/item/?product=${product.id}" class="rp-btn-view" onclick="event.stopPropagation();">
+                        <a href="/item/?product=${product.id}" class="rp-btn-view" onclick="event.stopPropagation();" data-translate="view_details">
                             <i class="fas fa-eye"></i>
                         </a>
                     </div>
@@ -310,7 +309,7 @@ function setupInfiniteScroll(container, sentinelId = 'rp-load-more') {
             </div>
             <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
                 <div style="width:24px;height:24px;border:3px solid #E2E8F0;border-top-color:#6C3CE1;border-radius:50%;animation:rp-spin 0.8s linear infinite;"></div>
-                <span>Loading more products...</span>
+                <span data-translate="loading_more">Loading more products...</span>
             </div>
         </div>
     `;
@@ -361,7 +360,7 @@ function loadMoreProducts() {
                 </div>
                 <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
                     <div style="width:24px;height:24px;border:3px solid #E2E8F0;border-top-color:#6C3CE1;border-radius:50%;animation:rp-spin 0.8s linear infinite;"></div>
-                    <span>Loading more products...</span>
+                    <span data-translate="loading_more">Loading more products...</span>
                 </div>
             </div>
         `;
@@ -390,7 +389,7 @@ function loadMoreProducts() {
                 sentinel.style.display = 'block';
                 sentinel.innerHTML = `
                     <div style="display:flex;align-items:center;justify-content:center;gap:12px;color:#94A3B8;padding:8px;">
-                        <span>Load more products</span>
+                        <span data-translate="load_more">Load more products</span>
                         <i class="fas fa-chevron-down"></i>
                     </div>
                 `;
@@ -421,8 +420,8 @@ async function initRandomProducts(containerId = 'randomProducts') {
             container.innerHTML = `
                 <div style="text-align:center;padding:60px 20px;color:#94A3B8;grid-column:1/-1;">
                     <i class="fas fa-box-open" style="font-size:48px;display:block;margin-bottom:16px;color:#E2E8F0;"></i>
-                    <p style="font-size:16px;font-weight:500;">No products available</p>
-                    <p style="font-size:14px;margin-top:4px;">Check back later for new arrivals</p>
+                    <p style="font-size:16px;font-weight:500;" data-translate="no_products_available">No products available</p>
+                    <p style="font-size:14px;margin-top:4px;" data-translate="check_back_later">Check back later for new arrivals</p>
                 </div>
             `;
             return;
@@ -443,24 +442,25 @@ async function initRandomProducts(containerId = 'randomProducts') {
             const sentinel = document.getElementById('rp-load-more');
             if (sentinel) sentinel.remove();
         }
-
+ translateUI();
         console.log(`✅ Random Products: Loaded ${loadedCount} products, ${randomProductsPool.length} more available`);
 
     } catch (err) {
+
         console.error('❌ Error loading random products:', err);
         container.innerHTML = `
             <div style="text-align:center;padding:60px 20px;color:#EF4444;grid-column:1/-1;">
                 <i class="fas fa-exclamation-circle" style="font-size:48px;display:block;margin-bottom:16px;"></i>
-                <p style="font-size:16px;font-weight:500;">Error loading products</p>
-                <p style="font-size:14px;margin-top:4px;">Please try again later</p>
-                <button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;background:#6C3CE1;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-family:inherit;">
+                <p style="font-size:16px;font-weight:500;" data-translate="error_loading">Error loading products</p>
+                <p style="font-size:14px;margin-top:4px;" data-translate="please_try_again">Please try again later</p>
+                <button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;background:#6C3CE1;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-family:inherit;" data-translate="retry">
                     <i class="fas fa-sync"></i> Retry
                 </button>
             </div>
         `;
+         translateUI();
     }
 }
-
 // ============================================================
 // STYLES (injected once)
 // ============================================================

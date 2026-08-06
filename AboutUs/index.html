@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-    <title>About Us · Sucess Technology</title>
+    <title data-translate="about_page_title">About Us · Sucess Technology</title>
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/head/header-core.js" defer></script>
+  <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
+    <script src="/head/header-core.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
 <script src="/head/header-dropdowns.js" defer></script>
@@ -770,7 +772,7 @@
         <!-- Loading State -->
         <div id="aboutLoading" class="about-loading">
             <div class="spinner"></div>
-            <span style="color:#94A3B8;font-weight:500;">Loading company information...</span>
+            <span style="color:#94A3B8;font-weight:500;" data-translate="loading_info">Loading company information...</span>
         </div>
 
         <!-- Content (hidden initially) -->
@@ -782,38 +784,38 @@
                     <div class="hero-icon">
                         <i class="fas fa-building"></i>
                     </div>
-                    <h1>About <span id="heroShopName">Sucess Technology</span></h1>
-                    <p class="hero-description" id="heroDescription">
+                    <h1><span data-translate="about_title">About</span> <span id="heroShopName">Sucess Technology</span></h1>
+                    <p class="hero-description" id="heroDescription" data-translate="hero_description">
                         Your trusted partner for premium technology products and exceptional service.
                         We're committed to bringing you the best in tech innovation.
                     </p>
                     <div class="hero-location" id="heroLocation">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span id="heroLocationText">Douala, Cameroon</span>
+                        <span id="heroLocationText" data-translate="location_default">Douala, Cameroon</span>
                     </div>
                     <div class="hero-hours" id="heroHours">
                         <i class="fas fa-clock"></i>
-                        <span id="heroHoursText">Mon - Fri: 7:00 AM - 8:00 PM</span>
+                        <span id="heroHoursText" data-translate="hours_default">Mon - Fri: 7:00 AM - 8:00 PM</span>
                     </div>
                     <div class="hero-stats">
                         <div class="stat-item">
-                            <span class="stat-number" id="statYears">3+</span>
-                            <span class="stat-label">Years of Excellence</span>
+                            <span class="stat-number" id="statYears" data-translate="stat_years">3+</span>
+                            <span class="stat-label" data-translate="stat_years_label">Years of Excellence</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-number" id="statProducts">500+</span>
-                            <span class="stat-label">Products Available</span>
+                            <span class="stat-number" id="statProducts" data-translate="stat_products">500+</span>
+                            <span class="stat-label" data-translate="stat_products_label">Products Available</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-number" id="statCustomers">1000+</span>
-                            <span class="stat-label">Happy Customers</span>
+                            <span class="stat-number" id="statCustomers" data-translate="stat_customers">1000+</span>
+                            <span class="stat-label" data-translate="stat_customers_label">Happy Customers</span>
                         </div>
                     </div>
                 </div>
                 <div class="hero-right" id="heroImageContainer">
                     <div class="shop-photo-placeholder" id="shopPhotoPlaceholder">
                         <i class="fas fa-store"></i>
-                        <span>Shop Photo</span>
+                        <span data-translate="shop_photo">Shop Photo</span>
                     </div>
                     <img id="heroShopImage" style="display:none;" alt="Shop Photo" />
                 </div>
@@ -823,39 +825,39 @@
             <div class="mission-grid">
                 <div class="mission-card">
                     <div class="card-icon"><i class="fas fa-bullseye"></i></div>
-                    <h3>Our Mission</h3>
-                    <p>To provide high-quality technology products and exceptional customer service that empowers individuals and businesses to achieve more.</p>
+                    <h3 data-translate="mission_title">Our Mission</h3>
+                    <p data-translate="mission_text">To provide high-quality technology products and exceptional customer service that empowers individuals and businesses to achieve more.</p>
                 </div>
                 <div class="mission-card">
                     <div class="card-icon"><i class="fas fa-eye"></i></div>
-                    <h3>Our Vision</h3>
-                    <p>To become the most trusted technology partner in Africa, connecting people with innovative solutions that enhance their lives.</p>
+                    <h3 data-translate="vision_title">Our Vision</h3>
+                    <p data-translate="vision_text">To become the most trusted technology partner in Africa, connecting people with innovative solutions that enhance their lives.</p>
                 </div>
                 <div class="mission-card">
                     <div class="card-icon"><i class="fas fa-heart"></i></div>
-                    <h3>Our Values</h3>
-                    <p>Integrity, innovation, and customer-centricity drive everything we do. We believe in building lasting relationships with our community.</p>
+                    <h3 data-translate="values_title">Our Values</h3>
+                    <p data-translate="values_text">Integrity, innovation, and customer-centricity drive everything we do. We believe in building lasting relationships with our community.</p>
                 </div>
             </div>
 
             <!-- About Content -->
             <div class="about-content">
                 <div class="about-text">
-                    <h2><i class="fas fa-info-circle"></i> Who We Are</h2>
-                    <p id="aboutDescription">
+                    <h2><i class="fas fa-info-circle"></i> <span data-translate="who_we_are">Who We Are</span></h2>
+                    <p id="aboutDescription" data-translate="about_description">
                         <strong id="aboutShopName">Sucess Technology</strong> is a premier technology retailer dedicated to bringing the latest and most innovative products to our customers. With a passion for technology and a commitment to excellence, we curate a diverse selection of high-quality devices and accessories.
                     </p>
-                    <p>
+                    <p data-translate="about_description_2">
                         Our team of technology enthusiasts is here to help you find the perfect product for your needs. Whether you're a professional looking for the latest laptop, a student seeking a reliable tablet, or a tech enthusiast exploring new gadgets, we've got you covered.
                     </p>
-                    <p>
+                    <p data-translate="about_description_3">
                         We believe that technology should be accessible to everyone, which is why we offer competitive prices, flexible payment options, and exceptional customer support. Your satisfaction is our priority.
                     </p>
                     <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
-                        <a href="/contactus" class="btn-primary" style="padding:12px 28px;background:#6C3CE1;color:white;border-radius:12px;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:8px;transition:all 0.3s ease;">
+                        <a href="/contactus" class="btn-primary" style="padding:12px 28px;background:#6C3CE1;color:white;border-radius:12px;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:8px;transition:all 0.3s ease;" data-translate="get_in_touch">
                             <i class="fas fa-envelope"></i> Get in Touch
                         </a>
-                        <a href="/product/" class="btn-secondary" style="padding:12px 28px;border:2px solid #E2E8F0;border-radius:12px;text-decoration:none;font-weight:600;color:#475569;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s ease;">
+                        <a href="/product/" class="btn-secondary" style="padding:12px 28px;border:2px solid #E2E8F0;border-radius:12px;text-decoration:none;font-weight:600;color:#475569;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s ease;" data-translate="shop_now">
                             <i class="fas fa-store"></i> Shop Now
                         </a>
                     </div>
@@ -869,38 +871,38 @@
 
             <!-- Values -->
             <div class="section-title" style="margin-bottom:16px;">
-                <i class="fas fa-star"></i> Our Core Values
+                <i class="fas fa-star"></i> <span data-translate="core_values">Our Core Values</span>
             </div>
             <div class="values-grid">
                 <div class="value-item">
                     <div class="value-icon"><i class="fas fa-shield-alt"></i></div>
-                    <span class="value-text">Trust &amp; Integrity</span>
+                    <span class="value-text" data-translate="value_trust">Trust &amp; Integrity</span>
                 </div>
                 <div class="value-item">
                     <div class="value-icon"><i class="fas fa-lightbulb"></i></div>
-                    <span class="value-text">Innovation</span>
+                    <span class="value-text" data-translate="value_innovation">Innovation</span>
                 </div>
                 <div class="value-item">
                     <div class="value-icon"><i class="fas fa-users"></i></div>
-                    <span class="value-text">Customer First</span>
+                    <span class="value-text" data-translate="value_customer">Customer First</span>
                 </div>
                 <div class="value-item">
                     <div class="value-icon"><i class="fas fa-gem"></i></div>
-                    <span class="value-text">Quality Excellence</span>
+                    <span class="value-text" data-translate="value_quality">Quality Excellence</span>
                 </div>
                 <div class="value-item">
                     <div class="value-icon"><i class="fas fa-handshake"></i></div>
-                    <span class="value-text">Community Focus</span>
+                    <span class="value-text" data-translate="value_community">Community Focus</span>
                 </div>
                 <div class="value-item">
                     <div class="value-icon"><i class="fas fa-globe-africa"></i></div>
-                    <span class="value-text">African Innovation</span>
+                    <span class="value-text" data-translate="value_africa">African Innovation</span>
                 </div>
             </div>
 
             <!-- Contact Information -->
             <div class="section-title" style="margin-bottom:16px;">
-                <i class="fas fa-address-card"></i> Get in Touch
+                <i class="fas fa-address-card"></i> <span data-translate="get_in_touch_title">Get in Touch</span>
             </div>
             <div class="contact-info-grid" id="contactInfoGrid">
                 <!-- Will be populated by JavaScript -->
@@ -909,7 +911,7 @@
             <!-- Social Links -->
             <div class="social-section">
                 <div class="social-text">
-                    <i class="fas fa-share-alt"></i> Connect with us on social media
+                    <i class="fas fa-share-alt"></i> <span data-translate="connect_social">Connect with us on social media</span>
                 </div>
                 <div class="social-links" id="socialLinks">
                     <!-- Will be populated by JavaScript -->
@@ -1141,7 +1143,7 @@
 
             if (contactItems.length === 0) {
                 grid.innerHTML = `
-                    <div style="grid-column:1/-1;text-align:center;padding:20px;color:#94A3B8;">
+                    <div style="grid-column:1/-1;text-align:center;padding:20px;color:#94A3B8;" data-translate="no_contact">
                         No contact information available
                     </div>
                 `;
@@ -1152,7 +1154,7 @@
                 <a href="${item.href}" target="${item.href.startsWith('mailto:') || item.href.startsWith('tel:') || item.href === '#' ? '_self' : '_blank'}" class="contact-info-item">
                     <div class="ci-icon"><i class="fas ${item.icon}"></i></div>
                     <div class="ci-text">
-                        <span class="ci-label">${item.label}</span>
+                        <span class="ci-label" data-translate="contact_${item.label.toLowerCase().replace(' ', '_')}">${item.label}</span>
                         <span class="ci-value">${item.value}</span>
                     </div>
                 </a>
@@ -1189,7 +1191,7 @@
 
             if (socialItems.length === 0) {
                 container.innerHTML = `
-                    <span style="color:#94A3B8;font-size:14px;">No social links available</span>
+                    <span style="color:#94A3B8;font-size:14px;" data-translate="no_social">No social links available</span>
                 `;
                 return;
             }

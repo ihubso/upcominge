@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Checkout · Sucess Technology</title>
+    <title data-translate="checkout_page_title">Checkout · Sucess Technology</title>
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
   <script src="/head/header-core.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
@@ -534,8 +536,8 @@
     <main class="st-checkout-container" id="stCheckoutPage">
         <!-- Page Header -->
         <div class="st-checkout-header">
-            <h1><i class="fas fa-credit-card"></i> Checkout</h1>
-            <a href="/Cart" class="st-back-btn">
+            <h1><i class="fas fa-credit-card"></i> <span data-translate="checkout_title">Checkout</span></h1>
+            <a href="/Cart" class="st-back-btn" data-translate="back_to_cart">
                 <i class="fas fa-arrow-left"></i> Back to Cart
             </a>
         </div>
@@ -548,22 +550,22 @@
                 <div id="stSuccessState" style="display:none;">
                     <div class="st-success-state">
                         <div class="st-success-icon"><i class="fas fa-check-circle"></i></div>
-                        <h2>Order Placed! 🎉</h2>
-                        <p>Thank you for your order. We'll confirm it shortly.</p>
+                        <h2 data-translate="order_placed_title">Order Placed! 🎉</h2>
+                        <p data-translate="order_placed_sub">Thank you for your order. We'll confirm it shortly.</p>
                         <div class="st-order-id" id="stOrderIdDisplay">Order #ORD-XXXXX</div>
-                        <p style="font-size:14px;color:#94A3B8;">
+                        <p style="font-size:14px;color:#94A3B8;" data-translate="confirmation_sent">
                             A confirmation has been sent to your email.
                         </p>
                         <div class="st-actions" style="margin-top:16px;">
-                            <a href="/product/" class="st-btn-continue">
+                            <a href="/product/" class="st-btn-continue" data-translate="continue_shopping">
                                 <i class="fas fa-home"></i> Continue Shopping
                             </a>
-                            <a href="/orders/" class="st-btn-orders">
+                            <a href="/orders/" class="st-btn-orders" data-translate="view_orders">
                                 <i class="fas fa-shopping-bag"></i> View Orders
                             </a>
                         </div>
                         <!-- WhatsApp Contact Button -->
-                        <a href="#" id="stWhatsAppSuccess" class="st-whatsapp-btn" style="margin-top:16px;max-width:300px;margin-left:auto;margin-right:auto;">
+                        <a href="#" id="stWhatsAppSuccess" class="st-whatsapp-btn" style="margin-top:16px;max-width:300px;margin-left:auto;margin-right:auto;" data-translate="contact_whatsapp">
                             <i class="fab fa-whatsapp"></i> Contact Seller on WhatsApp
                         </a>
                     </div>
@@ -572,67 +574,69 @@
                 <!-- Checkout Form (visible by default) -->
                 <div id="stCheckoutFormContent">
                     <div class="st-section-title">
-                        <i class="fas fa-user"></i> Shipping Information
+                        <i class="fas fa-user"></i> <span data-translate="shipping_info">Shipping Information</span>
                     </div>
 
                     <form id="stCheckoutFormSubmit" autocomplete="off">
                         <div class="st-form-group">
-                            <label class="st-form-label">
+                            <label class="st-form-label" data-translate="full_name">
                                 Full Name <span class="st-required">*</span>
                             </label>
                             <input type="text" class="st-form-input" id="stCustomerName" 
-                                   placeholder="John Doe" required />
-                            <div class="st-form-error" id="stCustomerNameError">Please enter your full name</div>
+                                   placeholder="John Doe" required data-translate-placeholder="full_name_placeholder" />
+                            <div class="st-form-error" id="stCustomerNameError" data-translate="name_error">Please enter your full name</div>
                         </div>
 
                         <div class="st-form-group">
-                            <label class="st-form-label">
+                            <label class="st-form-label" data-translate="email_address">
                                 Email Address <span class="st-required">*</span>
                             </label>
                             <input type="email" class="st-form-input" id="stCustomerEmail" 
-                                   placeholder="you@example.com" required />
-                            <div class="st-form-error" id="stCustomerEmailError">Please enter a valid email</div>
+                                   placeholder="you@example.com" required data-translate-placeholder="email_placeholder" />
+                            <div class="st-form-error" id="stCustomerEmailError" data-translate="email_error">Please enter a valid email</div>
                         </div>
 
                         <div class="st-form-group">
-                            <label class="st-form-label">
+                            <label class="st-form-label" data-translate="phone_number">
                                 Phone Number <span class="st-required">*</span>
                             </label>
                             <input type="tel" class="st-form-input" id="stCustomerPhone" 
-                                   placeholder="+237 6XX XXX XXX" required />
-                            <div class="st-form-error" id="stCustomerPhoneError">Please enter your phone number</div>
-                            <div class="st-form-help" style="font-size:12px;color:#94A3B8;margin-top:4px;">
+                                   placeholder="+237 6XX XXX XXX" required data-translate-placeholder="phone_placeholder" />
+                            <div class="st-form-error" id="stCustomerPhoneError" data-translate="phone_error">Please enter your phone number</div>
+                            <div class="st-form-help" style="font-size:12px;color:#94A3B8;margin-top:4px;" data-translate="phone_help">
                                 We'll use this to contact you about your order
                             </div>
                         </div>
 
                         <div class="st-form-group">
-                            <label class="st-form-label">
+                            <label class="st-form-label" data-translate="delivery_address">
                                 Delivery Address <span class="st-required">*</span>
                             </label>
                             <input type="text" class="st-form-input" id="stCustomerAddress" 
-                                   placeholder="123 Main St, City, Country" required />
-                            <div class="st-form-error" id="stCustomerAddressError">Please enter your delivery address</div>
+                                   placeholder="123 Main St, City, Country" required data-translate-placeholder="address_placeholder" />
+                            <div class="st-form-error" id="stCustomerAddressError" data-translate="address_error">Please enter your delivery address</div>
                         </div>
 
                         <!-- ============================================
                              ADDED: PAYMENT METHOD SELECTION
                              ============================================ -->
                         <div class="st-form-group">
-                            <label class="st-form-label">
+                            <label class="st-form-label" data-translate="payment_method">
                                 Payment Method <span class="st-required">*</span>
-                                and for our costumer safety we recommend you to wait until your order is confirmed  then you will be informed 
-                                we will contact you <bold>   before making any payment </bold>
+                                <div style="font-weight:400;font-size:12px;color:#94A3B8;margin-top:4px;" data-translate="payment_help">
+                                    For your safety, please wait until your order is confirmed before making any payment.
+                                    We will contact you.
+                                </div>
                             </label>
                             <select class="st-form-input" id="stPaymentMethod" required>
-                                <option value="">Select a payment method</option>
-                                <option value="mobile_money">Mobile Money (MTN, Orange, Moov)</option>
-                                <option value="cash_on_delivery">Cash on Delivery</option>
-                                <option value="credit_card">Credit Card (Stripe)</option>
-                                <option value="paypal">PayPal</option>
-                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="" data-translate="select_payment">Select a payment method</option>
+                                <option value="mobile_money" data-translate="payment_mobile_money">Mobile Money (MTN, Orange, Moov)</option>
+                                <option value="cash_on_delivery" data-translate="payment_cash">Cash on Delivery</option>
+                                <option value="credit_card" data-translate="payment_credit_card">Credit Card (Stripe)</option>
+                                <option value="paypal" data-translate="payment_paypal">PayPal</option>
+                                <option value="bank_transfer" data-translate="payment_bank">Bank Transfer</option>
                             </select>
-                            <div class="st-form-error" id="stPaymentMethodError">Please select a payment method</div>
+                            <div class="st-form-error" id="stPaymentMethodError" data-translate="payment_error">Please select a payment method</div>
                         </div>
 
                         <!-- ============================================
@@ -641,19 +645,19 @@
                         <div class="st-form-group" style="margin-top:8px;">
                             <label style="display:flex;align-items:flex-start;gap:10px;font-weight:500;font-size:14px;color:#1E293B;cursor:pointer;">
                                 <input type="checkbox" id="stTermsCheckbox" required style="margin-top:3px;width:18px;height:18px;accent-color:#6C3CE1;" />
-                                <span>I agree to the <a href="/terms" target="_blank" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Terms of Service</a> and <a href="/Policy" target="_blank" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Privacy Policy</a>.</span>
+                                <span data-translate="terms_agree">I agree to the <a href="/terms" target="_blank" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Terms of Service</a> and <a href="/Policy" target="_blank" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Privacy Policy</a>.</span>
                             </label>
-                            <div class="st-form-error" id="stTermsError">You must agree to the terms to place an order</div>
+                            <div class="st-form-error" id="stTermsError" data-translate="terms_error">You must agree to the terms to place an order</div>
                         </div>
 
                         <div class="st-form-group">
-                            <label class="st-form-label">Order Notes (Optional)</label>
+                            <label class="st-form-label" data-translate="order_notes">Order Notes (Optional)</label>
                             <textarea class="st-form-input" id="stOrderNotes" 
-                                      rows="3" placeholder="Special instructions for delivery..."></textarea>
+                                      rows="3" placeholder="Special instructions for delivery..." data-translate-placeholder="notes_placeholder"></textarea>
                         </div>
 
                         <div style="margin-top:8px;">
-                            <button type="submit" class="st-btn-checkout" id="stPlaceOrderBtn">
+                            <button type="submit" class="st-btn-checkout" id="stPlaceOrderBtn" data-translate="place_order">
                                 <i class="fas fa-check"></i> Place Order
                             </button>
                         </div>
@@ -663,39 +667,39 @@
 
             <!-- Order Summary -->
             <div class="st-order-summary" id="stOrderSummary">
-                <h2><i class="fas fa-shopping-bag"></i> Order Summary</h2>
+                <h2><i class="fas fa-shopping-bag"></i> <span data-translate="order_summary">Order Summary</span></h2>
                 <div id="stOrderItems">
                     <!-- Will be populated by JavaScript -->
                     <div class="st-loading" id="stSummaryLoading">
                         <div class="st-spinner"></div>
-                        <span style="color:#94A3B8;font-size:14px;">Loading cart...</span>
+                        <span style="color:#94A3B8;font-size:14px;" data-translate="loading_cart">Loading cart...</span>
                     </div>
                     <div id="stOrderItemsList"></div>
                 </div>
                 <div id="stOrderTotals" style="display:none;">
                     <div class="st-summary-row">
-                        <span>Subtotal</span>
+                        <span data-translate="subtotal">Subtotal</span>
                         <span id="stSubtotal">FCFA 0.00</span>
                     </div>
                     <div class="st-summary-row">
-                        <span>Delivery Fee</span>
+                        <span data-translate="delivery_fee">Delivery Fee</span>
                         <span id="stDeliveryFee">FCFA 0.00</span>
                     </div>
                     <div class="st-summary-row st-total">
-                        <span>Total</span>
+                        <span data-translate="total">Total</span>
                         <span class="st-value" id="stTotal">FCFA 0.00</span>
                     </div>
 
                     <!-- WhatsApp Contact Button -->
-                    <a href="#" id="stWhatsAppBtn" class="st-whatsapp-btn">
+                    <a href="#" id="stWhatsAppBtn" class="st-whatsapp-btn" data-translate="contact_whatsapp">
                         <i class="fab fa-whatsapp"></i> Contact Seller on WhatsApp
                     </a>
                 </div>
                 <div id="stEmptyCart" style="display:none;">
                     <div class="st-empty-cart">
                         <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
-                        <p>Your cart is empty</p>
-                        <a href="/product/" style="display:inline-block;margin-top:12px;padding:10px 20px;background:#6C3CE1;color:white;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">
+                        <p data-translate="cart_empty">Your cart is empty</p>
+                        <a href="/product/" style="display:inline-block;margin-top:12px;padding:10px 20px;background:#6C3CE1;color:white;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;" data-translate="browse_products">
                             Browse Products
                         </a>
                     </div>
@@ -711,6 +715,15 @@
         // ============================================================
         //  CHECKOUT - Standalone Page
         // ============================================================
+
+        // Helper translation function for dynamic content
+        function t(key, fallback) {
+            if (window.Translations && window.Translations.translate) {
+                const result = window.Translations.translate(key);
+                if (result && result !== key) return result;
+            }
+            return fallback || key;
+        }
 
         // --- State ---
         let cartItems = [];
@@ -880,7 +893,7 @@ function getFallbackBusinessInfo() {
                         <div class="st-item-details">
                             <div class="st-item-name">${item.name || 'Unknown Product'}</div>
                             ${variantText ? `<div class="st-item-meta">${variantText}</div>` : ''}
-                            <div class="st-item-meta">Qty: ${qty}</div>
+                            <div class="st-item-meta">${t('qty', 'Qty')}: ${qty}</div>
                         </div>
                         <div class="st-item-price">FCFA ${total.toFixed(2)}</div>
                     </div>
@@ -893,7 +906,7 @@ function getFallbackBusinessInfo() {
             orderTotal = total;
 
             elements.subtotal.textContent = `FCFA ${subtotal.toFixed(2)}`;
-            elements.deliveryFee.textContent = deliveryFee === 0 ? 'Free' : `FCFA ${deliveryFee.toFixed(2)}`;
+            elements.deliveryFee.textContent = deliveryFee === 0 ? t('free', 'Free') : `FCFA ${deliveryFee.toFixed(2)}`;
             elements.total.textContent = `FCFA ${total.toFixed(2)}`;
 
             elements.whatsappBtn.style.display = 'flex';
@@ -916,14 +929,14 @@ async function updateWhatsAppLink() {
     const total = orderTotal || 0;
     
     const message = `🛒 *New Order from ${shopName}*%0A%0A` +
-        `👤 *Customer:* ${name}%0A` +
-        `📧 *Email:* ${elements.customerEmail.value.trim() || 'N/A'}%0A` +
-        `📱 *Phone:* ${elements.customerPhone.value.trim() || 'N/A'}%0A` +
-        `📍 *Address:* ${elements.customerAddress.value.trim() || 'N/A'}%0A` +
-        `💳 *Payment:* ${elements.paymentMethod.options[elements.paymentMethod.selectedIndex]?.text || 'N/A'}%0A` +
-        `📝 *Notes:* ${elements.orderNotes.value.trim() || 'None'}%0A%0A` +
-        `📦 *Items:*%0A• ${items}%0A%0A` +
-        `💰 *Total:* FCFA ${total.toFixed(2)}`;
+        `👤 *${t('customer', 'Customer')}:* ${name}%0A` +
+        `📧 *${t('email', 'Email')}:* ${elements.customerEmail.value.trim() || 'N/A'}%0A` +
+        `📱 *${t('phone', 'Phone')}:* ${elements.customerPhone.value.trim() || 'N/A'}%0A` +
+        `📍 *${t('address', 'Address')}:* ${elements.customerAddress.value.trim() || 'N/A'}%0A` +
+        `💳 *${t('payment', 'Payment')}:* ${elements.paymentMethod.options[elements.paymentMethod.selectedIndex]?.text || 'N/A'}%0A` +
+        `📝 *${t('notes', 'Notes')}:* ${elements.orderNotes.value.trim() || 'None'}%0A%0A` +
+        `📦 *${t('items', 'Items')}:*%0A• ${items}%0A%0A` +
+        `💰 *${t('total', 'Total')}:* FCFA ${total.toFixed(2)}`;
 
     // Clean phone number for WhatsApp
     const cleanPhone = phone.replace(/\D/g, '');
@@ -942,7 +955,7 @@ async function placeOrder(e) {
 
     if (isSubmitting) return;
     if (!cartItems || cartItems.length === 0) {
-        showToast('❌ Your cart is empty', 'error');
+        showToast('❌ ' + t('cart_empty_error', 'Your cart is empty'), 'error');
         return;
     }
 
@@ -1021,7 +1034,7 @@ async function placeOrder(e) {
     const customerId = user?.id || window.getCurrentCustomerId?.() || null;
 
     if (!customerId) {
-        showToast('⚠️ Please login to place an order', 'warning');
+        showToast('⚠️ ' + t('please_login', 'Please login to place an order'), 'warning');
         if (window.STHeader && window.STHeader.openLoginModal) {
             window.STHeader.openLoginModal();
         }
@@ -1057,7 +1070,7 @@ async function placeOrder(e) {
 
     isSubmitting = true;
     elements.placeOrderBtn.disabled = true;
-    elements.placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing Order...';
+    elements.placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + t('placing_order', 'Placing Order...');
 
     try {
         const client = getSupabaseClient();
@@ -1122,17 +1135,17 @@ async function placeOrder(e) {
         elements.orderIdDisplay.textContent = `Order #${orderId}`;
 
         // ✅ FIXED: Use business info in WhatsApp message
-        const orderMessage = `🛒 *Order #${orderId} from ${shopName}*%0A%0A` +
-            `👤 *Customer:* ${name}%0A` +
-            `📧 *Email:* ${email}%0A` +
-            `📱 *Phone:* ${formattedPhone || phoneRaw}%0A` +
-            `📍 *Address:* ${address}%0A` +
-            `💳 *Payment:* ${elements.paymentMethod.options[elements.paymentMethod.selectedIndex]?.text || 'N/A'}%0A` +
-            `📝 *Notes:* ${elements.orderNotes.value.trim() || 'None'}%0A%0A` +
-            `📦 *Items:*%0A• ${cartItems.map(item => 
+        const orderMessage = `🛒 *${t('order', 'Order')} #${orderId} from ${shopName}*%0A%0A` +
+            `👤 *${t('customer', 'Customer')}:* ${name}%0A` +
+            `📧 *${t('email', 'Email')}:* ${email}%0A` +
+            `📱 *${t('phone', 'Phone')}:* ${formattedPhone || phoneRaw}%0A` +
+            `📍 *${t('address', 'Address')}:* ${address}%0A` +
+            `💳 *${t('payment', 'Payment')}:* ${elements.paymentMethod.options[elements.paymentMethod.selectedIndex]?.text || 'N/A'}%0A` +
+            `📝 *${t('notes', 'Notes')}:* ${elements.orderNotes.value.trim() || 'None'}%0A%0A` +
+            `📦 *${t('items', 'Items')}:*%0A• ${cartItems.map(item => 
                 `${item.name || 'Product'} (${item.qty || 1}x) - FCFA ${((item.price || 0) * (item.qty || 1)).toFixed(2)}`
             ).join('%0A• ')}%0A%0A` +
-            `💰 *Total:* FCFA ${orderTotal.toFixed(2)}`;
+            `💰 *${t('total', 'Total')}:* FCFA ${orderTotal.toFixed(2)}`;
 
         // ✅ FIXED: Use business phone for WhatsApp
         const cleanPhone = shopPhone.replace(/\D/g, '');
@@ -1142,11 +1155,11 @@ async function placeOrder(e) {
         cartItems = [];
         orderTotal = 0;
 
-        showToast('✅ Order placed successfully! 🎉');
+        showToast('✅ ' + t('order_placed_success', 'Order placed successfully! 🎉'));
         // --- Trigger in-app + native notification for the placed order ---
         try {
-            const notifTitle = `✅ Order ${orderId} Placed`;
-            const notifText = `Thank you ${name}! Your order ${orderId} totaling FCFA ${orderData.total} has been received.`;
+            const notifTitle = `✅ ${t('order', 'Order')} ${orderId} ${t('placed', 'Placed')}`;
+            const notifText = `${t('thank_you', 'Thank you')} ${name}! ${t('your_order', 'Your order')} ${orderId} ${t('totaling', 'totaling')} FCFA ${orderData.total} ${t('has_been_received', 'has been received.')}`;
             const orderLink = `/orders/?order=${encodeURIComponent(orderId)}`;
 
             if (window.notificationSystem && typeof window.notificationSystem.add === 'function') {
@@ -1168,13 +1181,13 @@ async function placeOrder(e) {
 
     } catch (err) {
         console.error('❌ Error placing order:', err);
-        let errorMessage = 'Failed to place order. Please try again.';
+        let errorMessage = t('order_failed', 'Failed to place order. Please try again.');
         if (err.message) errorMessage = err.message;
         showToast('❌ ' + errorMessage, 'error');
         
         isSubmitting = false;
         elements.placeOrderBtn.disabled = false;
-        elements.placeOrderBtn.innerHTML = '<i class="fas fa-check"></i> Place Order';
+        elements.placeOrderBtn.innerHTML = '<i class="fas fa-check"></i> ' + t('place_order', 'Place Order');
     }
 }
 // ============================================================

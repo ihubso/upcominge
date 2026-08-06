@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Your Wishlist - Sucess Technology</title>
+    <title data-translate="wishlist_page_title">Your Wishlist - Sucess Technology</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -13,12 +13,16 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+      <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
   <script src="/head/header-core.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
 <script src="/head/header-dropdowns.js" defer></script>
 <script src="/head/header-search.js" defer></script>
-  <script src="/head/push-notifications.js" defer></script><script src="/head/header-init.js" defer></script>
+  <script src="/head/push-notifications.js" defer></script>
+  <script src="/head/header-init.js" defer></script>
     <style>
         /* ============================================
            WISHLIST PAGE STYLES (Includes Skeleton)
@@ -738,14 +742,14 @@
         <div class="st-wishlist-header">
             <h1>
                 <i class="fas fa-heart"></i>
-                Your Wishlist
-                <span class="st-wishlist-count" id="stWishlistPageCount">0 items</span>
+                <span data-translate="wishlist_title">Your Wishlist</span>
+                <span class="st-wishlist-count" id="stWishlistPageCount" data-translate="items_count">0 items</span>
             </h1>
             <div class="st-wishlist-actions">
-                <button class="st-btn-clear" id="stClearWishlistBtn">
+                <button class="st-btn-clear" id="stClearWishlistBtn" data-translate="clear_all">
                     <i class="fas fa-trash-alt"></i> Clear All
                 </button>
-                <a href="/product/" class="st-btn-shop">
+                <a href="/product/" class="st-btn-shop" data-translate="browse_products">
                     <i class="fas fa-store"></i> Browse Products
                 </a>
             </div>
@@ -755,6 +759,13 @@
         <div class="st-wishlist-grid" id="stWishlistGrid">
             <!-- Skeleton Loader will be injected here -->
         </div>
+            <section>
+     <div class="related-section">
+            <h2><i class="fas fa-boxes"></i> <span data-translate="related_title">You May Also Like</span></h2>
+            <div id="randomProducts"></div>
+        </div>
+        </section>
+
     </main>
 
     <!-- ============================================
@@ -871,9 +882,9 @@
                 grid.innerHTML = `
                     <div class="st-empty-wishlist">
                         <div class="st-empty-icon"><i class="fas fa-heart"></i></div>
-                        <h2>Your wishlist is empty</h2>
-                        <p>Save your favorite items and come back to them anytime.</p>
-                        <a href="/product/" class="st-btn-shop">
+                        <h2 data-translate="empty_wishlist_title">Your wishlist is empty</h2>
+                        <p data-translate="empty_wishlist_sub">Save your favorite items and come back to them anytime.</p>
+                        <a href="/product/" class="st-btn-shop" data-translate="start_exploring">
                             <i class="fas fa-store"></i> Start Exploring
                         </a>
                     </div>
@@ -893,9 +904,9 @@
                     grid.innerHTML = `
                         <div class="st-empty-wishlist">
                             <div class="st-empty-icon"><i class="fas fa-heart"></i></div>
-                            <h2>Your wishlist is empty</h2>
-                            <p>Save your favorite items and come back to them anytime.</p>
-                            <a href="/product/" class="st-btn-shop">
+                            <h2 data-translate="empty_wishlist_title">Your wishlist is empty</h2>
+                            <p data-translate="empty_wishlist_sub">Save your favorite items and come back to them anytime.</p>
+                            <a href="/product/" class="st-btn-shop" data-translate="start_exploring">
                                 <i class="fas fa-store"></i> Start Exploring
                             </a>
                         </div>
@@ -914,9 +925,9 @@
                     const reviewCount = product.reviewCount || 0;
 
                     let badge = '';
-                    if (isDeal) badge = `<span class="st-card-badge st-deal">🔥 Deal</span>`;
-                    else if (isNew) badge = `<span class="st-card-badge st-new">✨ New</span>`;
-                    else if (isHot) badge = `<span class="st-card-badge st-hot">⚡ Hot</span>`;
+                    if (isDeal) badge = `<span class="st-card-badge st-deal" data-translate="badge_deal">🔥 Deal</span>`;
+                    else if (isNew) badge = `<span class="st-card-badge st-new" data-translate="badge_new">✨ New</span>`;
+                    else if (isHot) badge = `<span class="st-card-badge st-hot" data-translate="badge_hot">⚡ Hot</span>`;
 
                     const starsHtml = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
 
@@ -927,7 +938,7 @@
                                      alt="${product.name || 'Product'}" 
                                      onerror="this.src='https://placehold.co/600x400'">
                                 ${badge}
-                                <button class="st-card-remove" onclick="removeFromWishlist('${product.id}')" title="Remove from wishlist">
+                                <button class="st-card-remove" onclick="removeFromWishlist('${product.id}')" title="Remove from wishlist" data-translate="remove">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
@@ -949,7 +960,7 @@
                                     </div>
                                 ` : ''}
                                 <div class="st-card-actions">
-                                    <a href="/item/?id=${product.id}" class="st-btn-view">
+                                    <a href="/item/?id=${product.id}" class="st-btn-view" data-translate="view_details">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 </div>
@@ -963,9 +974,9 @@
                 grid.innerHTML = `
                     <div class="st-empty-wishlist">
                         <div class="st-empty-icon"><i class="fas fa-exclamation-circle"></i></div>
-                        <h2>Something went wrong</h2>
-                        <p>We couldn't load your wishlist. Please try again later.</p>
-                        <button class="st-btn-shop" onclick="location.reload()">
+                        <h2 data-translate="error_title">Something went wrong</h2>
+                        <p data-translate="error_sub">We couldn't load your wishlist. Please try again later.</p>
+                        <button class="st-btn-shop" onclick="location.reload()" data-translate="retry">
                             <i class="fas fa-sync"></i> Retry
                         </button>
                     </div>
@@ -1162,10 +1173,12 @@
             window.getSupabaseClient = getSupabaseClient;
             window.fetchWishlistFromDB = fetchWishlistFromDB;
             window.saveWishlistToDB = saveWishlistToDB;
+          
            
         });
 
         console.log('✅ Wishlist Page Loaded');
     </script>
+      <script src="/related-products.js" defer></script>
 </body>
 </html>

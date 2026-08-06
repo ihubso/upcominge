@@ -160,11 +160,11 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
     if (!products || products.length === 0) {
         container.innerHTML = `
             <div class="hot-products-header">
-                <h2><i class="fas fa-fire"></i> Hot Products</h2>
-                <a href="/product/?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
+                <h2><i class="fas fa-fire"></i> <span data-translate="hot_products_title">Hot Products</span></h2>
+                <a href="/product/?filter=hot" class="hot-view-all" data-translate="view_all">View All <i class="fas fa-arrow-right"></i></a>
             </div>
             <div style="text-align:center;padding:40px 20px;background:#f8fafc;border-radius:16px;">
-                <p style="color:#94A3B8;font-size:16px;">No hot products available</p>
+                <p style="color:#94A3B8;font-size:16px;" data-translate="no_hot_products">No hot products available</p>
             </div>
         `;
         return;
@@ -177,8 +177,8 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
     // Build the HTML
     let html = `
         <div class="hot-products-header">
-            <h2><i class="fas fa-fire"></i> Hot Products</h2>
-            <a href="/product/?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
+            <h2><i class="fas fa-fire"></i> <span data-translate="hot_products_title">Hot Products</span></h2>
+            <a href="/product/?filter=hot" class="hot-view-all" data-translate="view_all">View All <i class="fas fa-arrow-right"></i></a>
         </div>
         <div class="hot-products-grid">
     `;
@@ -210,7 +210,7 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
              <div onclick="window.location.href='/item/?id=${product.id}'">
                 <div class="hot-product-image">
                     <img src="${image}" alt="${product.name || 'Product'}" loading="lazy" onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'">
-                    ${discountPercent > 0 ? `<span class="hot-product-discount">-${discountPercent}%</span>` : ''}
+                    ${discountPercent > 0 ? `<span class="hot-product-discount" data-translate="discount_percent">-${discountPercent}%</span>` : ''}
                     <button class="hot-product-wishlist ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')" aria-label="Add to wishlist">
                         <i class="fas fa-heart"></i>
                     </button>
@@ -234,7 +234,7 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
                     ` : ''}
                     </div>
                     <div class="hot-product-actions">
-                        <a href="/item/?id=${product.id}" class="hot-btn-view">
+                        <a href="/item/?id=${product.id}" class="hot-btn-view" data-translate="view_details">
                             <i class="fas fa-eye"></i>
                         </a>
                     </div>
@@ -245,6 +245,7 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
 
     html += `</div>`;
     container.innerHTML = html;
+     translateUI();
 }
 
 // ============================================================

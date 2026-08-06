@@ -3,15 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>welcome · Sucess Technology</title>
+  <title data-translate="page_title">welcome · Sucess Technology</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="newshop.css">
+  <script src="head/Translate.js" defer></script>
+  <script src="head/lan.js" defer></script>
 <script src="head/header-core.js" defer></script>
 <script src="head/header-database.js" defer></script>
 <script src="head/header-auth.js" defer></script>
@@ -19,6 +22,8 @@
 <script src="head/header-search.js" defer></script>
   <script src="head/push-notifications.js" defer></script>
 <script src="head/header-init.js" defer></script>
+
+
 
  
 </head>
@@ -31,16 +36,16 @@
             <div class="hero-skeleton-slide">
                 <div class="hero-skeleton-content">
                     <div class="hero-skeleton-text">
-                        <div class="skeleton-badge"></div>
-                        <div class="skeleton-title"></div>
-                        <div class="skeleton-brand"></div>
+                        <div class="skeleton-badge" data-translate="hero_badge">🔥 New Arrival</div>
+                        <div class="skeleton-title" data-translate="hero_title">Next-Gen Smartphone</div>
+                        <div class="skeleton-brand" data-translate="hero_brand">Brand X</div>
                         <div class="skeleton-price">
-                            <div class="skeleton-current-price"></div>
-                            <div class="skeleton-original-price"></div>
-                            <div class="skeleton-discount"></div>
+                            <div class="skeleton-current-price" data-translate="hero_price">$999</div>
+                            <div class="skeleton-original-price" data-translate="hero_original_price">$1,299</div>
+                            <div class="skeleton-discount" data-translate="hero_discount">-23%</div>
                         </div>
-                        <div class="skeleton-description"></div>
-                        <div class="skeleton-btn"></div>
+                        <div class="skeleton-description" data-translate="hero_desc">Experience the future today.</div>
+                        <div class="skeleton-btn" data-translate="hero_btn">Shop Now</div>
                     </div>
                 </div>
             </div>
@@ -53,7 +58,7 @@
         </div>
     </div>
 </div>
-</div>
+</section>
 <section class="best-categories-section">
     <div class="container">
 
@@ -61,16 +66,16 @@
             <div>
                 <span class="section-tag">
                     <i class="fas fa-fire"></i>
-                    Popular Categories
+                    <span data-translate="categories_tag">Popular Categories</span>
                 </span>
 
-                <h2>Shop by Category</h2>
+                <h2 data-translate="categories_title">Shop by Category</h2>
 
-                <p>Explore our best selling departments</p>
+                <p data-translate="categories_sub">Explore our best selling departments</p>
             </div>
 
             <a href="/category/" class="view-all">
-                View All
+                <span data-translate="view_all">View All</span>
                 <i class="fas fa-arrow-right"></i>
             </a>
         </div>
@@ -90,8 +95,8 @@
 </section>
 <section class="deals-section">
     <div class="deals-header">
-        <h2><i class="fas fa-fire"></i> Deals du Jour</h2>
-        <a href="/deals/" class="deals-view-all">Voir Plus →</a>
+        <h2><i class="fas fa-fire"></i> <span data-translate="deals_title">Deals du Jour</span></h2>
+        <a href="/deals/" class="deals-view-all"><span data-translate="deals_view_all">Voir Plus →</span></a>
     </div>
     <div id="dealsContainer"></div>
 </section>
@@ -103,21 +108,23 @@
      data-countdown-hours="48">
 </div>
 </section>
+<section>
      <div class="related-section">
-            <h2><i class="fas fa-boxes"></i> You May Also Like</h2>
+            <h2><i class="fas fa-boxes"></i> <span data-translate="related_title">You May Also Like</span></h2>
             <div id="randomProducts"></div>
         </div>
+        </section>
 
       
 <footer id="support">
   <div>
-    <h4>Products</h4>
-    <p>Phone</p>
-    <p>Tablet</p>
-    <p>Audio</p>
+    <h4 data-translate="footer_products">Products</h4>
+    <p data-translate="footer_phone">Phone</p>
+    <p data-translate="footer_tablet">Tablet</p>
+    <p data-translate="footer_audio">Audio</p>
   </div>
 <div>
-  <h4>📱 Follow Us</h4>
+  <h4 data-translate="footer_follow">📱 Follow Us</h4>
   <div class="flex gap-4 mt-2">
     <a id="facebookLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
       <i class="fab fa-facebook"></i>
@@ -131,15 +138,15 @@
   </div>
 </div>
   <div>
-    <h4>About</h4>
+    <h4 data-translate="footer_about">About</h4>
     <ul class="footer-links">
-      <li class="mobile-nav-item"><a href="AboutUs/index.html">About Us</a></li>
-      <li class="mobile-nav-item"><a href="/contactus">Locate Us</a></li>
-      <li class="mobile-nav-item"><a href="Terms/Terms.html">Terms & Conditions</a></li>
+      <li class="mobile-nav-item"><a href="AboutUs/index.html" data-translate="footer_about_us">About Us</a></li>
+      <li class="mobile-nav-item"><a href="/contactus" data-translate="footer_locate">Locate Us</a></li>
+      <li class="mobile-nav-item"><a href="Terms/Terms.html" data-translate="footer_terms">Terms & Conditions</a></li>
     </ul>
   </div>
   <div>
-    <h4>📞 Contact</h4>
+    <h4 data-translate="footer_contact">📞 Contact</h4>
     <p id="footerEmail"></p>
     <p id="footerPhone"></p>
     <p id="footerAddress"></p>

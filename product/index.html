@@ -8,7 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-     <script src="/head/header-core.js" defer></script>
+     <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
+  <script src="/head/header-core.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
 <script src="/head/header-dropdowns.js" defer></script>
@@ -806,12 +808,12 @@
             <!-- Hero Content -->
             <div class="hero-content" id="heroContent" style="display:none;">
                 <div class="hero-badge">
-                    <i class="fas fa-star"></i> Curated Just For You
+                    <i class="fas fa-star"></i> <span data-translate="curated_for_you">Curated Just For You</span>
                 </div>
                 <h1>
-                    Discover <span class="gradient-text">Your</span> Perfect Picks
+                    <span data-translate="discover">Discover</span> <span class="gradient-text" data-translate="your">Your</span> <span data-translate="perfect_picks">Perfect Picks</span>
                 </h1>
-                <p>
+                <p data-translate="hero_description">
                     Handpicked products from your favorite brands and categories.
                     Personalized recommendations updated daily.
                 </p>
@@ -831,14 +833,14 @@
         <!-- Infinite Scroll Loader -->
         <div class="infinite-loader" id="infiniteLoader">
             <div class="loader-spinner"></div>
-            <p>Loading more recommendations...</p>
+            <p data-translate="loading_recommendations">Loading more recommendations...</p>
         </div>
 
         <!-- End of Results -->
         <div class="end-results" id="endResults" style="display:none;">
             <i class="fas fa-check-circle"></i>
-            <p>You've seen all our recommendations!</p>
-            <p style="font-size:13px;margin-top:4px;">Check back later for new picks.</p>
+            <p data-translate="seen_all">You've seen all our recommendations!</p>
+            <p style="font-size:13px;margin-top:4px;" data-translate="check_back_later">Check back later for new picks.</p>
         </div>
 
     </main>
@@ -847,6 +849,15 @@
          SCRIPTS
          ============================================ -->
     <script>
+
+        // Helper translation function for dynamic content
+        function t(key, fallback) {
+            if (window.Translations && window.Translations.translate) {
+                const result = window.Translations.translate(key);
+                if (result && result !== key) return result;
+            }
+            return fallback || key;
+        }
 
         let allProducts = [];
         let processedProducts = new Set();
@@ -1160,7 +1171,7 @@
             const icon = getGroupIcon(group.name);
             const iconClass = icon.startsWith('fab') ? icon : `fas ${icon}`;
             const isBrand = group.type === 'brand';
-            const typeLabel = isBrand ? 'Brand' : 'Category';
+            const typeLabel = isBrand ? t('brand', 'Brand') : t('category', 'Category');
 
             return `
                 <div class="group-section">
@@ -1170,7 +1181,7 @@
                             <h3>${group.name}</h3>
                             <span style="font-size:12px;color:#94A3B8;font-weight:400;">${typeLabel}</span>
                         </div>
-                        <span class="group-count">${products.length} products</span>
+                        <span class="group-count">${products.length} ${t('products', 'products')}</span>
                     </div>
                     <div class="group-scroll">
                         ${products.map(p => renderProductCard(p)).join('')}
@@ -1193,9 +1204,9 @@
             const image = product.image || 'https://placehold.co/200x200/6C3CE1/FFFFFF?text=Product';
 
             let badge = '';
-            if (isDeal) badge = `<span class="card-badge deal">🔥 Deal</span>`;
-            else if (product.isHot) badge = `<span class="card-badge hot">⚡ Hot</span>`;
-            else if (product.isNew) badge = `<span class="card-badge new">✨ New</span>`;
+            if (isDeal) badge = `<span class="card-badge deal" data-translate="deal">🔥 Deal</span>`;
+            else if (product.isHot) badge = `<span class="card-badge hot" data-translate="hot">⚡ Hot</span>`;
+            else if (product.isNew) badge = `<span class="card-badge new" data-translate="new">✨ New</span>`;
 
             return `
                 <div class="scroll-card" onclick="window.location.href='/item/?product=${product.id}'">
@@ -1276,10 +1287,10 @@
                 const index = wishlist.indexOf(productId);
                 if (index !== -1) {
                     wishlist.splice(index, 1);
-                    showToast('❤️ Removed from wishlist', 'info');
+                    showToast('❤️ ' + t('removed_wishlist', 'Removed from wishlist'), 'info');
                 } else {
                     wishlist.push(productId);
-                    showToast('❤️ Added to wishlist!');
+                    showToast('❤️ ' + t('added_wishlist', 'Added to wishlist!'));
                 }
 
                 localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
@@ -1306,7 +1317,7 @@
 
             } catch (err) {
                 console.error('❌ Wishlist error:', err);
-                showToast('❌ Failed to update wishlist', 'error');
+                showToast('❌ ' + t('wishlist_failed', 'Failed to update wishlist'), 'error');
             }
         }
 
@@ -1344,7 +1355,7 @@
             container.innerHTML = `
                 <div style="text-align:center;padding:60px 20px;grid-column:1/-1;">
                     <div style="width:48px;height:48px;border:4px solid #E2E8F0;border-top-color:#6C3CE1;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
-                    <p style="color:#94A3B8;font-weight:500;">Curating your personalized picks...</p>
+                    <p style="color:#94A3B8;font-weight:500;" data-translate="curating_picks">Curating your personalized picks...</p>
                 </div>
                 <style>
                     @keyframes spin {
@@ -1368,8 +1379,8 @@
                 container.innerHTML = `
                     <div style="text-align:center;padding:60px 20px;grid-column:1/-1;">
                         <i class="fas fa-box-open" style="font-size:48px;color:#E2E8F0;margin-bottom:16px;display:block;"></i>
-                        <h3 style="font-weight:700;font-size:20px;color:#0F172A;">No products available</h3>
-                        <p style="color:#94A3B8;margin-top:4px;">Check back later for personalized recommendations.</p>
+                        <h3 style="font-weight:700;font-size:20px;color:#0F172A;" data-translate="no_products_title">No products available</h3>
+                        <p style="color:#94A3B8;margin-top:4px;" data-translate="no_products_sub">Check back later for personalized recommendations.</p>
                     </div>
                 `;
                 return;

@@ -8,7 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-   <script src="/head/header-core.js" defer></script>
+   <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
+  <script src="/head/header-core.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
 <script src="/head/header-dropdowns.js" defer></script>
@@ -637,15 +639,15 @@
         <div class="st-search-header">
             <h1>
                 <i class="fas fa-search"></i>
-                Search Results for "<span class="st-search-query" id="stSearchQueryDisplay">...</span>"
+                <span data-translate="search_results_for">Search Results for</span> "<span class="st-search-query" id="stSearchQueryDisplay">...</span>"
             </h1>
-            <div class="st-search-meta" id="stSearchMeta">Loading results...</div>
+            <div class="st-search-meta" id="stSearchMeta" data-translate="loading_results">Loading results...</div>
             <div class="st-search-actions">
                 <div class="st-search-input-wrapper">
                     <i class="fas fa-search"></i>
-                    <input type="search" id="stSearchInput" placeholder="Search again..." autocomplete="off" />
+                    <input type="search" id="stSearchInput" placeholder="Search again..." autocomplete="off" data-translate-placeholder="search_again" />
                 </div>
-                <button id="stSearchBtn" style="padding:10px 24px;background:#6C3CE1;color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:inherit;">
+                <button id="stSearchBtn" style="padding:10px 24px;background:#6C3CE1;color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:inherit;" data-translate="search">
                     <i class="fas fa-search"></i> Search
                 </button>
             </div>
@@ -654,25 +656,25 @@
         <!-- Filter & Sort Bar -->
         <div class="st-filter-bar">
             <div class="st-filter-group">
-                <span class="st-filter-label">Filter:</span>
-                <button class="st-filter-chip active" data-filter="all">All</button>
-                <button class="st-filter-chip" data-filter="phone">Phones</button>
-                <button class="st-filter-chip" data-filter="laptop">Laptops</button>
-                <button class="st-filter-chip" data-filter="tablet">Tablets</button>
-                <button class="st-filter-chip" data-filter="audio">Audio</button>
-                <button class="st-filter-chip" data-filter="accessories">Accessories</button>
+                <span class="st-filter-label" data-translate="filter">Filter:</span>
+                <button class="st-filter-chip active" data-filter="all" data-translate="filter_all">All</button>
+                <button class="st-filter-chip" data-filter="phone" data-translate="filter_phones">Phones</button>
+                <button class="st-filter-chip" data-filter="laptop" data-translate="filter_laptops">Laptops</button>
+                <button class="st-filter-chip" data-filter="tablet" data-translate="filter_tablets">Tablets</button>
+                <button class="st-filter-chip" data-filter="audio" data-translate="filter_audio">Audio</button>
+                <button class="st-filter-chip" data-filter="accessories" data-translate="filter_accessories">Accessories</button>
             </div>
             <div class="st-filter-group">
-                <span class="st-filter-label">Sort:</span>
+                <span class="st-filter-label" data-translate="sort">Sort:</span>
                 <select id="stSortSelect">
-                    <option value="relevance">Relevance</option>
-                    <option value="price_asc">Price: Low to High</option>
-                    <option value="price_desc">Price: High to Low</option>
-                    <option value="newest">Newest First</option>
-                    <option value="rating">Highest Rated</option>
+                    <option value="relevance" data-translate="sort_relevance">Relevance</option>
+                    <option value="price_asc" data-translate="sort_price_asc">Price: Low to High</option>
+                    <option value="price_desc" data-translate="sort_price_desc">Price: High to Low</option>
+                    <option value="newest" data-translate="sort_newest">Newest First</option>
+                    <option value="rating" data-translate="sort_rating">Highest Rated</option>
                 </select>
             </div>
-            <div class="st-result-count" id="stResultCount">0 products</div>
+            <div class="st-result-count" id="stResultCount" data-translate="products_count">0 products</div>
         </div>
 
         <!-- Products Grid -->
@@ -680,13 +682,13 @@
             <!-- Loading State -->
             <div class="st-loading" id="stLoading">
                 <div class="st-spinner"></div>
-                <span style="color:#94A3B8;font-weight:500;">Searching for products...</span>
+                <span style="color:#94A3B8;font-weight:500;" data-translate="searching_products">Searching for products...</span>
             </div>
         </div>
 
         <!-- Load More -->
         <div class="st-load-more" id="stLoadMore" style="display:none;">
-            <button id="stLoadMoreBtn">
+            <button id="stLoadMoreBtn" data-translate="load_more">
                 <i class="fas fa-chevron-down"></i> Load More
             </button>
         </div>
@@ -696,6 +698,15 @@
          SCRIPTS
          ============================================ -->
     <script>
+        // Helper translation function for dynamic content
+        function t(key, fallback) {
+            if (window.Translations && window.Translations.translate) {
+                const result = window.Translations.translate(key);
+                if (result && result !== key) return result;
+            }
+            return fallback || key;
+        }
+
         // --- State ---
         let allProducts = [];
         let filteredProducts = [];
@@ -833,18 +844,19 @@
                     grid.innerHTML = `
                         <div class="st-empty-state">
                             <div class="st-empty-icon"><i class="fas fa-search"></i></div>
-                            <h2>No products found</h2>
-                            <p>We couldn't find any products matching "<strong>${currentQuery}</strong>"</p>
+                            <h2 data-translate="no_products_found">No products found</h2>
+                            <p data-translate="no_products_message">We couldn't find any products matching "<strong>${currentQuery}</strong>"</p>
                             <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-                                <a href="/product/" class="st-btn-shop">
+                                <a href="/product/" class="st-btn-shop" data-translate="browse_all">
                                     <i class="fas fa-store"></i> Browse All Products
                                 </a>
-                                <button onclick="clearSearch()" class="st-btn-shop" style="background:#94A3B8;box-shadow:none;">
+                                <button onclick="clearSearch()" class="st-btn-shop" style="background:#94A3B8;box-shadow:none;" data-translate="clear_search">
                                     <i class="fas fa-undo"></i> Clear Search
                                 </button>
                             </div>
                         </div>
                     `;
+                  
                 }
                 return;
             }
@@ -856,9 +868,9 @@
                 const isNew = product.isNew || false;
 
                 let badge = '';
-                if (isDeal) badge = `<span class="st-product-badge deal">🔥 Deal</span>`;
-                else if (isHot) badge = `<span class="st-product-badge hot">⚡ Hot</span>`;
-                else if (isNew) badge = `<span class="st-product-badge new">✨ New</span>`;
+                if (isDeal) badge = `<span class="st-product-badge deal" data-translate="badge_deal">🔥 Deal</span>`;
+                else if (isHot) badge = `<span class="st-product-badge hot" data-translate="badge_hot">⚡ Hot</span>`;
+                else if (isNew) badge = `<span class="st-product-badge new" data-translate="badge_new">✨ New</span>`;
 
                 const image = product.image || 'https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product';
                 const rating = product.rating || 0;
@@ -951,21 +963,23 @@
                 if (append) {
                     allProducts = [...allProducts, ...filtered];
                     renderProducts(filtered, true);
+                      translateUI();
                 } else {
                     allProducts = filtered;
                     renderProducts(filtered);
+                      translateUI();
                 }
 
                 // Update UI
                 const totalDisplay = currentFilter !== 'all' ? filtered.length : total;
-                elements.resultCount.textContent = `${totalDisplay} product${totalDisplay !== 1 ? 's' : ''}`;
-                elements.searchMeta.textContent = `Found ${totalDisplay} results for "${query}"`;
+                elements.resultCount.textContent = `${totalDisplay} ${t('product', 'product')}${totalDisplay !== 1 ? 's' : ''}`;
+                elements.searchMeta.textContent = `${t('found_results', 'Found')} ${totalDisplay} ${t('results_for', 'results for')} "${query}"`;
 
                 // Update load more
                 hasMore = (page * perPage) < total;
                 if (hasMore && filtered.length > 0) {
                     elements.loadMore.style.display = 'block';
-                    elements.loadMoreBtn.innerHTML = `<i class="fas fa-chevron-down"></i> Load More`;
+                    elements.loadMoreBtn.innerHTML = `<i class="fas fa-chevron-down"></i> ${t('load_more', 'Load More')}`;
                     elements.loadMoreBtn.disabled = false;
                 } else {
                     elements.loadMore.style.display = 'none';
@@ -975,7 +989,7 @@
 
             } catch (err) {
                 console.error('❌ Search error:', err);
-                showToast('Failed to search products', 'error');
+                showToast(t('search_failed', 'Failed to search products'), 'error');
             } finally {
                 isLoading = false;
                 elements.loading.style.display = 'none';
@@ -1020,10 +1034,10 @@
                 const index = wishlist.indexOf(productId);
                 if (index !== -1) {
                     wishlist.splice(index, 1);
-                    showToast('❤️ Removed from wishlist', 'info');
+                    showToast('❤️ ' + t('removed_wishlist', 'Removed from wishlist'), 'info');
                 } else {
                     wishlist.push(productId);
-                    showToast('❤️ Added to wishlist!');
+                    showToast('❤️ ' + t('added_wishlist', 'Added to wishlist!'));
                 }
 
                 localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
@@ -1047,7 +1061,7 @@
 
             } catch (err) {
                 console.error('❌ Wishlist error:', err);
-                showToast('❌ Failed to update wishlist', 'error');
+                showToast('❌ ' + t('wishlist_failed', 'Failed to update wishlist'), 'error');
             }
         }
 
@@ -1070,8 +1084,8 @@
             if (!currentQuery) {
                 // No query, show all products
                 currentQuery = '';
-                elements.queryDisplay.textContent = 'All Products';
-                elements.searchMeta.textContent = 'Showing all products';
+                elements.queryDisplay.textContent = t('all_products', 'All Products');
+                elements.searchMeta.textContent = t('showing_all', 'Showing all products');
             } else {
                 elements.queryDisplay.textContent = currentQuery;
             }
@@ -1132,14 +1146,14 @@
                     renderProducts(sortProducts(filtered, currentSort));
                     
                     // Update count
-                    elements.resultCount.textContent = `${filtered.length} product${filtered.length !== 1 ? 's' : ''}`;
+                    elements.resultCount.textContent = `${filtered.length} ${t('product', 'product')}${filtered.length !== 1 ? 's' : ''}`;
                 });
             });
 
             // Load more
             elements.loadMoreBtn.addEventListener('click', function() {
                 if (!isLoading && hasMore) {
-                    this.innerHTML = `<span class="st-loader-small"></span> Loading...`;
+                    this.innerHTML = `<span class="st-loader-small"></span> ${t('loading', 'Loading...')}`;
                     this.disabled = true;
                     performSearch(currentQuery, currentPage + 1, true);
                 }
@@ -1152,6 +1166,7 @@
                     if (originalUpdate) originalUpdate();
                     loadWishlist();
                     renderProducts(allProducts);
+                      translateUI();
                 };
             }
 
@@ -1164,7 +1179,7 @@
         //  EXPOSE GLOBALLY
         // ============================================================
 
-    
+     
         window.toggleWishlist = toggleWishlist;
         window.clearSearch = clearSearch;
         window.performSearch = performSearch;

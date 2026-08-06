@@ -1823,18 +1823,18 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                     <ul class="st-nav-list">
                         ${HEADER_CONFIG.navLinks.map(link => `
                             <li class="st-nav-item">
-                                <a href="${link.href}" class="st-nav-link ${link.dropdown ? 'has-dropdown' : ''}">
+                                <a href="${link.href}" class="st-nav-link ${link.dropdown ? 'has-dropdown' : ''}" data-translate="${link['data-translate'] || ''}">
                                     <i class="fas ${link.icon}"></i> ${link.label}
                                 </a>
                                 ${link.dropdown ? `
                                     <div class="st-dropdown" id="stDropdown_${link.dropdownType || 'products'}">
                                         <div class="st-dropdown-header">
-                                            <h3>${link.label}</h3>
-                                            <a href="${link.href}" class="st-view-all">View All →</a>
+                                            <h3 data-translate="${link['data-translate'] || ''}">${link.label}</h3>
+                                            <a href="${link.href}" class="st-view-all" data-translate="view_all">View All →</a>
                                         </div>
                                         <div class="st-dropdown-grid" id="stDropdownGrid_${link.dropdownType || 'products'}">
                                             <!-- Will be populated dynamically -->
-                                            <div class="st-dropdown-empty">Loading...</div>
+                                            <div class="st-dropdown-empty" data-translate="loading">Loading...</div>
                                         </div>
                                     </div>
                                 ` : ''}
@@ -1851,7 +1851,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
 
                         <i class="fas fa-search st-search-icon"></i>
                         <input name="query" type="search" class="st-search-input" id="stSearchInput" 
-                               placeholder="Search..." autocomplete="off">
+                               placeholder="Search..." autocomplete="off" data-translate-placeholder="search_placeholder">
                     </div>
                      </div>
                     
@@ -1878,36 +1878,36 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                         <div class="st-account-dropdown" id="stAccountDropdown">
                             <div class="st-account-dropdown-header">
                                 <div class="st-avatar-large" id="stDropdownAvatar">G</div>
-                                <div class="st-name" id="stDropdownName">Guest</div>
+                                <div class="st-name" id="stDropdownName" data-translate="guest">Guest</div>
                                 <div class="st-email" id="stDropdownEmail"></div>
                             </div>
                             <div style="padding-top:12px;">
                                 <button class="st-account-dropdown-item" id="stMyOrdersBtn">
-                                    <i class="fas fa-shopping-bag"></i> My Orders
+                                    <i class="fas fa-shopping-bag"></i> <span data-translate="my_orders">My Orders</span>
                                 </button>
                                 <button class="st-account-dropdown-item" id="stSettingsBtn">
-                                    <i class="fas fa-cog"></i> Settings
+                                    <i class="fas fa-cog"></i> <span data-translate="settings">Settings</span>
                                 </button>
-                                <button class="st-account-dropdown-item danger" id="stLogoutBtn" style="display:none;">
-                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                <button class="st-account-dropdown-item danger" id="stLogoutBtn" style="display:none;" >
+                                    <i class="fas fa-sign-out-alt"></i> <span data-translate="logout">Logout</span>
                                 </button>
-                                <button class="st-account-dropdown-item" id="stAboutUsBtn" onclick="window.location.href='/AboutUs'">
-                                    <i class="fa fa-info-circle"></i> About Us
+                                <button class="st-account-dropdown-item" id="stAboutUsBtn" onclick="window.location.href='/AboutUs'" >
+                                    <i class="fa fa-info-circle"></i> <span data-translate="about_us">About Us</span>
                                 </button>
                                 <button class="st-account-dropdown-item" id="stTermsBtn" onclick="window.location.href='/Terms'">
-                                    <i class="fa fa-file-text"></i> Terms & Conditions
+                                    <i class="fa fa-file-text"></i> <span data-translate="terms">Terms & Conditions</span>
                                 </button>
                                 <button class="st-account-dropdown-item" id="stContactBtn" onclick="window.location.href='/contactus'">
-                                    <i class="fa fa-map-marker"></i> Locate Us
+                                    <i class="fa fa-map-marker"></i> <span data-translate="locate_us">Locate Us</span>
                                 </button>
                             </div>
 
                             <div id="stAuthButtons" style="padding-top:12px;border-top:1px solid var(--st-gray-light);margin-top:4px;">
                                 <button class="st-account-dropdown-item" id="stLoginBtn">
-                                    <i class="fas fa-sign-in-alt"></i> Login
+                                    <i class="fas fa-sign-in-alt"></i> <span data-translate="login">Login</span>
                                 </button>
                                 <button class="st-account-dropdown-item" id="stRegisterBtn">
-                                    <i class="fas fa-user-plus"></i> Register
+                                    <i class="fas fa-user-plus"></i> <span data-translate="register">Register</span>
                                 </button>
                             </div>
 
@@ -1927,7 +1927,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                 <div class="st-search-wrapper">
                     <i class="fas fa-search st-search-icon"></i>
                     <input type="search" class="st-search-input" id="stMobileSearchInput" 
-                        placeholder="Search..." autocomplete="off" readonly="readonly">
+                        placeholder="Search..." autocomplete="off" readonly="readonly" data-translate-placeholder="search_placeholder">
                 </div>
                 <span class="st-icon-wrap" id="stMobileNotificationBtn"">
                     <i class="fas fa-bell"></i>
@@ -1945,16 +1945,16 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
              ============================================ -->
         <nav class="st-mobile-bottom-nav" id="stMobileBottomNav">
             <div class="st-nav-items">
-                <a href="/index.html" class="st-nav-item active">
+                <a href="/index.html" class="st-nav-item active" >
                     <span class="st-icon-wrap"><i class="fas fa-home"></i></span>
-                    <span class="st-label">Home</span>
+                    <span class="st-label"data-translate="home">Home</span>
                 </a>
                 
-                <button class="st-nav-item" id="stForyouMobileWishlistBtn">
+                <button class="st-nav-item" id="stForyouMobileWishlistBtn" >
                     <span class="st-icon-wrap">
                         <i class="fas fa-heart"></i>
                     </span>
-                    <span class="st-label">for you</span>
+                    <span class="st-label"data-translate="for_you">for you</span>
                 </button>
                 
                 <button class="st-nav-item" id="stMobileCartBtn">
@@ -1962,7 +1962,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                         <i class="fas fa-shopping-bag"></i>
                         <span class="st-badge" id="stMobileCartCount">0</span>
                     </span>
-                    <span class="st-label">Cart</span>
+                    <span class="st-label" data-translate="cart">Cart</span>
                 </button>
                 
                 <button class="st-nav-item" id="stMobileAccountBtn">
@@ -1991,20 +1991,23 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                     ${HEADER_CONFIG.navLinks.map(link => `
                         <li class="st-mobile-nav-item">
                             <a href="${link.href}" class="st-mobile-nav-link">
-                                <i class="fas ${link.icon}"></i> ${link.label}
+                                <i class="fas ${link.icon}"></i> <span data-translate="${link['data-translate'] || ''}">${link.label}</span>
                             </a>
                         </li>
                     `).join('')}
                     <li class="st-mobile-nav-item">
-                        <a href="/AboutUs" class="st-mobile-nav-link">
-                            <i class="fas fa-info-circle"></i> About Us
-                        </a>
+                        <button onclick="window.location.href='/AboutUs'" class="btn btn-primary st-mobile-nav-btn">
+                            <i class="fas fa-info-circle"></i> 
+                            <span data-translate="about_us">About Us</span>
+                        </button>
                     </li>
                     <li class="st-mobile-nav-item">
-                        <a href="/Terms" class="st-mobile-nav-link">
-                            <i class="fas fa-file-contract"></i> Terms
-                        </a>
+                        <button onclick="window.location.href='/Terms'" class="btn btn-primary st-mobile-nav-btn">
+                            <i class="fas fa-file-contract"></i> 
+                            <span data-translate="terms">Terms & Conditions</span>
+                        </button>
                     </li>
+
                 </ul>
                 <div style="padding-top:16px;border-top:1px solid var(--st-gray-light);">
                     <button class="st-nav-item" id="stMobileWishlistBtn">
@@ -2012,27 +2015,27 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                             <i class="fas fa-heart"></i>
                             <span class="st-badge" id="stMobileWishlistCount">0</span>
                         </span>
-                        <span class="st-label">Wishlist</span>
+                        <span class="st-label" data-translate="wishlist">Wishlist</span>
                     </button>
                 <button class="st-account-dropdown-item" id="andstMyOrdersBtn">
-                    <i class="fas fa-shopping-bag"></i> My Orders
+                    <i class="fas fa-shopping-bag"></i> <span data-translate="my_orders">My Orders</span>
                 </button>
                 <button class="st-account-dropdown-item" id="andstSettingsBtn">
-                <i class="fas fa-cog"></i> Settings
+                <i class="fas fa-cog"></i> <span data-translate="settings">Settings</span>
                 </button>
                 </div>
 
                 <div id="stLogoutactt" style="padding-top:16px;border-top:1px solid var(--st-gray-light);">
                     <button class="st-mobile-nav-link" id="stMobileLoginBtn">
-                        <i class="fas fa-sign-in-alt"></i> Login
+                        <i class="fas fa-sign-in-alt"></i> <span data-translate="login">Login</span>
                     </button>
                     <button class="st-mobile-nav-link" id="stMobileRegisterBtn">
-                        <i class="fas fa-user-plus"></i> Register
-                    </button>
+                        <i class="fas fa-user-plus"></i>  <span data-translate="register">Register</span>
+                     </button>
                 </div>
                 <div style="padding-top:16px;border-top:1px solid var(--st-gray-light);">
                     <button class="st-account-dropdown-item danger" id="stAndroidLogout" style="display:none;">
-                    <i class="fas fa-sign-out-alt"></i> Logout
+                    <i class="fas fa-sign-out-alt"></i> <span data-translate="logout">Logout</span>
                     </button>
                 </div>
 
@@ -2042,7 +2045,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
         <div class="st-notification-overlay" id="stNotificationOverlay"></div>
         <div class="st-notification-modal" id="stNotificationModal">
             <div class="modal-header">
-                <h2><i class="fas fa-bell"></i> Notifications</h2>
+                <h2 data-translate="notifications_title"><i class="fas fa-bell"></i> Notifications</h2>
                 <button class="close-btn" id="stNotificationClose">&times;</button>
             </div>
             <div class="modal-body" id="stNotificationBody">
@@ -2060,68 +2063,68 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                 <!-- Login Form -->
                 <div id="stLoginForm">
                     <div class="st-modal-icon"><i class="fas fa-sign-in-alt"></i></div>
-                    <h2 class="st-modal-title">Welcome Back</h2>
-                    <p class="st-modal-subtitle">Login to your account</p>
+                    <h2 class="st-modal-title" data-translate="welcome_back">Welcome Back</h2>
+                    <p class="st-modal-subtitle" data-translate="login_subtitle">Login to your account</p>
                     
                     <div class="st-form-group">
-                        <label class="st-form-label">Email Address</label>
+                        <label class="st-form-label" data-translate="email_address">Email Address</label>
                         <input type="email" class="st-form-input" id="stLoginEmail" 
-                               placeholder="you@example.com">
-                        <div class="st-form-error" id="stLoginEmailError">Please enter a valid email</div>
+                               placeholder="you@example.com" data-translate-placeholder="email_placeholder">
+                        <div class="st-form-error" id="stLoginEmailError" data-translate="email_error">Please enter a valid email</div>
                     </div>
                     
                     <div class="st-form-group">
-                        <label class="st-form-label">Password</label>
+                        <label class="st-form-label" data-translate="password">Password</label>
                         <input type="password" class="st-form-input" id="stLoginPassword" 
-                               placeholder="Enter your password">
-                        <div class="st-form-error" id="stLoginPasswordError">Password is required</div>
+                               placeholder="Enter your password" data-translate-placeholder="password_placeholder">
+                        <div class="st-form-error" id="stLoginPasswordError" data-translate="password_error">Password is required</div>
                     </div>
                     
                     <div class="st-form-group" style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
                         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
                             <input type="checkbox" id="stLoginRemember" style="width:16px;height:16px;margin:0;"> 
-                            <span style="font-size:14px;color:var(--st-gray);">Remember me</span>
+                            <span style="font-size:14px;color:var(--st-gray);" data-translate="remember_me">Remember me</span>
                         </label>
                     </div>
 
-                    <button class="st-btn-primary" id="stLoginSubmit">Login</button>
+                    <button class="st-btn-primary" id="stLoginSubmit" data-translate="login">Login</button>
                     
                     <div class="st-modal-footer">
-                        Don't have an account? <button class="st-link" id="stSwitchToRegister">Register</button>
+                        <span data-translate="no_account">Don't have an account?</span> <button class="st-link" id="stSwitchToRegister" data-translate="register">Register</button>
                     </div>
                 </div>
                 
                 <!-- Register Form -->
                 <div id="stRegisterForm" style="display:none;">
                     <div class="st-modal-icon"><i class="fas fa-user-plus"></i></div>
-                    <h2 class="st-modal-title">Create Account</h2>
-                    <p class="st-modal-subtitle">Join Success Technology</p>
+                    <h2 class="st-modal-title" data-translate="create_account">Create Account</h2>
+                    <p class="st-modal-subtitle" data-translate="join_subtitle">Join Success Technology</p>
                     
                     <!-- Full Name -->
                     <div class="st-form-group">
-                        <label class="st-form-label">Full Name <span style="color:#EF4444;">*</span></label>
+                        <label class="st-form-label" data-translate="full_name">Full Name <span style="color:#EF4444;">*</span></label>
                         <input type="text" class="st-form-input" id="stRegisterName" 
-                            placeholder="John Doe" required>
-                        <div class="st-form-error" id="stRegisterNameError">Name is required</div>
+                            placeholder="John Doe" required data-translate-placeholder="name_placeholder">
+                        <div class="st-form-error" id="stRegisterNameError" data-translate="name_error">Name is required</div>
                     </div>
                     
                     <!-- Email Address -->
                     <div class="st-form-group">
-                        <label class="st-form-label">Email Address <span style="color:#EF4444;">*</span></label>
+                        <label class="st-form-label" data-translate="email_address">Email Address <span style="color:#EF4444;">*</span></label>
                         <input type="email" class="st-form-input" id="stRegisterEmail" 
-                            placeholder="you@example.com" required>
-                        <div class="st-form-error" id="stRegisterEmailError">Please enter a valid email</div>
+                            placeholder="you@example.com" required data-translate-placeholder="email_placeholder">
+                        <div class="st-form-error" id="stRegisterEmailError" data-translate="email_error">Please enter a valid email</div>
                     </div>
                     
                     <!-- Password -->
                     <div class="st-form-group">
-                        <label class="st-form-label">Password <span style="color:#EF4444;">*</span></label>
+                        <label class="st-form-label" data-translate="password">Password <span style="color:#EF4444;">*</span></label>
                         <input type="password" class="st-form-input" id="stRegisterPassword" 
-                            placeholder="Min 6 characters" required>
+                            placeholder="Min 6 characters" required data-translate-placeholder="password_placeholder">
                         <div class="st-form-help" style="font-size:12px;color:#94A3B8;margin-top:4px;">
-                            <i class="fas fa-info-circle"></i> Password must be at least 6 characters
+                            <i class="fas fa-info-circle"></i> <span data-translate="password_help">Password must be at least 6 characters</span>
                         </div>
-                        <div class="st-form-error" id="stRegisterPasswordError">Password must be at least 6 characters</div>
+                        <div class="st-form-error" id="stRegisterPasswordError" data-translate="password_error">Password must be at least 6 characters</div>
                     </div>
 
                     <!-- ============================================
@@ -2130,7 +2133,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                     
                     <!-- Phone Number -->
                     <div class="st-form-group">
-                        <label class="st-form-label">Phone Number</label>
+                        <label class="st-form-label" data-translate="phone_number">Phone Number</label>
                         <div style="display:flex;gap:8px;align-items:center;">
                             <select class="st-form-input" id="stRegisterCountryCode" 
                                     style="width:100px;flex-shrink:0;padding:12px 8px;">
@@ -2322,30 +2325,30 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                                 <option value="+998">🇺🇿 +998</option>
                             </select>
                             <input type="tel" class="st-form-input" id="stRegisterPhone" 
-                                placeholder="6XX XXX XXX" style="flex:1;">
+                                placeholder="6XX XXX XXX" style="flex:1;" data-translate-placeholder="phone_placeholder">
                         </div>
                         <div class="st-form-help" style="font-size:12px;color:#94A3B8;margin-top:4px;">
-                            <i class="fas fa-info-circle"></i> We'll use this to contact you about your orders
+                            <i class="fas fa-info-circle"></i> <span data-translate="phone_help">We'll use this to contact you about your orders</span>
                         </div>
-                        <div class="st-form-error" id="stRegisterPhoneError">Please enter a valid phone number</div>
+                        <div class="st-form-error" id="stRegisterPhoneError" data-translate="phone_error">Please enter a valid phone number</div>
                     </div>
 
                     <!-- Address -->
                     <div class="st-form-group">
-                        <label class="st-form-label">Delivery Address</label>
+                        <label class="st-form-label" data-translate="delivery_address">Delivery Address</label>
                         <input type="text" class="st-form-input" id="stRegisterAddress" 
-                            placeholder="123 Main St, City, Country">
+                            placeholder="123 Main St, City, Country" data-translate-placeholder="address_placeholder">
                         <div class="st-form-help" style="font-size:12px;color:#94A3B8;margin-top:4px;">
-                            <i class="fas fa-info-circle"></i> Your default delivery address
+                            <i class="fas fa-info-circle"></i> <span data-translate="address_help">Your default delivery address</span>
                         </div>
-                        <div class="st-form-error" id="stRegisterAddressError">Please enter your address</div>
+                        <div class="st-form-error" id="stRegisterAddressError" data-translate="address_error">Please enter your address</div>
                     </div>
 
                     <!-- Country / Region (Optional - can be auto-detected) -->
                     <div class="st-form-group">
-                        <label class="st-form-label">Country / Region</label>
+                        <label class="st-form-label" data-translate="country_region">Country / Region</label>
                         <select class="st-form-input" id="stRegisterCountry">
-                            <option value="">Select your country</option>
+                            <option value="" data-translate="select_country">Select your country</option>
                             <option value="Cameroon">🇨🇲 Cameroon</option>
                             <option value="Côte d'Ivoire">🇨🇮 Côte d'Ivoire</option>
                             <option value="Nigeria">🇳🇬 Nigeria</option>
@@ -2421,27 +2424,27 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                             <option value="Eritrea">🇪🇷 Eritrea</option>
                         </select>
                         <div class="st-form-help" style="font-size:12px;color:#94A3B8;margin-top:4px;">
-                            <i class="fas fa-info-circle"></i> Select your country for shipping and currency
+                            <i class="fas fa-info-circle"></i> <span data-translate="country_help">Select your country for shipping and currency</span>
                         </div>
-                        <div class="st-form-error" id="stRegisterCountryError">Please select your country</div>
+                        <div class="st-form-error" id="stRegisterCountryError" data-translate="country_error">Please select your country</div>
                     </div>
                     
                     <!-- Terms & Conditions -->
                         <div class="st-form-group" style="margin-top:8px;">
                             <label style="display:flex;align-items:flex-start;gap:10px;font-weight:500;font-size:14px;color:#1E293B;cursor:pointer;">
                                 <input type="checkbox" id="stRegisterTerms" required style="margin-top:3px;width:18px;height:18px;accent-color:#6C3CE1;">
-                                <span>I agree to the <a href="/terms" target="_blank" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Terms of Service</a> and <a href="/Policy" target="_blank" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Privacy Policy</a>.</span>
+                                <span data-translate="terms_agree">I agree to the <a href="/terms" target="_blank" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Terms of Service</a> and <a href="/Policy" target="_blank" style="color:#6C3CE1;text-decoration:underline;font-weight:600;">Privacy Policy</a>.</span>
                             </label>
-                            <div class="st-form-error" id="stRegisterTermsError">You must agree to the terms to create an account</div>
+                            <div class="st-form-error" id="stRegisterTermsError" data-translate="terms_error">You must agree to the terms to create an account</div>
                         </div>
                     
                     <!-- Submit Button -->
-                    <button class="st-btn-primary" id="stRegisterSubmit">
+                    <button class="st-btn-primary" id="stRegisterSubmit" data-translate="create_account">
                         <i class="fas fa-user-plus"></i> Create Account
                     </button>
                     
                     <div class="st-modal-footer">
-                        Already have an account? <button class="st-link" id="stSwitchToLogin">Login</button>
+                       <span data-translate="have_account">Already have an account?</span> <button class="st-link" id="stSwitchToLogin" data-translate="login">Login</button>
                     </div>
                 </div>
             </div>

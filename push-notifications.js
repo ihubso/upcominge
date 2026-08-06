@@ -1,23 +1,65 @@
-
+// push-notifications.js - Fixed & Optimized Version
+const VAPID_CONFIG = {
+    publicKey: 'BI-tM9VQcqAeco67R9VhA9TxByJyFjPgcMcqS_dhfOsve-BcVA5G_0fQIK9uVcECs_sbqnUGWOa1t5kFs-94FRg',
+    privateKey: 'Y0tevI6hf8uyKQr1rqOzXjTOGTBKT4Fz_VV9jnYrlOs',
+    email: 'austinlebechi02@gmail.com',
+    supabase: {
+        url: 'https://bulprhgwuwatzobiojwz.supabase.co',
+        anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHByaGd3dXdhdHpvYmlvand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDczNDksImV4cCI6MjA5MjA4MzM0OX0.2fcHrGX7iXw5G9nGRNkBy70W1Ex_om1C0v3qbryPmvw'
+    }
+};
 class PushNotificationManager {
     constructor() {
         this.swRegistration = null;
         this.subscription = null;
         this.isSubscribed = false;
         this.vapidPublicKey = VAPID_CONFIG.publicKey;
-        this.supabase = getSupabase();
-        this.userId = this.getUserId();
+        this.supabase = null;
+        this.userId = null;
         this.initialized = false;
+        this.maxRetries = 3;
     }
     
     getUserId() {
-        // Get or create a user ID
-        let userId = localStorage.getItem('push_user_id');
-        if (!userId) {
-            userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('push_user_id', userId);
+        if (typeof AppState !== 'undefined' && AppState.user?.id) {
+            return AppState.user.id;
         }
-        return userId;
+        try {
+            const stored = localStorage.getItem('st_customer') || sessionStorage.getItem('st_customer');
+            if (stored) {
+                const user = JSON.parse(stored);
+                if (user?.id) return user.id;
+            }
+        } catch (e) {}
+        
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const userId = params.get('user_id');
+            if (userId && userId !== 'null') return userId;
+        } catch (e) {}
+        
+        return null;
+    }
+    
+    getSupabaseClient() {
+        if (this.supabase) return this.supabase;
+        try {
+            if (typeof getSupabaseClient === 'function') {
+                this.supabase = getSupabaseClient();
+                return this.supabase;
+            }
+            if (typeof supabase !== 'undefined' && supabase.createClient) {
+                this.supabase = supabase.createClient(
+                    VAPID_CONFIG.supabase.url,
+                    VAPID_CONFIG.supabase.anonKey
+                );
+                return this.supabase;
+            }
+            return null;
+        } catch (error) {
+            console.error('❌ Error getting Supabase client:', error);
+            return null;
+        }
     }
     
     async init() {
@@ -26,314 +68,241 @@ class PushNotificationManager {
         try {
             console.log('🔔 Initializing Push Notification Manager...');
             
-            // Check if browser supports notifications
-            if (!('Notification' in window)) {
-                console.warn('⚠️ This browser does not support notifications');
+            if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+                console.warn('⚠️ Push notifications are not supported in this browser environment.');
                 return false;
             }
             
-            // Check if service workers are supported
-            if (!('serviceWorker' in navigator)) {
-                console.warn('⚠️ Service workers not supported');
-                return false;
-            }
+            this.userId = this.getUserId();
+            this.supabase = this.getSupabaseClient();
             
-            // Check if push is supported
-            if (!('PushManager' in window)) {
-                console.warn('⚠️ Push notifications not supported');
-                return false;
-            }
-            
-            // Register service worker
             await this.registerServiceWorker();
             
-            // Get permission
-            const permission = await this.getPermission();
-            if (permission !== 'granted') {
-                console.warn('⚠️ Notification permission not granted');
-                return false;
+            const permission = Notification.permission;
+            console.log(`📋 Notification permission state: ${permission}`);
+            
+            if (permission === 'granted') {
+                await this.subscribeToPush();
+                await this.loadSubscriptionFromServer();
+                this.initialized = true;
+                console.log('✅ Push Notification Manager initialized');
+            } else if (permission === 'denied') {
+                // Browser blocks re-requesting native prompt when denied; show custom guidance UI
+                this.showPermissionDeniedPrompt();
+            } else {
+                // Default state - render custom banner to handle user-gesture requirement
+                this.showPermissionRequestPrompt();
             }
             
-            // Subscribe to push
-            await this.subscribeToPush();
-            
-            // Load existing subscription from server
-            await this.loadSubscriptionFromServer();
-            
-            // Setup listeners
             this.setupListeners();
-            
-            this.initialized = true;
-            console.log('✅ Push Notification Manager initialized');
             return true;
-            
         } catch (error) {
             console.error('❌ Error initializing push notifications:', error);
             return false;
         }
     }
+
+    showPermissionDeniedPrompt() {
+        if (document.getElementById('stNotificationPrompt')) return;
+        
+        const promptHTML = `
+            <div id="stNotificationPrompt" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1E293B; color: white; padding: 20px 24px; border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.3); z-index: 99999; max-width: 400px; width: 90%; text-align: center; font-family: sans-serif;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                    <div style="font-size: 32px;">🔔</div>
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Notifications Blocked</h3>
+                    <p style="margin: 0; font-size: 14px; color: #94A3B8; line-height: 1.5;">
+                        Notifications are blocked in your browser settings. Click the lock/gear icon near the URL bar to enable notifications for this site.
+                    </p>
+                    <button onclick="document.getElementById('stNotificationPrompt').remove()" style="padding: 10px 20px; background: #6C3CE1; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
+                        Got It
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', promptHTML);
+    }
     
-    async registerServiceWorker() {
+    showPermissionRequestPrompt() {
+        if (document.getElementById('stNotificationPrompt')) return;
+        
+        const promptHTML = `
+            <div id="stNotificationPrompt" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1E293B; color: white; padding: 20px 24px; border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.3); z-index: 99999; max-width: 400px; width: 90%; text-align: center; font-family: sans-serif;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                    <div style="font-size: 32px;">🔔</div>
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Get Order Updates</h3>
+                    <p style="margin: 0; font-size: 14px; color: #94A3B8; line-height: 1.5;">
+                        Receive real-time notifications about your orders, deals, and updates.
+                    </p>
+                    <div style="display: flex; gap: 10px; margin-top: 8px;">
+                        <button onclick="window.requestNotificationPermission()" style="padding: 10px 20px; background: #6C3CE1; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
+                            Enable Notifications
+                        </button>
+                        <button onclick="document.getElementById('stNotificationPrompt').remove()" style="padding: 10px 20px; background: transparent; color: #94A3B8; border: 1px solid #334155; border-radius: 10px; font-weight: 600; cursor: pointer;">
+                            Not Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', promptHTML);
+    }
+    
+    async requestNotificationPermission() {
         try {
-            // Register service worker
-            this.swRegistration = await navigator.serviceWorker.register('/sw.js', {
-                scope: '/'
-            });
+            // Triggered on button click -> valid user gesture
+            const permission = await Notification.requestPermission();
+            console.log(`📋 Permission result: ${permission}`);
             
-            console.log('✅ Service Worker registered:', this.swRegistration);
+            const prompt = document.getElementById('stNotificationPrompt');
+            if (prompt) prompt.remove();
             
-            // Check for waiting service worker
-            if (this.swRegistration.waiting) {
-                console.log('🔄 Found waiting service worker, updating...');
-                await this.swRegistration.update();
+            if (permission === 'granted') {
+                await this.subscribeToPush();
+                await this.loadSubscriptionFromServer();
+                this.initialized = true;
+
+            } else {
+                this.showToast('⚠️ Notification permission was not granted.');
             }
-            
-            return this.swRegistration;
-            
         } catch (error) {
-            console.error('❌ Error registering service worker:', error);
-            throw error;
+            console.error('❌ Error requesting permission:', error);
+            this.showToast('❌ Failed to enable notifications.');
         }
     }
     
-    async getPermission() {
-        // Check current permission status
-        let permission = Notification.permission;
-        
-        if (permission === 'default') {
-            // Request permission
-            permission = await Notification.requestPermission();
+    showToast(message) {
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+            background: #1E293B; color: white; padding: 12px 24px; border-radius: 12px;
+            font-family: sans-serif; font-size: 14px; z-index: 99999;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3); max-width: 90%; text-align: center;
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3300);
+    }
+    
+    async registerServiceWorker() {
+        if (navigator.serviceWorker.controller) {
+            this.swRegistration = await navigator.serviceWorker.ready;
+            return this.swRegistration;
         }
-        
-        console.log(`📋 Notification permission: ${permission}`);
-        return permission;
+        this.swRegistration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        return this.swRegistration;
     }
     
     async subscribeToPush() {
-        try {
-            if (!this.swRegistration) {
-                await this.registerServiceWorker();
-            }
-            
-            // Check if already subscribed
-            let existingSubscription = await this.swRegistration.pushManager.getSubscription();
-            
-            if (existingSubscription) {
-                console.log('📡 Already subscribed to push');
-                this.subscription = existingSubscription;
-                this.isSubscribed = true;
-                await this.saveSubscriptionToServer();
-                return this.subscription;
-            }
-            
-            // Create new subscription
-            const applicationServerKey = this.urlBase64ToUint8Array(this.vapidPublicKey);
-            
-            const options = {
-                userVisibleOnly: true,
-                applicationServerKey: applicationServerKey
-            };
-            
-            this.subscription = await this.swRegistration.pushManager.subscribe(options);
+        if (!this.swRegistration) await this.registerServiceWorker();
+        
+        let existingSubscription = await this.swRegistration.pushManager.getSubscription();
+        if (existingSubscription) {
+            this.subscription = existingSubscription;
             this.isSubscribed = true;
-            
-            console.log('📡 Push subscription created');
-            
-            // Save subscription to server
             await this.saveSubscriptionToServer();
-            
             return this.subscription;
-            
-        } catch (error) {
-            console.error('❌ Error subscribing to push:', error);
-            throw error;
         }
+        
+        const applicationServerKey = this.urlBase64ToUint8Array(this.vapidPublicKey);
+        this.subscription = await this.swRegistration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: applicationServerKey
+        });
+        this.isSubscribed = true;
+        await this.saveSubscriptionToServer();
+        return this.subscription;
     }
     
     async saveSubscriptionToServer() {
         if (!this.subscription) return;
+        if (!this.userId) this.userId = this.getUserId();
+        
+        if (!this.userId || !this.supabase) {
+            localStorage.setItem('push_subscription', JSON.stringify(this.subscription));
+            return;
+        }
         
         try {
-            // Save to Supabase
-            const { data, error } = await this.supabase
-                .from('push_subscriptions')
-                .upsert({
-                    user_id: this.userId,
-                    subscription: this.subscription,
-                    endpoint: this.subscription.endpoint,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                }, {
-                    onConflict: 'user_id'
-                });
+            const subscriptionData = {
+                user_id: this.userId,
+                subscription: this.subscription,
+                endpoint: this.subscription.endpoint,
+                updated_at: new Date().toISOString()
+            };
             
-            if (error) {
-                console.error('❌ Error saving subscription to Supabase:', error);
-                
-                // Fallback to localStorage
-                localStorage.setItem('push_subscription', JSON.stringify(this.subscription));
-            } else {
-                console.log('✅ Subscription saved to Supabase');
-            }
-            
+            await this.supabase.from('push_subscriptions').upsert(subscriptionData, { onConflict: 'endpoint' });
         } catch (error) {
             console.error('❌ Error saving subscription:', error);
-            // Fallback to localStorage
             localStorage.setItem('push_subscription', JSON.stringify(this.subscription));
         }
     }
     
     async loadSubscriptionFromServer() {
+        if (!this.userId) this.userId = this.getUserId();
+        if (!this.userId || !this.supabase) return this.loadSubscriptionFromLocalStorage();
+        
         try {
-            const { data, error } = await this.supabase
+            const { data } = await this.supabase
                 .from('push_subscriptions')
                 .select('*')
                 .eq('user_id', this.userId)
-                .single();
-            
-            if (error) {
-                console.log('ℹ️ No subscription found on server');
-                return null;
-            }
-            
-            if (data && data.subscription) {
-                console.log('📡 Loaded subscription from server');
+                .maybeSingle();
+                
+            if (data?.subscription) {
                 this.subscription = data.subscription;
                 this.isSubscribed = true;
                 return data.subscription;
             }
-            
-            return null;
-            
         } catch (error) {
             console.error('❌ Error loading subscription:', error);
-            return null;
         }
+        return this.loadSubscriptionFromLocalStorage();
     }
     
-    async unsubscribe() {
-        try {
-            if (!this.subscription) {
-                console.warn('⚠️ No active subscription');
-                return false;
-            }
-            
-            const success = await this.subscription.unsubscribe();
-            
-            if (success) {
-                this.isSubscribed = false;
-                this.subscription = null;
-                
-                // Remove from Supabase
-                await this.supabase
-                    .from('push_subscriptions')
-                    .delete()
-                    .eq('user_id', this.userId);
-                
-                localStorage.removeItem('push_subscription');
-                console.log('✅ Unsubscribed from push notifications');
-                return true;
-            }
-            
-            return false;
-            
-        } catch (error) {
-            console.error('❌ Error unsubscribing:', error);
-            return false;
+    loadSubscriptionFromLocalStorage() {
+        const localSub = localStorage.getItem('push_subscription');
+        if (localSub) {
+            try {
+                this.subscription = JSON.parse(localSub);
+                this.isSubscribed = true;
+                return this.subscription;
+            } catch (e) {}
         }
+        return null;
     }
     
     setupListeners() {
-        // Listen for service worker updates
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            console.log('🔄 Service worker controller changed');
-            this.subscribeToPush();
-        });
-        
-        // Listen for push subscription changes
+        navigator.serviceWorker?.addEventListener('controllerchange', () => this.subscribeToPush());
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                // Check if subscription is still valid
-                this.checkSubscription();
-            }
+            if (document.visibilityState === 'visible') this.checkSubscription();
+        });
+        document.addEventListener('userLoggedIn', (event) => {
+            this.userId = event.detail?.userId || this.getUserId();
+            if (this.userId) this.saveSubscriptionToServer();
         });
     }
     
     async checkSubscription() {
-        try {
-            if (!this.swRegistration) return;
-            
-            const subscription = await this.swRegistration.pushManager.getSubscription();
-            
-            if (!subscription && this.isSubscribed) {
-                console.warn('⚠️ Subscription lost, re-subscribing...');
-                await this.subscribeToPush();
-            }
-            
-        } catch (error) {
-            console.error('❌ Error checking subscription:', error);
-        }
+        if (!this.swRegistration) return;
+        const sub = await this.swRegistration.pushManager.getSubscription();
+        if (!sub && this.isSubscribed) await this.subscribeToPush();
     }
     
     urlBase64ToUint8Array(base64String) {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
-        const base64 = (base64String + padding)
-            .replace(/\-/g, '+')
-            .replace(/_/g, '/');
-        
+        const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
         const rawData = window.atob(base64);
         const outputArray = new Uint8Array(rawData.length);
-        
         for (let i = 0; i < rawData.length; ++i) {
             outputArray[i] = rawData.charCodeAt(i);
         }
-        
         return outputArray;
-    }
-    
-    // Send a test notification
-    async sendTestNotification() {
-        if (!this.isSubscribed) {
-            console.warn('⚠️ Not subscribed to push');
-            return false;
-        }
-        
-        try {
-            // Send via Supabase Edge Function
-            const response = await fetch('/api/send-push', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    userId: this.userId,
-                    title: 'Test Notification',
-                    body: 'This is a test notification from Sucess Technology!',
-                    data: {
-                        url: '/',
-                        orderId: null
-                    }
-                })
-            });
-            
-            const result = await response.json();
-            console.log('📤 Test notification sent:', result);
-            return result;
-            
-        } catch (error) {
-            console.error('❌ Error sending test notification:', error);
-            return false;
-        }
     }
 }
 
-// Initialize the push manager
+// Global Push Instance Initialization
 const pushManager = new PushNotificationManager();
 
-// Auto-initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    pushManager.init();
-});
-
-// Expose for use in other scripts
-window.pushManager = pushManager;
+window.requestNotificationPermission = function() {
+    pushManager.requestNotificationPermission();
+};

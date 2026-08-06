@@ -1,12 +1,11 @@
-
 const HEADER_CONFIG = {
     shopName: 'SUCESS<span class="st-brand-highlight">TECHNOLOGY</span>',
     logoText: 'ST',
     navLinks: [
-        { label: 'Products', icon: 'fa-box', href: '/product/', dropdown: true, dropdownType: 'products' },
-        { label: 'Categories', icon: 'fa-th-large', href: '/category/', dropdown: true, dropdownType: 'categories' },
-        { label: 'Brands', icon: 'fa-tag', href: '/brand/', dropdown: true, dropdownType: 'brands' },
-        { label: 'Contact', icon: 'fa-envelope', href: '/contactus' }
+        { label: 'Products', icon: 'fa-box', href: '/product/', dropdown: true, dropdownType: 'products', 'data-translate': 'nav_products' },
+        { label: 'Categories', icon: 'fa-th-large', href: '/category/', dropdown: true, dropdownType: 'categories', 'data-translate': 'nav_categories' },
+        { label: 'Brands', icon: 'fa-tag', href: '/brand/', dropdown: true, dropdownType: 'brands', 'data-translate': 'nav_brands' },
+        { label: 'Contact', icon: 'fa-envelope', href: '/contactus', 'data-translate': 'nav_contact' }
     ],
     pages: {
         cart: '/cart',
@@ -18,7 +17,7 @@ const HEADER_CONFIG = {
         brand: '/brand/'
     }
 };
-;
+
 
 // ============================================================
 // 5. STATE MANAGEMENT
@@ -269,8 +268,8 @@ function renderNotifications() {
         body.innerHTML = `
             <div class="notification-empty">
                 <i class="fas fa-bell-slash"></i>
-                <p style="font-weight:600;color:#0F172A;font-size:16px;">No notifications</p>
-                <p style="font-size:13px;color:#94A3B8;">You're all caught up!</p>
+                <p style="font-weight:600;color:#0F172A;font-size:16px;" data-translate="notif_empty_title">No notifications</p>
+                <p style="font-size:13px;color:#94A3B8;" data-translate="notif_empty_sub">You're all caught up!</p>
             </div>
         `;
         return;
@@ -281,14 +280,14 @@ function renderNotifications() {
     
     // Add mark all read button if there are unread
     const markAllHtml = unreadCount > 0 ? `
-        <button class="notification-mark-all" onclick="markAllNotificationsAsRead()">
+        <button class="notification-mark-all" onclick="markAllNotificationsAsRead()" data-translate="notif_mark_all">
             <i class="fas fa-check-double"></i> Mark all as read
         </button>
     ` : '';
 
     let html = `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px 12px;border-bottom:1px solid #f1f5f9;margin-bottom:8px;">
-            <span style="font-size:13px;color:#94A3B8;">${unreadCount} unread</span>
+            <span style="font-size:13px;color:#94A3B8;" data-translate="notif_unread_count">${unreadCount} unread</span>
             ${markAllHtml}
         </div>
     `;
@@ -329,7 +328,7 @@ function renderNotifications() {
     if (notifications.length > 0) {
         html += `
             <div style="text-align:center;padding-top:12px;border-top:1px solid #f1f5f9;margin-top:4px;">
-                <button class="notification-clear-all" onclick="clearAllNotifications()">
+                <button class="notification-clear-all" onclick="clearAllNotifications()" data-translate="notif_clear_all">
                     <i class="fas fa-trash-alt"></i> Clear all notifications
                 </button>
             </div>
@@ -483,7 +482,7 @@ function showNotificationToast(title, text, image = null, type = 'info') {
             <div style="flex:1;min-width:0;">
                 <div style="font-weight:700;font-size:14px;color:#0F172A;">${title}</div>
                 <div style="font-size:13px;color:#64748B;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${text}</div>
-                <div style="font-size:11px;color:#94A3B8;margin-top:4px;">Just now</div>
+                <div style="font-size:11px;color:#94A3B8;margin-top:4px;" data-translate="notif_just_now">Just now</div>
             </div>
             <button onclick="event.stopPropagation(); this.parentElement.parentElement.remove();" style="border:none;background:none;color:#94A3B8;cursor:pointer;font-size:14px;padding:4px;">
                 <i class="fas fa-times"></i>

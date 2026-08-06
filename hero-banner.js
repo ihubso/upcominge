@@ -109,8 +109,8 @@ function renderHeroBanner(products, containerId = 'heroBanner') {
     if (!products || products.length === 0) {
         container.innerHTML = `
             <div style="text-align:center;padding:60px 20px;background:linear-gradient(135deg,#f8fafc,#e2e8f0);border-radius:16px;">
-                <h2 style="color:#94A3B8;font-size:20px;">No featured products available</h2>
-                <p style="color:#94A3B8;margin-top:8px;">Check back soon for our latest deals!</p>
+                <h2 style="color:#94A3B8;font-size:20px;" data-translate="no_featured_title">No featured products available</h2>
+                <p style="color:#94A3B8;margin-top:8px;" data-translate="no_featured_sub">Check back soon for our latest deals!</p>
             </div>
         `;
         return;
@@ -131,9 +131,9 @@ function renderHeroBanner(products, containerId = 'heroBanner') {
         const originalPrice = product.originalPrice || price;
 
         let badge = '';
-        if (isDeal) badge = `<span class="hero-badge deal">🔥 Deal</span>`;
-        else if (isNew) badge = `<span class="hero-badge new">✨ New</span>`;
-        else if (isHot) badge = `<span class="hero-badge hot">⚡ Hot</span>`;
+        if (isDeal) badge = `<span class="hero-badge deal" data-translate="badge_deal">🔥 Deal</span>`;
+        else if (isNew) badge = `<span class="hero-badge new" data-translate="badge_new">✨ New</span>`;
+        else if (isHot) badge = `<span class="hero-badge hot" data-translate="badge_hot">⚡ Hot</span>`;
 
         let discountPercent = 0;
         if (discount > 0) {
@@ -157,7 +157,7 @@ function renderHeroBanner(products, containerId = 'heroBanner') {
                             ` : ''}
                         </div>
                         <div class="hero-description">${product.description || ''}</div>
-                        <a href="/item/?id=${product.id}" class="hero-btn">
+                        <a href="/item/?id=${product.id}" class="hero-btn" data-translate="view_details">
                             <i class="fas fa-eye"></i> View Details
                         </a>
                     </div>
@@ -184,8 +184,8 @@ function renderHeroBanner(products, containerId = 'heroBanner') {
 
     container.innerHTML = html;
     initHeroSlider(products.length);
-}
 
+}
 // ============================================================
 // 5. HERO SLIDER CONTROLS
 // ============================================================
@@ -339,6 +339,7 @@ async function initHeroBanner(containerId = 'heroBanner') {
 
     const products = await fetchFeaturedProducts();
     await renderHeroBanner(products, containerId);
+    translateUI();
 
     const wrapper = container.closest('.hero-banner-wrapper');
     if (wrapper) {

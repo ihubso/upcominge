@@ -8,7 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-   <script src="/head/header-core.js" defer></script>
+   <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
+  <script src="/head/header-core.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
 <script src="/head/header-dropdowns.js" defer></script>
@@ -512,14 +514,14 @@
             <div class="hero-icon">
                 <i class="fas fa-undo-alt"></i>
             </div>
-            <h1>Return &amp; Refund Policy</h1>
-            <p>
+            <h1 data-translate="return_policy_title">Return &amp; Refund Policy</h1>
+            <p data-translate="return_policy_sub">
                 We are committed to providing you with a satisfying shopping experience.
                 If you need to return an item, we have implemented a clear and fair return
                 policy to facilitate your experience.
             </p>
             <span class="hero-badge">
-                <i class="fas fa-check-circle"></i> Updated January 2025
+                <i class="fas fa-check-circle"></i> <span data-translate="updated_january">Updated January 2025</span>
             </span>
         </div>
 
@@ -532,39 +534,39 @@
                 <div class="card-icon">
                     <i class="fas fa-exchange-alt"></i>
                 </div>
-                <h3>Returns for Change of Mind or Size</h3>
-                <p class="card-sub">You can return most items, with some exceptions</p>
+                <h3 data-translate="change_mind_title">Returns for Change of Mind or Size</h3>
+                <p class="card-sub" data-translate="change_mind_sub">You can return most items, with some exceptions</p>
                 <div class="card-details">
                     <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
                         <div style="display:flex;align-items:center;gap:10px;padding:4px 0;">
                             <i class="fas fa-box" style="color:#EF4444;font-size:14px;"></i>
-                            <span style="font-size:13px;"><span class="highlight-red">Not eligible:</span> Opened sealed items (official brand seals or original packaging)</span>
+                            <span style="font-size:13px;"><span class="highlight-red" data-translate="not_eligible">Not eligible:</span> <span data-translate="opened_sealed">Opened sealed items (official brand seals or original packaging)</span></span>
                         </div>
                         <div style="display:flex;align-items:center;gap:10px;padding:4px 0;">
                             <i class="fas fa-tshirt" style="color:#EF4444;font-size:14px;"></i>
-                            <span style="font-size:13px;"><span class="highlight-red">Not eligible:</span> Mattresses, underwear, swimwear</span>
+                            <span style="font-size:13px;"><span class="highlight-red" data-translate="not_eligible">Not eligible:</span> <span data-translate="mattresses_underwear">Mattresses, underwear, swimwear</span></span>
                         </div>
                         <div style="display:flex;align-items:center;gap:10px;padding:4px 0;">
                             <i class="fas fa-tv" style="color:#EF4444;font-size:14px;"></i>
-                            <span style="font-size:13px;"><span class="highlight-red">Not eligible:</span> TVs &amp; Large Appliances</span>
+                            <span style="font-size:13px;"><span class="highlight-red" data-translate="not_eligible">Not eligible:</span> <span data-translate="tvs_appliances">TVs &amp; Large Appliances</span></span>
                         </div>
                         <div style="display:flex;align-items:center;gap:10px;padding:4px 0;">
                             <i class="fas fa-couch" style="color:#EF4444;font-size:14px;"></i>
-                            <span style="font-size:13px;"><span class="highlight-red">Not eligible:</span> Large stapled items (sofas, furniture)</span>
+                            <span style="font-size:13px;"><span class="highlight-red" data-translate="not_eligible">Not eligible:</span> <span data-translate="large_furniture">Large stapled items (sofas, furniture)</span></span>
                         </div>
                     </div>
 
                     <div class="info-box" style="margin-top:12px;">
                         <i class="fas fa-info-circle"></i>
                         <div class="info-text">
-                            <strong>Return Conditions:</strong> You must return the item with its invoice and packaging in excellent condition.
+                            <strong data-translate="return_conditions">Return Conditions:</strong> <span data-translate="return_conditions_text">You must return the item with its invoice and packaging in excellent condition.</span>
                         </div>
                     </div>
 
                     <div class="info-box" style="margin-top:8px;background:#DBEAFE;">
                         <i class="fas fa-clock" style="color:#3B82F6;"></i>
                         <div class="info-text">
-                            <strong>Return Period:</strong> <span class="highlight">7 business days</span> from delivery date to initiate your return.
+                            <strong data-translate="return_period">Return Period:</strong> <span class="highlight" data-translate="return_period_days">7 business days</span> <span data-translate="from_delivery">from delivery date to initiate your return.</span>
                         </div>
                     </div>
                 </div>
@@ -576,31 +578,31 @@
                 <div class="card-icon">
                     <i class="fas fa-shield-alt"></i>
                 </div>
-                <h3>Returns for Defective Items</h3>
-                <p class="card-sub">Defective, broken, non-functional, or counterfeit items</p>
+                <h3 data-translate="defective_title">Returns for Defective Items</h3>
+                <p class="card-sub" data-translate="defective_sub">Defective, broken, non-functional, or counterfeit items</p>
                 <div class="card-details">
-                    <p style="font-size:13px;color:#475569;margin-bottom:8px;">
+                    <p style="font-size:13px;color:#475569;margin-bottom:8px;" data-translate="defective_text">
                         Returns are accepted for all types of items, <span class="highlight-red">except</span> for categories not eligible for return.
                     </p>
 
                     <div class="info-box" style="margin-top:8px;">
                         <i class="fas fa-info-circle"></i>
                         <div class="info-text">
-                            <strong>Return Conditions:</strong> You must return the item with its invoice and packaging in excellent condition.
+                            <strong data-translate="return_conditions">Return Conditions:</strong> <span data-translate="return_conditions_text">You must return the item with its invoice and packaging in excellent condition.</span>
                         </div>
                     </div>
 
                     <div class="info-box" style="margin-top:8px;background:#DBEAFE;">
                         <i class="fas fa-clock" style="color:#3B82F6;"></i>
                         <div class="info-text">
-                            <strong>Return Deadline:</strong> <span class="highlight"> 7 business days</span> from delivery date.
+                            <strong data-translate="return_deadline">Return Deadline:</strong> <span class="highlight" data-translate="return_deadline_days">7 business days</span> <span data-translate="from_delivery">from delivery date.</span>
                         </div>
                     </div>
 
                     <div class="info-box" style="margin-top:8px;background:#FEF3C7;">
                         <i class="fas fa-phone" style="color:#D97706;"></i>
                         <div class="info-text">
-                            <strong>Note:</strong> For categories not eligible for return, please contact our Customer Service.
+                            <strong data-translate="note">Note:</strong> <span data-translate="note_contact">For categories not eligible for return, please contact our Customer Service.</span>
                         </div>
                     </div>
                 </div>
@@ -611,46 +613,46 @@
         <div class="ineligible-section">
             <div class="section-header">
                 <i class="fas fa-ban"></i>
-                <h2>Categories Not Eligible for Return</h2>
-                <span class="badge-warning">⚠️ Important</span>
+                <h2 data-translate="ineligible_title">Categories Not Eligible for Return</h2>
+                <span class="badge-warning" data-translate="important">⚠️ Important</span>
             </div>
             <div class="ineligible-grid">
                 <div class="ineligible-item">
                     <i class="fas fa-bed"></i>
-                    <span>Mattresses</span>
+                    <span data-translate="ineligible_mattresses">Mattresses</span>
                 </div>
                 <div class="ineligible-item">
                     <i class="fas fa-print"></i>
-                    <span>Printers &amp; Software</span>
+                    <span data-translate="ineligible_printers">Printers &amp; Software</span>
                 </div>
                 <div class="ineligible-item">
                     <i class="fas fa-shopping-basket"></i>
-                    <span>Supermarkets &amp; Groceries</span>
+                    <span data-translate="ineligible_groceries">Supermarkets &amp; Groceries</span>
                 </div>
                 <div class="ineligible-item">
                     <i class="fas fa-swimmer"></i>
-                    <span>Underwear &amp; Swimwear</span>
+                    <span data-translate="ineligible_underwear">Underwear &amp; Swimwear</span>
                 </div>
                 <div class="ineligible-item">
                     <i class="fas fa-paint-brush"></i>
-                    <span>Beauty &amp; Makeup</span>
+                    <span data-translate="ineligible_beauty">Beauty &amp; Makeup</span>
                 </div>
                 <div class="ineligible-item">
                     <i class="fas fa-spa"></i>
-                    <span>Perfumes &amp; Wellness</span>
+                    <span data-translate="ineligible_perfumes">Perfumes &amp; Wellness</span>
                 </div>
                 <div class="ineligible-item">
                     <i class="fas fa-ticket-alt"></i>
-                    <span>Events &amp; Tickets</span>
+                    <span data-translate="ineligible_events">Events &amp; Tickets</span>
                 </div>
                 <div class="ineligible-item">
                     <i class="fas fa-undo-alt"></i>
-                    <span>"Second Chance" Items</span>
+                    <span data-translate="ineligible_second_chance">"Second Chance" Items</span>
                 </div>
             </div>
             <div style="margin-top:16px;font-size:13px;color:#64748B;background:#f8fafc;padding:12px 16px;border-radius:10px;border:1px solid #f1f5f9;">
                 <i class="fas fa-info-circle" style="color:#6C3CE1;margin-right:8px;"></i>
-                <strong>Note:</strong> Second Chance products are not refundable for simple change of mind, damage to packaging, or minor cosmetic defects, if clearly stated in the product description.
+                <strong data-translate="note">Note:</strong> <span data-translate="second_chance_note">Second Chance products are not refundable for simple change of mind, damage to packaging, or minor cosmetic defects, if clearly stated in the product description.</span>
             </div>
         </div>
 
@@ -658,9 +660,9 @@
         <div class="notes-section">
             <div class="notes-header">
                 <i class="fas fa-exclamation-triangle"></i>
-                <h2>Important Information</h2>
+                <h2 data-translate="important_info">Important Information</h2>
             </div>
-            <p>
+            <p data-translate="important_info_text">
                 <strong>⚠️ We recommend that you carefully check your items upon receipt to avoid any disputes.</strong>
                 Categories not eligible for return upon receipt. If you have any questions about a specific product's return eligibility, please contact our customer service team.
             </p>
@@ -671,14 +673,14 @@
             <div class="contact-info">
                 <i class="fas fa-headset"></i>
                 <div class="contact-text">
-                    <strong>Need Help?</strong><br />
-                    Contact our customer service team
+                    <strong data-translate="need_help">Need Help?</strong><br />
+                    <span data-translate="contact_team">Contact our customer service team</span>
                 </div>
             </div>
-            <a href="/contactus" class="contact-btn">
+            <a href="/contactus" class="contact-btn" data-translate="contact_us">
                 <i class="fas fa-envelope"></i> Contact Us
             </a>
-            <a href="tel:+2372500000000" class="contact-btn" style="background:#10B981;">
+            <a href="tel:+2372500000000" class="contact-btn" style="background:#10B981;" data-translate="call_us">
                 <i class="fas fa-phone"></i> Call Us
             </a>
         </div>

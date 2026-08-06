@@ -8,7 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-      <script src="/head/header-core.js" defer></script>
+      <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
+  <script src="/head/header-core.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
 <script src="/head/header-dropdowns.js" defer></script>
@@ -1277,7 +1279,7 @@
     <!-- LEFT SIDEBAR: Recommended Categories -->
     <aside class="sidebar-left" id="sidebarLeft">
       <div class="sidebar-header">
-        <i class="fas fa-tags"></i> Recommended
+        <i class="fas fa-tags"></i> <span data-translate="recommended">Recommended</span>
         <span id="categoryBadge">0</span>
       </div>
       <div class="category-list" id="categoryList">
@@ -1296,14 +1298,14 @@
     <!-- RIGHT CONTENT -->
     <section class="content-right">
       <div class="page-header">
-        <h1><i class="fas fa-th-large"></i> For You</h1>
-        <div class="header-sub" id="categorySub">Showing products in <strong>All</strong></div>
+        <h1><i class="fas fa-th-large"></i> <span data-translate="for_you_title">For You</span></h1>
+        <div class="header-sub" id="categorySub"><span data-translate="showing_in">Showing products in</span> <strong data-translate="all">All</strong></div>
       </div>
 
       <!-- For You -->
       <div class="section-header">
-        <h2><i class="fas fa-star"></i> For You</h2>
-        <a href="#" class="view-all">See All →</a>
+        <h2><i class="fas fa-star"></i> <span data-translate="for_you">For You</span></h2>
+        <a href="#" class="view-all" data-translate="see_all">See All →</a>
       </div>
       <div class="foryou-grid" id="foryouGrid">
         <div class="skeleton-foryou-grid" id="foryouSkeleton">
@@ -1318,8 +1320,8 @@
 
       <!-- Recommended Products -->
       <div class="section-header" style="margin-top:8px;">
-        <h2><i class="fas fa-fire"></i> <span id="productSectionTitle">Recommended</span></h2>
-        <a id="viewallforsection" class="view-all">View All →</a>
+        <h2><i class="fas fa-fire"></i> <span id="productSectionTitle" data-translate="recommended">Recommended</span></h2>
+        <a id="viewallforsection" class="view-all" data-translate="view_all">View All →</a>
       </div>
       <div class="recommended-grid" id="recommendedGrid">
         <div class="skeleton-product-grid" id="recommendedSkeleton">
@@ -1340,6 +1342,15 @@
     // ============================================================
     //  CATEGORIES PAGE - LEFT SIDEBAR + FILTER (sticky sidebar, 8 cols desktop, 2 cols mobile)
     // ============================================================
+
+    // Helper translation function for dynamic content
+    function t(key, fallback) {
+        if (window.Translations && window.Translations.translate) {
+            const result = window.Translations.translate(key);
+            if (result && result !== key) return result;
+        }
+        return fallback || key;
+    }
 
     let wishlist = [];
     let allProducts = [];
@@ -1425,7 +1436,7 @@
         filterProducts(null);
       } catch (err) {
         console.error('❌ Fetch error:', err);
-        showToast('Failed to load data', 'error');
+        showToast(t('load_error', 'Failed to load data'), 'error');
         hideSkeletons();
       }
     }
@@ -1438,7 +1449,7 @@
 
     function renderCategories(cats) {
       if (!cats || cats.length === 0) {
-        categoryList.innerHTML = `<div style="padding:12px;color:#94A3B8;">No categories</div>`;
+        categoryList.innerHTML = `<div style="padding:12px;color:#94A3B8;" data-translate="no_categories">No categories</div>`;
         categoryBadge.textContent = '0';
         return;
       }
@@ -1446,7 +1457,7 @@
       const html = `
         <div class="category-chip-side ${!currentCategory ? 'active' : ''}" data-cat="all" onclick="selectCategory(null)">
           <div class="chip-icon"><i class="fas fa-th"></i></div>
-          <span class="chip-label">All</span>
+          <span class="chip-label" data-translate="all">All</span>
           <span class="chip-count">${allProducts.length}</span>
         </div>
         ${cats.map(cat => `
@@ -1472,8 +1483,8 @@
 
     function filterProducts(categoryName) {
       let filtered = allProducts;
-      let title = 'Recommended';
-      let subText = 'All';
+      let title = t('recommended', 'Recommended');
+      let subText = t('all', 'All');
       if (categoryName) {
         filtered = allProducts.filter(p => p.category && p.category.toLowerCase() === categoryName.toLowerCase());
         title = categoryName;
@@ -1481,10 +1492,10 @@
       } else {
         filtered = allProducts.filter(p => p.isDeal || (p.rating || 0) >= 4.5 || p.discount > 0);
         if (filtered.length === 0) filtered = allProducts.slice(0, 8);
-        title = 'Recommended';
-        subText = 'All';
+        title = t('recommended', 'Recommended');
+        subText = t('all', 'All');
       }
-      categorySub.innerHTML = `Showing products in <strong>${subText}</strong> (${filtered.length} items)`;
+      categorySub.innerHTML = `${t('showing_in', 'Showing products in')} <strong>${subText}</strong> (${filtered.length} ${t('items', 'items')})`;
       productSectionTitle.textContent = title;
       viewallforsection.href = `/category/?category=${categoryName || ''}`;
       renderRecommended(filtered);
@@ -1493,7 +1504,7 @@
     function renderRecommended(products) {
       const grid = recommendedGrid;
       if (!products || products.length === 0) {
-        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:#94A3B8;">No products in this category</div>`;
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:#94A3B8;" data-translate="no_products">No products in this category</div>`;
         return;
       }
       grid.innerHTML = products.map(p => {
@@ -1506,13 +1517,13 @@
           <div class="recommended-card" onclick="window.location.href='/item/?product=${p.id}'">
             <div class="card-image">
               <img src="${image}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/300x300/6C3CE1/FFFFFF?text=Product'">
-              ${isDeal ? `<span class="card-badge">🔥 Deal</span>` : ''}
-              <span class="card-sold">${sold} sold</span>
+              ${isDeal ? `<span class="card-badge" data-translate="deal">🔥 Deal</span>` : ''}
+              <span class="card-sold" data-translate="sold">${sold} sold</span>
               ${rating > 0 ? `<span class="card-rating-float"><i class="fas fa-star" style="color:#F59E0B;"></i> ${rating.toFixed(1)}</span>` : ''}
             </div>
             <div class="card-body">
               <div class="card-name">${p.name || 'Unknown Product'}</div>
-              <div class="card-meta">${p.brand ? `<span>${p.brand}</span>` : ''}${p.brand ? `<span class="dot"></span>` : ''}<span>${sold} sold</span></div>
+              <div class="card-meta">${p.brand ? `<span>${p.brand}</span>` : ''}${p.brand ? `<span class="dot"></span>` : ''}<span>${sold} ${t('sold', 'sold')}</span></div>
               <div class="card-price">FCFA ${(p.price || 0).toFixed(2)}${isDeal && p.originalPrice ? `<span class="original">FCFA ${(p.originalPrice || 0).toFixed(2)}</span>` : ''}</div>
               <div class="card-actions">
                 <button class="btn-wish ${isWished ? 'active' : ''}" onclick="event.stopPropagation(); toggleWishlist('${p.id}')"><i class="fas fa-heart"></i></button>
@@ -1533,7 +1544,7 @@ function closereccomedsection() {
     function renderForYou(products) {
       const grid = foryouGrid;
       if (!products || products.length === 0) {
-        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:#94A3B8;">No recommendations</div>`;
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:#94A3B8;" data-translate="no_recommendations">No recommendations</div>`;
         return;
       }
 
@@ -1544,9 +1555,9 @@ function closereccomedsection() {
         const sold = p.sold || Math.floor(Math.random() * 500) + 50;
         const isDeal = p.isDeal || p.discount > 0;
         let tag = '';
-        if (p.isHot) tag = 'Hot';
-        else if (p.isNew) tag = 'New';
-        else if (isDeal) tag = 'Deal';
+        if (p.isHot) tag = t('hot', 'Hot');
+        else if (p.isNew) tag = t('new', 'New');
+        else if (isDeal) tag = t('deal', 'Deal');
         return `
           <div class="foryou-card" onclick="window.location.href='/item/?product=${p.id}'">
             <div class="foryou-image"><img src="${image}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/80x80/6C3CE1/FFFFFF?text=Product'"></div>
@@ -1554,7 +1565,7 @@ function closereccomedsection() {
               <div class="foryou-name">${p.name || 'Unknown'}</div>
               <div class="foryou-meta">${p.brand ? `<span>${p.brand}</span>` : ''}${tag ? `<span class="tag">${tag}</span>` : ''}</div>
               <div class="foryou-price">FCFA ${(p.price || 0).toFixed(2)}${isDeal && p.originalPrice ? `<span class="original">FCFA ${(p.originalPrice || 0).toFixed(2)}</span>` : ''}</div>
-              <div class="foryou-stats">${rating > 0 ? `<span class="rating"><i class="fas fa-star" style="color:#F59E0B;"></i> ${rating.toFixed(1)}</span>` : ''}<span>${sold} sold</span></div>
+              <div class="foryou-stats">${rating > 0 ? `<span class="rating"><i class="fas fa-star" style="color:#F59E0B;"></i> ${rating.toFixed(1)}</span>` : ''}<span>${sold} ${t('sold', 'sold')}</span></div>
             </div>
             <div class="foryou-actions">
               <button class="btn-wish-small ${isWished ? 'active' : ''}" onclick="event.stopPropagation(); toggleWishlist('${p.id}')"><i class="fas fa-heart"></i></button>
@@ -1570,13 +1581,13 @@ function closereccomedsection() {
     async function toggleWishlist(productId) {
       try {
         const index = wishlist.indexOf(productId);
-        if (index !== -1) { wishlist.splice(index, 1); showToast('❤️ Removed from wishlist', 'info'); } else { wishlist.push(productId); showToast('❤️ Added to wishlist!'); }
+        if (index !== -1) { wishlist.splice(index, 1); showToast('❤️ ' + t('removed_wishlist', 'Removed from wishlist'), 'info'); } else { wishlist.push(productId); showToast('❤️ ' + t('added_wishlist', 'Added to wishlist!')); }
         localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
         if (window.STHeader) { window.STHeader.AppState.wishlist = wishlist; if (window.STHeader.updateCounts) window.STHeader.updateCounts(); }
         filterProducts(currentCategory);
         renderForYou(foryouProducts);
         renderCategories(categories);
-      } catch (err) { console.error(err); showToast('❌ Failed', 'error'); }
+      } catch (err) { console.error(err); showToast('❌ ' + t('failed', 'Failed'), 'error'); }
     }
 
     window.toggleWishlist = toggleWishlist;

@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Account Settings · Success Technology</title>
+    <title data-translate="account_page_title">Account Settings · Success Technology</title>
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
+  <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
   <script src="/head/header-core.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
@@ -713,10 +715,10 @@ button#stSaveProfileBtn:hover {
     <main class="st-account-container" id="stAccountPage">
         <!-- Page Header -->
         <div class="st-account-header">
-            <h1><i class="fas fa-user-cog"></i> Account Settings</h1>
+            <h1><i class="fas fa-user-cog"></i> <span data-translate="account_settings_title">Account Settings</span></h1>
             <div class="st-account-status">
                 <span class="st-status-dot"></span>
-                <span id="stAccountStatus">Signed in as Guest</span>
+                <span id="stAccountStatus" data-translate="signed_in_guest">Signed in as Guest</span>
             </div>
         </div>
 
@@ -727,34 +729,34 @@ button#stSaveProfileBtn:hover {
                 <div class="st-profile-card">
                     <div class="st-profile-avatar" id="stSidebarAvatar">G</div>
                     <div>
-                        <div class="st-profile-name" id="stSidebarName">Guest</div>
-                        <div class="st-profile-email" id="stSidebarEmail">Not logged in</div>
+                        <div class="st-profile-name" id="stSidebarName" data-translate="guest">Guest</div>
+                        <div class="st-profile-email" id="stSidebarEmail" data-translate="not_logged_in">Not logged in</div>
                     </div>
                 </div>
                 <nav class="st-sidebar-nav">
-                    <button class="st-nav-item active" data-section="profile">
-                        <i class="fas fa-user"></i> Profile
+                    <button class="st-nav-item active" data-section="profile" >
+                        <i class="fas fa-user"></i><span data-translate="nav_profile">Profile</span>
                     </button>
-                    <button class="st-nav-item" data-section="orders">
-                        <i class="fas fa-shopping-bag"></i> My Orders
+                    <button class="st-nav-item" data-section="orders" >
+                        <i class="fas fa-shopping-bag"></i><span data-translate="nav_orders"></span>
                     </button>
                     <button class="st-nav-item" data-section="security">
-                        <i class="fas fa-shield-alt"></i> Security
+                        <i class="fas fa-shield-alt"></i> <span data-translate="nav_security">Security</span>
                     </button>
-                    <button class="st-nav-item" data-section="preferences">
-                        <i class="fas fa-sliders-h"></i> Preferences
+                    <button class="st-nav-item" data-section="preferences" >
+                        <i class="fas fa-sliders-h"></i> <span data-translate="nav_preferences"></span>
                     </button>
-                    <button class="st-nav-item danger" id="stSidebarLogout">
-                        <i class="fas fa-sign-out-alt"></i> Logout
+                    <button class="st-nav-item danger" id="stSidebarLogout" >
+                        <i class="fas fa-sign-out-alt"></i> <span data-translate="nav_logout">Logout</span>
                     </button>
                 </nav>
 
                                <div class="st-footer-links" style="margin-top:30px;padding:20px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;">
-                        <div style="font-weight:700;color:#0F172A;margin-bottom:12px;">Quick Links</div>
+                        <div style="font-weight:700;color:#0F172A;margin-bottom:12px;" data-translate="quick_links">Quick Links</div>
                         <div style="display:grid;gap:10px;">
-                            <a href="/AboutUs" class="st-link">About Us</a>
-                            <a href="/Terms" class="st-link">Terms & Conditions</a>
-                            <a href="/contact" class="st-link">Locate Us</a>
+                            <a href="/AboutUs" class="st-link" data-translate="about_us">About Us</a>
+                            <a href="/Terms" class="st-link" data-translate="terms">Terms & Conditions</a>
+                            <a href="/contact" class="st-link" data-translate="locate_us">Locate Us</a>
                         </div>
                     </div>
             </aside>
@@ -764,52 +766,52 @@ button#stSaveProfileBtn:hover {
                 <!-- Profile Section -->
                 <div id="section-profile" class="st-section">
                     <div class="st-section-title">
-                        <i class="fas fa-user"></i> Profile Information
+                        <i class="fas fa-user"></i> <span data-translate="profile_info">Profile Information</span>
                         <!-- EDIT TOGGLE BUTTON -->
-                        <button id="stEditToggleBtn" class="st-btn-secondary" style="margin-left:auto;padding:6px 18px;font-size:13px;">
+                        <button id="stEditToggleBtn" class="st-btn-secondary" style="margin-left:auto;padding:6px 18px;font-size:13px;" data-translate="enable_editing">
                             <i class="fas fa-pen"></i> Enable Editing
                         </button>
                     </div>
 
                     <form id="stProfileForm" autocomplete="off">
                         <div class="st-form-group">
-                            <label class="st-form-label">Full Name</label>
+                            <label class="st-form-label" data-translate="full_name">Full Name</label>
                             <input type="text" class="st-form-input" id="stProfileName"
-                            placeholder="Your full name" required disabled />
-                            <div class="st-form-error" id="stProfileNameError">Name is required</div>
+                            placeholder="Your full name" required disabled data-translate-placeholder="full_name_placeholder" />
+                            <div class="st-form-error" id="stProfileNameError" data-translate="name_required">Name is required</div>
                         </div>
 
                         <div class="st-form-group">
-                            <label class="st-form-label">Email Address</label>
+                            <label class="st-form-label" data-translate="email_address">Email Address</label>
                             <input type="email" class="st-form-input" id="stProfileEmail"
-                            placeholder="you@example.com" disabled />
-                            <div class="st-form-help">Email cannot be changed</div>
+                            placeholder="you@example.com" disabled data-translate-placeholder="email_placeholder" />
+                            <div class="st-form-help" data-translate="email_cannot_change">Email cannot be changed</div>
                         </div>
 
                         <div class="st-form-row">
                             <div class="st-form-group">
-                                <label class="st-form-label">Phone Number</label>
+                                <label class="st-form-label" data-translate="phone_number">Phone Number</label>
                                 <input type="tel" class="st-form-input" id="stProfilePhone"
-                                placeholder="+1 234 567 890" disabled />
+                                placeholder="+1 234 567 890" disabled data-translate-placeholder="phone_placeholder" />
                             </div>
                             <div class="st-form-group">
-                                <label class="st-form-label">Address</label>
+                                <label class="st-form-label" data-translate="address">Address</label>
                                 <input type="text" class="st-form-input" id="stProfileAddress"
-                                placeholder="123 Main St, City" disabled />
+                                placeholder="123 Main St, City" disabled data-translate-placeholder="address_placeholder" />
                             </div>
                         </div>
 
                         <div class="st-form-group" style="margin-top:8px;">
-                            <label class="st-form-label">Bio</label>
+                            <label class="st-form-label" data-translate="bio">Bio</label>
                             <textarea class="st-form-input" id="stProfileBio"
-                            rows="3" placeholder="Tell us a little about yourself..." disabled></textarea>
+                            rows="3" placeholder="Tell us a little about yourself..." disabled data-translate-placeholder="bio_placeholder"></textarea>
                         </div>
 
                         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
-                            <button type="submit" class="st-btn-primary" id="stSaveProfileBtn" disabled>
+                            <button type="submit" class="st-btn-primary" id="stSaveProfileBtn" disabled data-translate="save_changes">
                                 <i class="fas fa-save"></i> Save Changes
                             </button>
-                            <button type="button" class="st-btn-secondary" id="stProfileReset">
+                            <button type="button" class="st-btn-secondary" id="stProfileReset" data-translate="reset">
                                 <i class="fas fa-undo"></i> Reset
                             </button>
                         </div>
@@ -818,12 +820,12 @@ button#stSaveProfileBtn:hover {
 
                 <!-- Orders Section -->
                 <div id="section-orders" class="st-section" style="display:none;">
-                    <div class="st-section-title"><i class="fas fa-shopping-bag"></i> My Orders</div>
+                    <div class="st-section-title"><i class="fas fa-shopping-bag"></i> <span data-translate="my_orders">My Orders</span></div>
 
                     <div id="stOrdersList">
                         <div class="st-loading" id="stOrdersLoading">
                             <div class="st-spinner"></div>
-                            <span style="color:#94A3B8;">Loading your orders...</span>
+                            <span style="color:#94A3B8;" data-translate="loading_orders">Loading your orders...</span>
                         </div>
                         <div id="stOrdersContainer"></div>
                     </div>
@@ -831,43 +833,43 @@ button#stSaveProfileBtn:hover {
 
                 <!-- Security Section -->
                 <div id="section-security" class="st-section" style="display:none;">
-                    <div class="st-section-title"><i class="fas fa-shield-alt"></i> Security</div>
+                    <div class="st-section-title"><i class="fas fa-shield-alt"></i> <span data-translate="security">Security</span></div>
 
                     <form id="stSecurityForm">
                         <div class="st-form-group">
-                            <label class="st-form-label">Current Password</label>
+                            <label class="st-form-label" data-translate="current_password">Current Password</label>
                             <input type="password" class="st-form-input" id="stCurrentPassword"
-                            placeholder="Enter current password" />
-                            <div class="st-form-error" id="stCurrentPasswordError">Current password is required</div>
+                            placeholder="Enter current password" data-translate-placeholder="current_password_placeholder" />
+                            <div class="st-form-error" id="stCurrentPasswordError" data-translate="current_password_required">Current password is required</div>
                         </div>
 
                         <div class="st-form-group">
-                            <label class="st-form-label">New Password</label>
+                            <label class="st-form-label" data-translate="new_password">New Password</label>
                             <input type="password" class="st-form-input" id="stNewPassword"
-                            placeholder="Enter new password (min 6 characters)" />
-                            <div class="st-form-error" id="stNewPasswordError">Password must be at least 6 characters</div>
+                            placeholder="Enter new password (min 6 characters)" data-translate-placeholder="new_password_placeholder" />
+                            <div class="st-form-error" id="stNewPasswordError" data-translate="password_min_length">Password must be at least 6 characters</div>
                         </div>
 
                         <div class="st-form-group">
-                            <label class="st-form-label">Confirm New Password</label>
+                            <label class="st-form-label" data-translate="confirm_password">Confirm New Password</label>
                             <input type="password" class="st-form-input" id="stConfirmPassword"
-                            placeholder="Confirm new password" />
-                            <div class="st-form-error" id="stConfirmPasswordError">Passwords do not match</div>
+                            placeholder="Confirm new password" data-translate-placeholder="confirm_password_placeholder" />
+                            <div class="st-form-error" id="stConfirmPasswordError" data-translate="passwords_mismatch">Passwords do not match</div>
                         </div>
 
-                        <button type="submit" class="st-btn-primary">
+                        <button type="submit" class="st-btn-primary" data-translate="update_password">
                             <i class="fas fa-key"></i> Update Password
                         </button>
                     </form>
 
                     <div style="margin-top:32px;padding-top:24px;border-top:2px solid #E2E8F0;">
                         <h4 style="font-weight:700;color:#EF4444;margin-bottom:8px;">
-                            <i class="fas fa-exclamation-triangle"></i> Danger Zone
+                            <i class="fas fa-exclamation-triangle"></i> <span data-translate="danger_zone">Danger Zone</span>
                         </h4>
-                        <p style="font-size:14px;color:#64748B;margin-bottom:16px;">
+                        <p style="font-size:14px;color:#64748B;margin-bottom:16px;" data-translate="delete_account_warning">
                             Permanently delete your account and all associated data.
                         </p>
-                        <button class="st-btn-danger" id="stDeleteAccountBtn">
+                        <button class="st-btn-danger" id="stDeleteAccountBtn" data-translate="delete_account">
                             <i class="fas fa-trash-alt"></i> Delete Account
                         </button>
                     </div>
@@ -875,41 +877,41 @@ button#stSaveProfileBtn:hover {
 
                 <!-- Preferences Section -->
                 <div id="section-preferences" class="st-section" style="display:none;">
-                    <div class="st-section-title"><i class="fas fa-sliders-h"></i> Preferences</div>
+                    <div class="st-section-title"><i class="fas fa-sliders-h"></i> <span data-translate="preferences_title">Preferences</span></div>
 
                     <div style="margin-bottom:20px;">
-                        <h4 style="font-weight:600;font-size:15px;margin-bottom:12px;">Email Notifications</h4>
+                        <h4 style="font-weight:600;font-size:15px;margin-bottom:12px;" data-translate="email_notifications">Email Notifications</h4>
                         <div style="display:flex;flex-direction:column;gap:8px;">
                             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
                                 <input type="checkbox" id="stPrefOrderUpdates" checked />
-                                <span>Order updates and confirmations</span>
+                                <span data-translate="pref_order_updates">Order updates and confirmations</span>
                             </label>
                             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
                                 <input type="checkbox" id="stPrefPromotions" />
-                                <span>Promotional emails and offers</span>
+                                <span data-translate="pref_promotions">Promotional emails and offers</span>
                             </label>
                             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
                                 <input type="checkbox" id="stPrefNewsletter" />
-                                <span>Newsletter and product updates</span>
+                                <span data-translate="pref_newsletter">Newsletter and product updates</span>
                             </label>
                         </div>
                     </div>
 
                     <div style="margin-bottom:20px;">
-                        <h4 style="font-weight:600;font-size:15px;margin-bottom:12px;">Privacy</h4>
+                        <h4 style="font-weight:600;font-size:15px;margin-bottom:12px;" data-translate="privacy">Privacy</h4>
                         <div style="display:flex;flex-direction:column;gap:8px;">
                             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
                                 <input type="checkbox" id="stPrefProfileVisibility" checked />
-                                <span>Show profile information to other users</span>
+                                <span data-translate="pref_profile_visibility">Show profile information to other users</span>
                             </label>
                             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
                                 <input type="checkbox" id="stPrefOrderHistory" checked />
-                                <span>Show order history</span>
+                                <span data-translate="pref_order_history">Show order history</span>
                             </label>
                         </div>
                     </div>
 
-                    <button class="st-btn-primary" id="stSavePreferences">
+                    <button class="st-btn-primary" id="stSavePreferences" data-translate="save_preferences">
                         <i class="fas fa-save"></i> Save Preferences
                     </button>
 
@@ -927,14 +929,14 @@ button#stSaveProfileBtn:hover {
             <button class="st-modal-close" id="stDeleteModalClose">&times;</button>
             <div style="text-align:center;margin-bottom:16px;">
                 <div style="font-size:48px;color:#EF4444;margin-bottom:8px;">⚠️</div>
-                <h3 class="st-modal-title">Delete Account</h3>
-                <p class="st-modal-text">
+                <h3 class="st-modal-title" data-translate="delete_account_modal_title">Delete Account</h3>
+                <p class="st-modal-text" data-translate="delete_account_modal_text">
                     Are you sure you want to delete your account? This action is <strong>permanent</strong> and cannot be undone. All your data, including orders and preferences, will be lost.
                 </p>
             </div>
             <div class="st-modal-actions">
-                <button class="st-btn-secondary" id="stDeleteCancel">Cancel</button>
-                <button class="st-btn-danger" id="stDeleteConfirm">
+                <button class="st-btn-secondary" id="stDeleteCancel" data-translate="cancel">Cancel</button>
+                <button class="st-btn-danger" id="stDeleteConfirm" data-translate="delete_account_confirm">
                     <i class="fas fa-trash-alt"></i> Delete Account
                 </button>
             </div>
@@ -1098,9 +1100,9 @@ button#stSaveProfileBtn:hover {
             container.innerHTML = `
                 <div class="st-order-empty">
                     <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
-                    <p style="font-weight:600;color:#0F172A;">No orders yet</p>
-                    <p style="font-size:14px;">Start shopping to see your orders here.</p>
-                    <a href="/product/" style="display:inline-block;margin-top:16px;padding:10px 24px;background:#6C3CE1;color:white;border-radius:10px;text-decoration:none;font-weight:600;">
+                    <p style="font-weight:600;color:#0F172A;" data-translate="no_orders_yet">No orders yet</p>
+                    <p style="font-size:14px;" data-translate="start_shopping">Start shopping to see your orders here.</p>
+                    <a href="/product/" style="display:inline-block;margin-top:16px;padding:10px 24px;background:#6C3CE1;color:white;border-radius:10px;text-decoration:none;font-weight:600;" data-translate="browse_products">
                         Browse Products
                     </a>
                 </div>
@@ -1118,12 +1120,12 @@ button#stSaveProfileBtn:hover {
             return `
                 <div class="st-order-card" onclick="window.location.href='/orders/?order=${orderId}'" style="cursor:pointer;">
                     <div class="st-order-header">
-                        <span class="st-order-id">Order #${order.id || 'N/A'}</span>
+                        <span class="st-order-id">${dataTranslate('order_number')} #${order.id || 'N/A'}</span>
                         <span class="st-order-status ${statusClass}">${statusLabel}</span>
                     </div>
                     <div class="st-order-details">
                         <div>
-                            <div class="st-order-items">${totalItems} item${totalItems > 1 ? 's' : ''}: ${itemNames}</div>
+                            <div class="st-order-items">${totalItems} ${dataTranslate('items')}: ${itemNames}</div>
                             <div style="font-size:12px;color:#94A3B8;margin-top:2px;">
                                 ${order.created_at ? new Date(order.created_at).toLocaleDateString() : (order.date ? new Date(order.date).toLocaleDateString() : 'N/A')}
                             </div>
@@ -1133,6 +1135,16 @@ button#stSaveProfileBtn:hover {
                 </div>
             `;
         }).join('');
+    }
+
+    // Simple data-translate helper for dynamic content
+    function dataTranslate(key) {
+        const translations = {
+            'order_number': 'Order',
+            'items': 'items',
+            'items_short': 'items'
+        };
+        return translations[key] || key;
     }
 
     // ============================================================
@@ -1155,8 +1167,8 @@ button#stSaveProfileBtn:hover {
                 container.innerHTML = `
                     <div class="st-order-empty">
                         <div class="st-empty-icon"><i class="fas fa-lock"></i></div>
-                        <p style="font-weight:600;color:#0F172A;">Please Login</p>
-                        <p style="font-size:14px;">Login to view your orders.</p>
+                        <p style="font-weight:600;color:#0F172A;" data-translate="please_login">Please Login</p>
+                        <p style="font-size:14px;" data-translate="login_to_view_orders">Login to view your orders.</p>
                     </div>
                 `;
                 return;
@@ -1189,9 +1201,9 @@ button#stSaveProfileBtn:hover {
             container.innerHTML = `
                 <div class="st-order-empty">
                     <div class="st-empty-icon"><i class="fas fa-exclamation-circle"></i></div>
-                    <p style="font-weight:600;color:#0F172A;">Failed to load orders</p>
-                    <p style="font-size:14px;">Please try again later.</p>
-                    <button onclick="window.accountSettings.loadOrders()" style="margin-top:16px;padding:10px 24px;background:#6C3CE1;color:white;border:none;border-radius:10px;cursor:pointer;font-weight:600;">
+                    <p style="font-weight:600;color:#0F172A;" data-translate="failed_to_load">Failed to load orders</p>
+                    <p style="font-size:14px;" data-translate="try_again_later">Please try again later.</p>
+                    <button onclick="window.accountSettings.loadOrders()" style="margin-top:16px;padding:10px 24px;background:#6C3CE1;color:white;border:none;border-radius:10px;cursor:pointer;font-weight:600;" data-translate="retry">
                         <i class="fas fa-sync"></i> Retry
                     </button>
                 </div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Your Cart - Success Technology</title>
+    <title data-translate="cart_page_title">Your Cart - Success Technology</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -13,6 +13,8 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
   <script src="/head/header-core.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
@@ -531,10 +533,10 @@
         <div class="st-cart-header">
             <h1>
                 <i class="fas fa-shopping-bag"></i>
-                Your Cart
+                <span data-translate="your_cart">Your Cart</span>
                 <span class="st-cart-count" id="stCartPageCount">0 items</span>
             </h1>
-            <a href="/product/" class="st-btn-continue" style="display:inline-block;padding:8px 20px;border:2px solid #E2E8F0;border-radius:10px;text-decoration:none;color:#0F172A;font-weight:600;font-size:14px;transition:all 0.2s ease;">
+            <a href="/product/" class="st-btn-continue" style="display:inline-block;padding:8px 20px;border:2px solid #E2E8F0;border-radius:10px;text-decoration:none;color:#0F172A;font-weight:600;font-size:14px;transition:all 0.2s ease;" data-translate="continue_shopping">
                 <i class="fas fa-arrow-left"></i> Continue Shopping
             </a>
         </div>
@@ -546,7 +548,7 @@
                 <!-- Loading State -->
                 <div class="st-loading" id="stCartLoading">
                     <div class="st-spinner"></div>
-                    <p style="color:#94A3B8;font-weight:500;">Loading your cart...</p>
+                    <p style="color:#94A3B8;font-weight:500;" data-translate="loading_cart">Loading your cart...</p>
                 </div>
 
                 <!-- Cart Items Container -->
@@ -555,57 +557,59 @@
 
             <!-- Cart Summary -->
             <div class="st-cart-summary" id="stCartSummary">
-                <h2>Order Summary</h2>
+                <h2 data-translate="order_summary">Order Summary</h2>
                 <div id="stSummaryContent">
                     <div class="st-summary-row">
-                        <span class="st-label">Subtotal</span>
+                        <span class="st-label" data-translate="subtotal">Subtotal</span>
                         <span class="st-value" id="stSubtotal">$0.00</span>
                     </div>
                     <div class="st-summary-row">
-                        <span class="st-label">Shipping</span>
+                        <span class="st-label" data-translate="shipping">Shipping</span>
                         <span class="st-value" id="stShipping">$0.00</span>
                     </div>
                     <div class="st-summary-row">
-                        <span class="st-label">Discount</span>
+                        <span class="st-label" data-translate="discount">Discount</span>
                         <span class="st-value" id="stDiscount">-$0.00</span>
                     </div>
                     <div class="st-summary-row st-total">
-                        <span class="st-label">Total</span>
+                        <span class="st-label" data-translate="total">Total</span>
                         <span class="st-value" id="stTotal">$0.00</span>
                     </div>
 
                     <div class="st-discount-input">
-                        <input type="text" id="stDiscountCode" placeholder="Discount code" />
-                        <button id="stApplyDiscount">Apply</button>
+                        <input type="text" id="stDiscountCode" placeholder="Discount code" data-translate-placeholder="discount_code_placeholder" />
+                        <button id="stApplyDiscount" data-translate="apply">Apply</button>
                     </div>
 
-                    <button class="st-btn-checkout" id="stCheckoutBtn">
+                    <button class="st-btn-checkout" id="stCheckoutBtn" data-translate="proceed_to_checkout">
                         <i class="fas fa-lock" style="margin-right:8px;"></i>
                         Proceed to Checkout
                     </button>
 
-                    <a href="/product/" class="st-btn-continue">
+                    <a href="/product/" class="st-btn-continue" data-translate="continue_shopping">
                         <i class="fas fa-arrow-left"></i> Continue Shopping
                     </a>
                 </div>
             </div>
         </div>
-    </main>
-
+        <section>
     <div class="related-section">
-        <h2><i class="fas fa-boxes"></i> You May Also Like to add these to your bag too</h2>
+        <h2><i class="fas fa-boxes"></i> <span data-translate="you_may_also_like">You May Also Like to add these to your bag too</span></h2>
         <div id="randomProducts"></div>
     </div>
+    </section>
+    </main>
+
     
     <footer id="support">
         <div>
-            <h4>Products</h4>
-            <p>Phone</p>
-            <p>Tablet</p>
-            <p>Audio</p>
+            <h4 data-translate="footer_products">Products</h4>
+            <p data-translate="footer_phone">Phone</p>
+            <p data-translate="footer_tablet">Tablet</p>
+            <p data-translate="footer_audio">Audio</p>
         </div>
         <div>
-            <h4>📱 Follow Us</h4>
+            <h4 data-translate="footer_follow">📱 Follow Us</h4>
             <div class="flex gap-4 mt-2">
                 <a id="facebookLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
                     <i class="fab fa-facebook"></i>
@@ -619,11 +623,11 @@
             </div>
         </div>
         <div>
-            <h4>About</h4>
-            <li class="mobile-nav-item"><a href="/contactus">📍 Locate Us</a></li>
+            <h4 data-translate="footer_about">About</h4>
+            <li class="mobile-nav-item"><a href="/contactus" data-translate="locate_us">📍 Locate Us</a></li>
         </div>
         <div>
-            <h4>📞 Contact</h4>
+            <h4 data-translate="footer_contact">📞 Contact</h4>
             <p id="footerEmail"></p>
             <p id="footerPhone"></p>
             <p id="footerAddress"></p>
@@ -640,6 +644,15 @@
     let discountApplied = 0;
     let discountCode = '';
 
+    // Helper function to translate dynamic content
+    function t(key, fallback) {
+        if (window.Translations && window.Translations.translate) {
+            const result = window.Translations.translate(key);
+            if (result && result !== key) return result;
+        }
+        return fallback || key;
+    }
+
     // ============================================================
     // 2. RENDER CART
     // ============================================================
@@ -655,19 +668,20 @@ function renderCart() {
         container.innerHTML = `
             <div class="st-empty-cart">
                 <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
-                <h2>Your cart is empty</h2>
-                <p>Looks like you haven't added any items to your cart yet.</p>
-                <a href="/product/" class="st-btn-shop">
+                <h2 data-translate="cart_empty_title">Your cart is empty</h2>
+                <p data-translate="cart_empty_sub">Looks like you haven't added any items to your cart yet.</p>
+                <a href="/product/" class="st-btn-shop" data-translate="start_shopping">
                     <i class="fas fa-store"></i> Start Shopping
                 </a>
             </div>
         `;
-        cartCount.textContent = '0 items';
+        cartCount.textContent = t('items_count_zero', '0 items');
         updateSummary();
+        translateUI();
         return;
     }
 
-    cartCount.textContent = cartItems.length + ' item' + (cartItems.length > 1 ? 's' : '');
+    cartCount.textContent = cartItems.length + ' ' + t('items', 'item') + (cartItems.length > 1 ? 's' : '');
 
     container.innerHTML = cartItems.map((item, index) => {
         // --- 1. SAFE VARIANT HANDLING ---
@@ -706,7 +720,7 @@ function renderCart() {
         let originalPriceMarkup = '';
 
         if (isDeal) {
-            dealBadgeMarkup = `<span class="st-deal-badge" style="background:#EF4444; color:white; font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px; margin-left:6px;"><i class="fas fa-fire"></i> DEAL</span>`;
+            dealBadgeMarkup = `<span class="st-deal-badge" style="background:#EF4444; color:white; font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px; margin-left:6px;"><i class="fas fa-fire"></i> ${t('deal', 'DEAL')}</span>`;
             
             if (originalPrice > price) {
                 const discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
@@ -742,15 +756,15 @@ function renderCart() {
                 </div>
                 <div class="st-cart-item-actions">
                     <div class="st-quantity-control">
-                        <button onclick="updateQuantity(${index}, -1)" aria-label="Decrease quantity">
+                        <button onclick="updateQuantity(${index}, -1)" aria-label="${t('decrease_quantity', 'Decrease quantity')}">
                             <i class="fas fa-minus"></i>
                         </button>
                         <span class="st-qty-value">${item.qty || 1}</span>
-                        <button onclick="updateQuantity(${index}, 1)" aria-label="Increase quantity">
+                        <button onclick="updateQuantity(${index}, 1)" aria-label="${t('increase_quantity', 'Increase quantity')}">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
-                    <button class="st-remove-btn" onclick="removeItem(${index})" aria-label="Remove item">
+                    <button class="st-remove-btn" onclick="removeItem(${index})" aria-label="${t('remove_item', 'Remove item')}" data-translate="remove">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
@@ -787,7 +801,7 @@ function renderCart() {
         renderCart();
         
         if (removedItem && removedItem.name) {
-            showNotification(`🗑️ Removed "${removedItem.name}" from cart`);
+            showNotification(`🗑️ ${t('removed_from_cart', 'Removed')} "${removedItem.name}" ${t('from_cart', 'from cart')}`);
         }
     }
 
@@ -895,7 +909,7 @@ function renderCart() {
         const total = subtotal + shipping - discountAmount;
 
         document.getElementById('stSubtotal').textContent = '$' + subtotal.toFixed(2);
-        document.getElementById('stShipping').textContent = shipping === 0 ? 'Free' : '$' + shipping.toFixed(2);
+        document.getElementById('stShipping').textContent = shipping === 0 ? t('free', 'Free') : '$' + shipping.toFixed(2);
         document.getElementById('stDiscount').textContent = discountAmount > 0 ? '-$' + discountAmount.toFixed(2) : '$0.00';
         document.getElementById('stTotal').textContent = '$' + total.toFixed(2);
 
@@ -915,17 +929,17 @@ function renderCart() {
                 if (code === 'SAVE10') {
                     discountApplied = 10;
                     discountCode = code;
-                    showNotification('✅ 10% discount applied!');
+                    showNotification('✅ ' + t('discount_applied', '10% discount applied!'));
                 } else if (code === 'SAVE20') {
                     discountApplied = 20;
                     discountCode = code;
-                    showNotification('✅ 20% discount applied!');
+                    showNotification('✅ ' + t('discount_applied_20', '20% discount applied!'));
                 } else if (code === '') {
                     discountApplied = 0;
                     discountCode = '';
-                    showNotification('ℹ️ Discount removed');
+                    showNotification('ℹ️ ' + t('discount_removed', 'Discount removed'));
                 } else {
-                    showNotification('❌ Invalid discount code', 'error');
+                    showNotification('❌ ' + t('invalid_discount', 'Invalid discount code'), 'error');
                     return;
                 }
                 updateSummary();
@@ -956,7 +970,7 @@ function renderCart() {
                         sessionStorage.setItem('st_pending_checkout', '1');
                     }
                     
-                    showNotification('⚠️ Please login to checkout', 'error');
+                    showNotification('⚠️ ' + t('please_login_to_checkout', 'Please login to checkout'), 'error');
                     if (window.STHeader?.openLoginModal) {
                         window.STHeader.openLoginModal();
                     }

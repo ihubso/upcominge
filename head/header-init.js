@@ -7,7 +7,7 @@ async function populateDropdowns() {
     const categoriesGrid = document.getElementById('stDropdownGrid_categories');
     if (categoriesGrid) {
         if (categories.length === 0) {
-            categoriesGrid.innerHTML = '<div class="st-dropdown-empty">No categories available</div>';
+            categoriesGrid.innerHTML = '<div class="st-dropdown-empty" data-translate="no_categories">No categories available</div>';
         } else {
             categoriesGrid.innerHTML = categories.map(cat => `
                 <a href="/category/?category=${encodeURIComponent(cat.name)}" class="st-dropdown-item">
@@ -15,8 +15,8 @@ async function populateDropdowns() {
                         <img src="${cat.image}" alt="${cat.name}" onerror="this.parentElement.innerHTML='<span class=\\'st-icon-fallback\\'><i class=\\'fas fa-folder\\'></i></span>'">
                     </div>
                     <div class="st-item-info">
-                        <span class="st-item-name">${cat.name}</span>
-                        <span class="st-item-count">${cat.count} products</span>
+                        <span class="st-item-name" data-translate="${cat.name}">${cat.name}</span>
+                        <span class="st-item-count" data-translate="product_count">${cat.count} products</span>
                     </div>
                 </a>
             `).join('');
@@ -27,7 +27,7 @@ async function populateDropdowns() {
     const brandsGrid = document.getElementById('stDropdownGrid_brands');
     if (brandsGrid) {
         if (brands.length === 0) {
-            brandsGrid.innerHTML = '<div class="st-dropdown-empty">No brands available</div>';
+            brandsGrid.innerHTML = '<div class="st-dropdown-empty" data-translate="no_brands">No brands available</div>';
         } else {
             brandsGrid.innerHTML = brands.map(brand => `
                 <a href="/brand/?brand=${encodeURIComponent(brand.name)}" class="st-dropdown-item">
@@ -35,8 +35,8 @@ async function populateDropdowns() {
                         <img src="${brand.image}" alt="${brand.name}" onerror="this.parentElement.innerHTML='<span class=\\'st-icon-fallback\\'><i class=\\'fas fa-tag\\'></i></span>'">
                     </div>
                     <div class="st-item-info">
-                        <span class="st-item-name">${brand.name}</span>
-                        <span class="st-item-count">${brand.count} products</span>
+                        <span class="st-item-name" data-translate="${brand.name}">${brand.name}</span>
+                        <span class="st-item-count" data-translate="product_count">${brand.count} products</span>
                     </div>
                 </a>
             `).join('');
@@ -64,16 +64,16 @@ async function populateDropdowns() {
                                      onerror="this.parentElement.innerHTML='<span class=\\'st-icon-fallback\\'><i class=\\'fas fa-box\\'></i></span>'">
                             </div>
                             <div class="st-item-info">
-                                <span class="st-item-name">${product.name}</span>
-                                <span class="st-item-count">FCFA${(product.price || 0).toFixed(2)}</span>
+                                <span class="st-item-name" data-translate="${product.name}">${product.name}</span>
+                                <span class="st-item-count" data-translate="product_price">FCFA${(product.price || 0).toFixed(2)}</span>
                             </div>
                         </a>
                     `).join('');
                 } else {
-                    productsGrid.innerHTML = '<div class="st-dropdown-empty">No products available</div>';
+                    productsGrid.innerHTML = '<div class="st-dropdown-empty" data-translate="no_products">No products available</div>';
                 }
             } catch (err) {
-                productsGrid.innerHTML = '<div class="st-dropdown-empty">Failed to load products</div>';
+                productsGrid.innerHTML = '<div class="st-dropdown-empty" data-translate="load_failed">Failed to load products</div>';
             }
         }
     }
@@ -248,6 +248,33 @@ async function initHeader() {
         registerPasswordError: document.getElementById('stRegisterPasswordError')
     };
     
+    // ----- Apply translations to text content and placeholders -----
+    function applyTranslations() {
+        // Set text content translations
+        const textElements = document.querySelectorAll('[data-translate]');
+        textElements.forEach(el => {
+            const key = el.getAttribute('data-translate');
+            if (window.Translations && window.Translations.translate) {
+                const translation = window.Translations.translate(key);
+                if (translation && translation !== key) {
+                    el.textContent = translation;
+                }
+            }
+        });
+
+        // Set placeholder translations
+        const placeholderElements = document.querySelectorAll('[data-translate-placeholder]');
+        placeholderElements.forEach(el => {
+            const key = el.getAttribute('data-translate-placeholder');
+            if (window.Translations && window.Translations.translate) {
+                const translation = window.Translations.translate(key);
+                if (translation && translation !== key) {
+                    el.placeholder = translation;
+                }
+            }
+        });
+    }
+
     // ----- Scroll Effect -----
     window.addEventListener('scroll', () => {
         if (window.scrollY > 20) {
@@ -681,7 +708,7 @@ function createSearchResultsContainer() {
     modal.className = 'st-search-modal';
     modal.innerHTML = `
         <div class="st-search-header">
-            <input type="search" id="stMobileSearchModalInput" placeholder="Search products..." autocomplete="off" />
+            <input type="search" id="stMobileSearchModalInput"  placeholder="Search products..." autocomplete="off" data-translate-placeholder="search_placeholder" />
             <button class="st-search-close" id="stSearchModalClose">&times;</button>
         </div>
         <div class="st-search-results-mobile" id="stSearchResultsMobile"></div>
@@ -706,7 +733,7 @@ async function performSearch(query) {
         container.innerHTML = `
             <div class="st-search-loading">
                 <div class="st-spinner-small"></div>
-                Searching...
+                <span data-translate="searching">Searching...</span>
             </div>
         `;
         container.style.display = 'block';
@@ -718,7 +745,7 @@ async function performSearch(query) {
         mobileContainer.innerHTML = `
             <div style="padding:20px;text-align:center;color:#94A3B8;display:flex;align-items:center;justify-content:center;gap:12px;">
                 <div style="width:20px;height:20px;border:3px solid #E2E8F0;border-top-color:#6C3CE1;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-                Searching...
+                <span data-translate="searching">Searching...</span>
             </div>
         `;
     }
@@ -764,9 +791,9 @@ function renderSearchResults(results, query) {
         container.innerHTML = `
             <div class="st-search-empty">
                 <i class="fas fa-search" style="font-size:24px;display:block;margin-bottom:8px;color:#E2E8F0;"></i>
-                No products found for "<strong>${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</strong>"
+                <span data-translate="no_results">No products found for</span> "<strong>${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</strong>"
             </div>
-            <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');">
+            <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');" data-translate="view_all_results">
                 View all results for "${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}" →
             </a>
         `;
@@ -784,7 +811,7 @@ function renderSearchResults(results, query) {
                 <div class="st-search-price">FCFA ${(item.price || 0).toFixed(2)}</div>
             </a>
         `).join('') + `
-            <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');">
+            <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');" data-translate="view_all_results">
                 View all ${results.length} results for "${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}" →
             </a>
         `;
@@ -798,9 +825,9 @@ function renderSearchResults(results, query) {
             mobileContainer.innerHTML = `
                 <div class="st-search-empty">
                     <i class="fas fa-search" style="font-size:32px;display:block;margin-bottom:12px;color:#E2E8F0;"></i>
-                    No products found for "<strong>${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</strong>"
+                    <span data-translate="no_results">No products found for</span> "<strong>${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</strong>"
                 </div>
-                <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');">
+                <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');" data-translate="view_all_results">
                     View all results for "${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}" →
                 </a>
             `;
@@ -817,7 +844,7 @@ function renderSearchResults(results, query) {
                     <div class="st-search-price">FCFA ${(item.price || 0).toFixed(2)}</div>
                 </a>
             `).join('') + `
-                <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');">
+                <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');" data-translate="view_all_results">
                     View all ${results.length} results for "${query.replace(/</g, '&lt;').replace(/>/g, '&gt;')}" →
                 </a>
             `;
@@ -862,7 +889,7 @@ function showSearchError() {
         container.innerHTML = `
             <div class="st-search-empty">
                 <i class="fas fa-exclamation-circle" style="font-size:24px;display:block;margin-bottom:8px;color:#EF4444;"></i>
-                Search unavailable. Please try again.
+                <span data-translate="search_unavailable">Search unavailable. Please try again.</span>
             </div>
         `;
         container.style.display = 'block';
@@ -872,7 +899,7 @@ function showSearchError() {
         mobileContainer.innerHTML = `
             <div class="st-search-empty">
                 <i class="fas fa-exclamation-circle" style="font-size:32px;display:block;margin-bottom:12px;color:#EF4444;"></i>
-                Search unavailable. Please try again.
+                <span data-translate="search_unavailable">Search unavailable. Please try again.</span>
             </div>
         `;
     }
@@ -1093,7 +1120,7 @@ if (modalSearchInput) {
                     mobileContainer.innerHTML = `
                         <div class="st-search-empty">
                             <i class="fas fa-search" style="font-size:32px;display:block;margin-bottom:12px;color:#E2E8F0;"></i>
-                            Type to search products...
+                            <span data-translate="type_to_search">Type to search products...</span>
                         </div>
                     `;
                 }
@@ -1269,7 +1296,7 @@ allSearchInputs.forEach(input => {
                             mobileContainer.innerHTML = `
                                 <div class="st-search-empty">
                                     <i class="fas fa-search" style="font-size:32px;display:block;margin-bottom:12px;color:#E2E8F0;"></i>
-                                    Type to search products...
+                                    <span data-translate="type_to_search">Type to search products...</span>
                                 </div>
                             `;
                         }
@@ -1366,12 +1393,12 @@ console.log('✅ Search with real-time results initialized');
             
             if (window.shouldRedirectToCheckout && window.shouldRedirectToCheckout()) {
                 window.clearPendingCheckout();
-                showNotification('✅ Redirecting you to checkout...');
+                showNotification('notif_redirect_checkout');
                 setTimeout(() => {
                     window.location.href = '/checkout/';
                 }, 300);
             } else {
-                showNotification(`✅ Welcome back, ${user.name}!`);
+                showNotification('notif_welcome_back', 'success', { name: user.name });
                 setTimeout(() => {
                     window.location.reload();
                 }, 5000);
@@ -1380,7 +1407,7 @@ console.log('✅ Search with real-time results initialized');
             
         } catch (err) {
             console.error('❌ Login error:', err);
-            showNotification(err.message || '❌ Login failed. Please try again.', 'error');
+            showNotification(err.message || 'notif_login_failed', 'error');
         } finally {
             AppState.isAuthLoading = false;
             elements.loginSubmit.disabled = false;
@@ -1514,12 +1541,12 @@ elements.registerSubmit.addEventListener('click', async () => {
         
         if (window.shouldRedirectToCheckout && window.shouldRedirectToCheckout()) {
             window.clearPendingCheckout();
-            showNotification('✅ Redirecting you to checkout...');
+            showNotification('notif_redirect_checkout');
             setTimeout(() => {
                 window.location.href = '/checkout/';
             }, 300);
         } else {
-            showNotification(`✅ Account created successfully! Welcome ${user.name}!`);
+            showNotification('notif_registration_success', 'success', { name: user.name });
             setTimeout(() => {
                 window.location.reload();
             }, 5000);
@@ -1527,7 +1554,7 @@ elements.registerSubmit.addEventListener('click', async () => {
         
     } catch (err) {
         console.error('❌ Signup error:', err);
-        showNotification(err.message || '❌ Registration failed. Please try again.', 'error');
+        showNotification(err.message || 'notif_registration_failed', 'error');
     } finally {
         AppState.isAuthLoading = false;
         elements.registerSubmit.disabled = false;
@@ -1568,7 +1595,7 @@ elements.registerSubmit.addEventListener('click', async () => {
         
         updateAuthUI();
         elements.accountDropdown.classList.remove('open');
-        showNotification('👋 Logged out successfully');
+        showNotification('notif_logout_success');
        window.location.reload();
     }
     
@@ -1814,7 +1841,19 @@ async function loadUserData(customerId, shouldMigrate = false) {
     }
     
     // ----- Notification System -----
-    function showNotification(message, type = 'success') {
+    function getTranslatedNotification(messageOrKey, params = {}) {
+        if (typeof messageOrKey !== 'string') return messageOrKey;
+
+        const hasTranslationKey = typeof translations !== 'undefined' && translations[currentLanguage] && Object.prototype.hasOwnProperty.call(translations[currentLanguage], messageOrKey);
+        if (hasTranslationKey && typeof translate === 'function') {
+            return translate(messageOrKey, params);
+        }
+
+        return messageOrKey;
+    }
+
+    function showNotification(message, type = 'success', params = {}) {
+        const actualMessage = getTranslatedNotification(message, params);
         const existing = document.querySelector('.st-notification');
         if (existing) existing.remove();
         
@@ -1873,7 +1912,7 @@ async function loadUserData(customerId, shouldMigrate = false) {
             opacity: 1;
             transform: translateY(0);
         `;
-        notif.innerHTML = `${icons[type] || '✅'} ${message}`;
+        notif.innerHTML = `${icons[type] || '✅'} ${actualMessage}`;
         container.appendChild(notif);
         
         if (!document.querySelector('#stNotificationStyle')) {
@@ -1956,7 +1995,7 @@ async function loadUserData(customerId, shouldMigrate = false) {
         
         return { allowed: true };
     }
-    
+        await initTranslation();
     // ============================================================
     // FIX: Properly expose save functions without circular reference
     // ============================================================
@@ -1971,6 +2010,9 @@ async function loadUserData(customerId, shouldMigrate = false) {
     // ----- Initialize -----
     await checkAutoLogin();
     updateAuthUI();
+    
+    // Apply translations after DOM is ready
+    applyTranslations();
     
     // ----- Expose to window -----
     window.STHeader = {
@@ -2002,12 +2044,6 @@ async function loadUserData(customerId, shouldMigrate = false) {
     updateUrlWithUserInfo();
      await requestNotificationPermission();
     await initNotifications();
-    // Register service worker for client-side push scaffolding
-    try {
-        await registerServiceWorker();
-    } catch (err) {
-        console.warn('⚠️ Service worker registration skipped:', err);
-    }
     window.getCurrentUser = getCurrentUser;
     window.getBusinessInfo = getBusinessInfo;
     
@@ -2016,8 +2052,13 @@ async function loadUserData(customerId, shouldMigrate = false) {
     setTimeout(() => {
         window.pushManager.init();
     }, 2000);
-}
+ 
+   
+     
+        
+  
 
+}
 // ============================================================
 // 8. INITIALIZATION
 // ============================================================
@@ -2056,21 +2097,6 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
-async function registerServiceWorker() {
-    if (!('serviceWorker' in navigator)) {
-        console.warn('⚠️ Service workers are not supported in this browser');
-        return null;
-    }
-
-    try {
-        const reg = await navigator.serviceWorker.register('/sw.js');
-        console.log('✅ Service worker registered:', reg.scope);
-        return reg;
-    } catch (err) {
-        console.warn('⚠️ Service worker registration failed:', err);
-        return null;
-    }
-}
 
 async function subscribeToPush(vapidPublicKey) {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {

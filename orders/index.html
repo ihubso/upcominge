@@ -8,7 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-       <script src="/head/header-core.js" defer></script>
+       <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
+  <script src="/head/header-core.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
 <script src="/head/header-dropdowns.js" defer></script>
@@ -865,32 +867,32 @@
     <main class="st-orders-container" id="stOrdersPage">
         <!-- Page Header -->
         <div class="st-orders-header">
-            <h1><i class="fas fa-shopping-bag"></i> My Orders</h1>
-            <span class="st-order-count" id="stOrderCount">0 orders</span>
+            <h1><i class="fas fa-shopping-bag"></i> <span data-translate="my_orders">My Orders</span></h1>
+            <span class="st-order-count" id="stOrderCount" data-translate="orders_count">0 orders</span>
         </div>
 
         <!-- Filter Tabs -->
         <div class="st-order-tabs" id="stOrderTabs">
             <button class="st-tab-btn active" data-status="all">
-                All <span class="st-tab-count" id="stCountAll">0</span>
+                <span data-translate="tab_all">All</span> <span class="st-tab-count" id="stCountAll">0</span>
             </button>
             <button class="st-tab-btn" data-status="pending">
-                Pending <span class="st-tab-count" id="stCountPending">0</span>
+                <span data-translate="tab_pending">Pending</span> <span class="st-tab-count" id="stCountPending">0</span>
             </button>
             <button class="st-tab-btn" data-status="confirmed">
-                Confirmed <span class="st-tab-count" id="stCountConfirmed">0</span>
+                <span data-translate="tab_confirmed">Confirmed</span> <span class="st-tab-count" id="stCountConfirmed">0</span>
             </button>
             <button class="st-tab-btn" data-status="processing">
-                Processing <span class="st-tab-count" id="stCountProcessing">0</span>
+                <span data-translate="tab_processing">Processing</span> <span class="st-tab-count" id="stCountProcessing">0</span>
             </button>
             <button class="st-tab-btn" data-status="shipped">
-                Shipped <span class="st-tab-count" id="stCountShipped">0</span>
+                <span data-translate="tab_shipped">Shipped</span> <span class="st-tab-count" id="stCountShipped">0</span>
             </button>
             <button class="st-tab-btn" data-status="delivered">
-                Delivered <span class="st-tab-count" id="stCountDelivered">0</span>
+                <span data-translate="tab_delivered">Delivered</span> <span class="st-tab-count" id="stCountDelivered">0</span>
             </button>
             <button class="st-tab-btn" data-status="cancelled">
-                Cancelled <span class="st-tab-count" id="stCountCancelled">0</span>
+                <span data-translate="tab_cancelled">Cancelled</span> <span class="st-tab-count" id="stCountCancelled">0</span>
             </button>
         </div>
 
@@ -899,7 +901,7 @@
             <!-- Loading State -->
             <div class="st-loading" id="stOrdersLoading">
                 <div class="st-spinner"></div>
-                <span style="color:#94A3B8;font-weight:500;">Loading your orders...</span>
+                <span style="color:#94A3B8;font-weight:500;" data-translate="loading_orders">Loading your orders...</span>
             </div>
             <!-- Orders Container -->
             <div id="stOrdersContainer"></div>
@@ -926,7 +928,7 @@
                 <!-- Will be populated by JavaScript -->
                 <div class="st-loading" id="stDetailLoading">
                     <div class="st-spinner"></div>
-                    <span style="color:#94A3B8;font-weight:500;">Loading order details...</span>
+                    <span style="color:#94A3B8;font-weight:500;" data-translate="loading_order_details">Loading order details...</span>
                 </div>
                 <div id="stDetailBody"></div>
             </div>
@@ -940,6 +942,15 @@
     // ============================================================
     //  ORDERS PAGE - COMPLETE FIX
     // ============================================================
+
+    // Helper translation function for dynamic content
+    function t(key, fallback) {
+        if (window.Translations && window.Translations.translate) {
+            const result = window.Translations.translate(key);
+            if (result && result !== key) return result;
+        }
+        return fallback || key;
+    }
 
     // --- State ---
     let allOrders = [];
@@ -1078,7 +1089,7 @@
     }
 
     function getStatusSteps(status) {
-        const steps = ['Placed', 'Confirmed', 'Processing', 'Done'];
+        const steps = [t('placed', 'Placed'), t('confirmed', 'Confirmed'), t('processing', 'Processing'), t('done', 'Done')];
         const statusMap = {
             pending: 0,
             confirmed: 1,
@@ -1139,20 +1150,20 @@
         // ✅ AWAIT the user
         const user = await getUserData();
         if (!user || !user.id) {
-            showToast('Please log in to view this order.', 'info');
+            showToast(t('please_login', 'Please log in to view this order.'), 'info');
             clearOrderRoute();
             return;
         }
 
         const order = allOrders.find(o => o.id === orderId);
         if (!order) {
-            showToast('Order not found', 'error');
+            showToast(t('order_not_found', 'Order not found'), 'error');
             clearOrderRoute();
             return;
         }
 
         if (!orderBelongsToUser(order, user)) {
-            showToast('This order does not belong to your account.', 'error');
+            showToast(t('order_not_belong', 'This order does not belong to your account.'), 'error');
             clearOrderRoute();
             return;
         }
@@ -1178,7 +1189,7 @@
             
             if (!user || !user.id) {
                 loading.style.display = 'none';
-                showEmptyState('Please Login', 'Login to view your orders.', 'login');
+                showEmptyState(t('please_login_title', 'Please Login'), t('login_to_view_orders', 'Login to view your orders.'), 'login');
                 return;
             }
 
@@ -1219,10 +1230,10 @@
             if (orders.length === 0) {
                 const pendingRouteOrderId = getOrderIdFromUrl();
                 if (pendingRouteOrderId) {
-                    showToast('This order is not available right now.', 'error');
+                    showToast(t('order_not_available', 'This order is not available right now.'), 'error');
                     clearOrderRoute();
                 }
-                showEmptyState('No Orders Yet', 'Start shopping to see your orders here.', 'shop');
+                showEmptyState(t('no_orders_title', 'No Orders Yet'), t('no_orders_sub', 'Start shopping to see your orders here.'), 'shop');
                 return;
             }
 
@@ -1238,7 +1249,7 @@
         } catch (err) {
             console.error('❌ Error loading orders:', err);
             loading.style.display = 'none';
-            showEmptyState('Failed to Load Orders', 'Please try again later.', 'retry');
+            showEmptyState(t('failed_to_load_title', 'Failed to Load Orders'), t('failed_to_load_sub', 'Please try again later.'), 'retry');
         }
     }
 
@@ -1264,7 +1275,7 @@
         elements.countShipped.textContent = counts.shipped;
         elements.countDelivered.textContent = counts.delivered;
         elements.countCancelled.textContent = counts.cancelled;
-        elements.orderCount.textContent = `${counts.all} order${counts.all !== 1 ? 's' : ''}`;
+        elements.orderCount.textContent = `${counts.all} ${t('orders', 'order')}${counts.all !== 1 ? 's' : ''}`;
     }
 
     // ============================================================
@@ -1281,6 +1292,7 @@
         }
 
         renderOrders(filteredOrders);
+         translateUI();
     }
 
     // ============================================================
@@ -1296,11 +1308,13 @@
                     <div class="st-empty-icon" style="font-size:48px;color:#E2E8F0;margin-bottom:12px;">
                         <i class="fas fa-inbox"></i>
                     </div>
-                    <p style="font-weight:600;color:#0F172A;">No orders with status "${currentStatus}"</p>
-                    <p style="font-size:14px;color:#94A3B8;">Try a different filter.</p>
+                    <p style="font-weight:600;color:#0F172A;" data-translate="no_orders_status">No orders with status</p>
+                    <p style="font-weight:600;color:#0F172A;">"${currentStatus}"</p>
+                    <p style="font-size:14px;color:#94A3B8;" data-translate="try_different_filter">Try a different filter.</p>
                 </div>
             `;
             return;
+           
         }
 
         container.innerHTML = orders.map(order => {
@@ -1308,7 +1322,7 @@
             const statusLabel = order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending';
             const totalItems = order.items?.reduce((sum, item) => sum + (item.qty || 1), 0) || 0;
             const itemNames = order.items?.map(item => item.name).slice(0, 3).join(', ') || 'No items';
-            const moreItems = order.items?.length > 3 ? ` +${order.items.length - 3} more` : '';
+            const moreItems = order.items?.length > 3 ? ` +${order.items.length - 3} ${t('more', 'more')}` : '';
 
             return `
                 <div class="st-order-card" onclick="openOrderDetail('${order.id}')" data-order-id="${order.id}">
@@ -1321,7 +1335,7 @@
                     </div>
                     <div class="st-order-meta">
                         <span><i class="fas fa-calendar-alt"></i> ${formatDate(order.created_at || order.date)}</span>
-                        <span><i class="fas fa-box"></i> ${totalItems} item${totalItems !== 1 ? 's' : ''}</span>
+                        <span><i class="fas fa-box"></i> ${totalItems} ${t('item', 'item')}${totalItems !== 1 ? 's' : ''}</span>
                         ${order.customer_name ? `<span><i class="fas fa-user"></i> ${order.customer_name}</span>` : ''}
                     </div>
                     <div class="st-order-bottom">
@@ -1336,6 +1350,7 @@
                 </div>
             `;
         }).join('');
+        
     }
 
     // ============================================================
@@ -1347,16 +1362,16 @@
 
         let actionHtml = '';
         if (type === 'shop') {
-            actionHtml = `<a href="/product/" class="st-btn-shop"><i class="fas fa-store"></i> Browse Products</a>`;
+            actionHtml = `<a href="/product/" class="st-btn-shop" data-translate="browse_products"><i class="fas fa-store"></i> Browse Products</a>`;
         } else if (type === 'login') {
             actionHtml = `
-                <button onclick="window.location.href='/account-settings'" class="st-btn-shop">
+                <button onclick="window.location.href='/account-settings'" class="st-btn-shop" data-translate="go_to_login">
                     <i class="fas fa-sign-in-alt"></i> Go to Login
                 </button>
             `;
         } else if (type === 'retry') {
             actionHtml = `
-                <button onclick="loadOrders()" class="st-btn-shop">
+                <button onclick="loadOrders()" class="st-btn-shop" data-translate="retry">
                     <i class="fas fa-sync"></i> Retry
                 </button>
             `;
@@ -1381,14 +1396,14 @@
     async function openOrderDetail(orderId, options = {}) {
         const order = allOrders.find(o => o.id === orderId);
         if (!order) {
-            showToast('Order not found', 'error');
+            showToast(t('order_not_found', 'Order not found'), 'error');
             return;
         }
 
         // ✅ AWAIT the user
         const user = await getUserData();
         if (user && !orderBelongsToUser(order, user)) {
-            showToast('This order does not belong to your account.', 'error');
+            showToast(t('order_not_belong', 'This order does not belong to your account.'), 'error');
             clearOrderRoute();
             return;
         }
@@ -1468,7 +1483,7 @@
         let timelineHtml = '';
         if (order.status === 'cancelled') {
             timelineHtml = `
-                <div style="text-align:center;padding:12px 0;color:#DC2626;font-weight:600;">
+                <div style="text-align:center;padding:12px 0;color:#DC2626;font-weight:600;" data-translate="order_cancelled">
                     <i class="fas fa-times-circle"></i> Order Cancelled
                 </div>
             `;
@@ -1484,17 +1499,17 @@
         }
 
         // Build WhatsApp message
-        const waMessage = `🛒 *Order #${order.id}*%0A%0A` +
-            `👤 *Customer:* ${order.customer_name || 'N/A'}%0A` +
-            `📧 *Email:* ${order.email || 'N/A'}%0A` +
-            `📱 *Phone:* ${order.phone || 'N/A'}%0A` +
-            `📍 *Address:* ${order.address || 'N/A'}%0A` +
-            `📦 *Status:* ${statusLabel}%0A` +
-            `📅 *Date:* ${formatDate(order.created_at || order.date)}%0A%0A` +
-            `📦 *Items:*%0A${order.items?.map(item => 
+        const waMessage = `🛒 *${t('order', 'Order')} #${order.id}*%0A%0A` +
+            `👤 *${t('customer', 'Customer')}:* ${order.customer_name || 'N/A'}%0A` +
+            `📧 *${t('email', 'Email')}:* ${order.email || 'N/A'}%0A` +
+            `📱 *${t('phone', 'Phone')}:* ${order.phone || 'N/A'}%0A` +
+            `📍 *${t('address', 'Address')}:* ${order.address || 'N/A'}%0A` +
+            `📦 *${t('status', 'Status')}:* ${statusLabel}%0A` +
+            `📅 *${t('date', 'Date')}:* ${formatDate(order.created_at || order.date)}%0A%0A` +
+            `📦 *${t('items', 'Items')}:*%0A${order.items?.map(item => 
                 `• ${item.name} (${item.qty || 1}x) - FCFA ${((item.price || 0) * (item.qty || 1)).toFixed(2)}`
             ).join('%0A') || 'No items'}%0A%0A` +
-            `💰 *Total:* FCFA ${(order.total || 0).toFixed(2)}`;
+            `💰 *${t('total', 'Total')}:* FCFA ${(order.total || 0).toFixed(2)}`;
 
         const phone = order.phone ? order.phone.replace(/\D/g, '') : '0172934545';
         const waUrl = `https://wa.me/${phone}?text=${waMessage}`;
@@ -1503,7 +1518,7 @@
             <div class="st-sheet-header" style="margin-bottom:16px;">
                 <div class="st-order-id" style="font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px;">
                     ${order.id || 'N/A'}
-                    <button class="st-copy-btn" onclick="copyOrderId('${order.id}')" title="Copy order ID" style="background:none;border:none;color:#6C3CE1;cursor:pointer;font-size:14px;">
+                    <button class="st-copy-btn" onclick="copyOrderId('${order.id}')" title="Copy order ID" style="background:none;border:none;color:#6C3CE1;cursor:pointer;font-size:14px;" data-translate="copy">
                         <i class="fas fa-copy"></i>
                     </button>
                 </div>
@@ -1525,7 +1540,7 @@
 
             <!-- Customer Info -->
             <div class="st-detail-section" style="margin-bottom:12px;">
-                <div class="st-section-label" style="font-weight:600;font-size:14px;color:#475569;margin-bottom:4px;"><i class="fas fa-user"></i> Customer</div>
+                <div class="st-section-label" style="font-weight:600;font-size:14px;color:#475569;margin-bottom:4px;"><i class="fas fa-user"></i> <span data-translate="customer">Customer</span></div>
                 <div class="st-section-value" style="font-size:14px;color:#0F172A;">
                     ${order.customer_name || 'N/A'}<br>
                     ${order.phone ? `<a href="tel:${order.phone}" style="color:#6C3CE1;text-decoration:none;">${order.phone}</a>` : ''}
@@ -1535,7 +1550,7 @@
 
             <!-- Order Total -->
             <div class="st-detail-section" style="margin-bottom:12px;">
-                <div class="st-section-label" style="font-weight:600;font-size:14px;color:#475569;margin-bottom:4px;"><i class="fas fa-money-bill-wave"></i> Order Total</div>
+                <div class="st-section-label" style="font-weight:600;font-size:14px;color:#475569;margin-bottom:4px;"><i class="fas fa-money-bill-wave"></i> <span data-translate="order_total">Order Total</span></div>
                 <div class="st-section-value" style="font-size:24px;font-weight:800;color:#6C3CE1;">
                     FCFA ${(order.total || 0).toFixed(2)}
                 </div>
@@ -1543,24 +1558,24 @@
 
             <!-- Order Items -->
             <div class="st-detail-section" style="margin-bottom:12px;">
-                <div class="st-section-label" style="font-weight:600;font-size:14px;color:#475569;margin-bottom:4px;"><i class="fas fa-boxes"></i> Order Items (${totalItems})</div>
+                <div class="st-section-label" style="font-weight:600;font-size:14px;color:#475569;margin-bottom:4px;"><i class="fas fa-boxes"></i> <span data-translate="order_items">Order Items</span> (${totalItems})</div>
                 ${itemsHtml}
             </div>
 
             <!-- Notes -->
             ${order.notes ? `
                 <div class="st-detail-section" style="margin-bottom:12px;">
-                    <div class="st-section-label" style="font-weight:600;font-size:14px;color:#475569;margin-bottom:4px;"><i class="fas fa-sticky-note"></i> Notes</div>
+                    <div class="st-section-label" style="font-weight:600;font-size:14px;color:#475569;margin-bottom:4px;"><i class="fas fa-sticky-note"></i> <span data-translate="notes">Notes</span></div>
                     <div class="st-section-value" style="font-size:14px;color:#64748B;">${order.notes}</div>
                 </div>
             ` : ''}
 
             <!-- Actions -->
             <div class="st-sheet-actions" style="display:flex;gap:12px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #E2E8F0;margin-top:8px;">
-                <a href="index.html" class="st-btn-primary" style="flex:1;padding:12px 20px;background:linear-gradient(135deg,#6C3CE1,#5A2FC4);color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;text-align:center;transition:all 0.3s ease;">
+                <a href="index.html" class="st-btn-primary" style="flex:1;padding:12px 20px;background:linear-gradient(135deg,#6C3CE1,#5A2FC4);color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;text-align:center;transition:all 0.3s ease;" data-translate="continue_shopping">
                     <i class="fas fa-shopping-bag"></i> Continue Shopping
                 </a>
-                <a href="${waUrl}" target="_blank" class="st-btn-whatsapp" style="flex:1;padding:12px 20px;background:#25D366;color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;text-align:center;transition:all 0.3s ease;">
+                <a href="${waUrl}" target="_blank" class="st-btn-whatsapp" style="flex:1;padding:12px 20px;background:#25D366;color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;text-align:center;transition:all 0.3s ease;" data-translate="contact_us">
                     <i class="fab fa-whatsapp"></i> Contact Us
                 </a>
             </div>
@@ -1574,7 +1589,7 @@
     function copyOrderId(orderId) {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(orderId).then(() => {
-                showToast('✅ Order ID copied to clipboard!');
+                showToast('✅ ' + t('order_id_copied', 'Order ID copied to clipboard!'));
             }).catch(() => {
                 fallbackCopy(orderId);
             });
@@ -1590,7 +1605,7 @@
         input.select();
         document.execCommand('copy');
         document.body.removeChild(input);
-        showToast('✅ Order ID copied to clipboard!');
+        showToast('✅ ' + t('order_id_copied', 'Order ID copied to clipboard!'));
     }
 
     // ============================================================

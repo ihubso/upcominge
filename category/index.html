@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-    <title>Category · Sucess Technology</title>
+    <title data-translate="category_page_title">Category · Sucess Technology</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+  <script src="/head/Translate.js" defer></script>
+  <script src="/head/lan.js" defer></script>
   <script src="/head/header-core.js" defer></script>
 <script src="/head/header-database.js" defer></script>
 <script src="/head/header-auth.js" defer></script>
@@ -512,8 +514,8 @@
             <!-- Hero Content -->
             <div class="hero-content max-w-7xl mx-auto px-4" id="heroContent" style="display:none;">
                 <div class="category-icon" id="categoryIcon">🏷️</div>
-                <h1 id="categoryTitle">All Categories</h1>
-                <p id="categorySubtitle">Explore our collection</p>
+                <h1 id="categoryTitle" data-translate="all_categories">All Categories</h1>
+                <p id="categorySubtitle" data-translate="explore_collection">Explore our collection</p>
             </div>
         </section>
 
@@ -521,23 +523,23 @@
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
             <div id="loadMoreContainer" class="text-center mt-8">
-                <button id="loadMoreBtn" class="bg-primary text-white px-8 py-3 rounded-full font-medium hover:bg-primaryHover transition-colors hidden">
+                <button id="loadMoreBtn" class="bg-primary text-white px-8 py-3 rounded-full font-medium hover:bg-primaryHover transition-colors hidden" data-translate="load_more">
                     Load More
                 </button>
             </div>
             <div id="noProducts" class="hidden text-center py-12 text-gray-500">
                 <span class="text-4xl block mb-4">😕</span>
-                <p>No products found for this category.</p>
+                <p data-translate="no_products_found">No products found for this category.</p>
             </div>
         </section>
 
         <!-- Related Products Section -->
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-gray-200">
-            <h3 class="text-2xl font-bold mb-6">🔄 You May Also Like</h3>
+            <h3 class="text-2xl font-bold mb-6" data-translate="you_may_also_like">🔄 You May Also Like</h3>
             <div id="relatedGrid" class="related-grid"></div>
             <div id="relatedLoadMore" class="related-loadmore hidden">
                 <div class="loader-small"></div>
-                <span>Loading more products...</span>
+                <span data-translate="loading_more_products">Loading more products...</span>
             </div>
         </section>
     </main>
@@ -546,13 +548,13 @@
     <footer class="bg-dark text-white py-12 mt-12">
         <div class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
-                <h4 class="font-bold mb-4">Products</h4>
-                <p class="text-slate-400 text-sm">Phone</p>
-                <p class="text-slate-400 text-sm">Tablet</p>
-                <p class="text-slate-400 text-sm">Audio</p>
+                <h4 class="font-bold mb-4" data-translate="footer_products">Products</h4>
+                <p class="text-slate-400 text-sm" data-translate="footer_phone">Phone</p>
+                <p class="text-slate-400 text-sm" data-translate="footer_tablet">Tablet</p>
+                <p class="text-slate-400 text-sm" data-translate="footer_audio">Audio</p>
             </div>
             <div>
-                <h4 class="font-bold mb-4">📱 Follow Us</h4>
+                <h4 class="font-bold mb-4" data-translate="footer_follow">📱 Follow Us</h4>
                 <div class="flex gap-4 mt-2">
                     <a id="facebookLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-facebook"></i></a>
                     <a id="instagramLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-instagram"></i></a>
@@ -560,20 +562,20 @@
                 </div>
             </div>
             <div>
-                <h4 class="font-bold mb-4">About</h4>
-                <p class="text-slate-400 text-sm">About Us</p>
-                <p class="text-slate-400 text-sm">Press</p>
-                <a href="/contactus" class="text-slate-400 text-sm block hover:text-primary transition-colors">📍 Locate Us</a>
+                <h4 class="font-bold mb-4" data-translate="footer_about">About</h4>
+                <p class="text-slate-400 text-sm" data-translate="about_us">About Us</p>
+                <p class="text-slate-400 text-sm" data-translate="press">Press</p>
+                <a href="/contactus" class="text-slate-400 text-sm block hover:text-primary transition-colors" data-translate="locate_us">📍 Locate Us</a>
             </div>
             <div>
-                <h4 class="font-bold mb-4">📞 Contact</h4>
+                <h4 class="font-bold mb-4" data-translate="footer_contact">📞 Contact</h4>
                 <p id="footerEmail" class="text-slate-400 text-sm"></p>
                 <p id="footerPhone" class="text-slate-400 text-sm"></p>
                 <p id="footerAddress" class="text-slate-400 text-sm"></p>
             </div>
         </div>
         <div class="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400 text-sm">
-            <p>&copy; 2024 Sucess Technology. All rights reserved.</p>
+            <p data-translate="copyright">&copy; 2024 Sucess Technology. All rights reserved.</p>
         </div>
     </footer>
 
@@ -602,6 +604,15 @@
     let heroInterval = null;
     let isHeroReady = false;
     let infiniteScrollObserver = null;
+
+    // Helper function for translations
+    function t(key, fallback) {
+        if (window.Translations && window.Translations.translate) {
+            const result = window.Translations.translate(key);
+            if (result && result !== key) return result;
+        }
+        return fallback || key;
+    }
 
     // ============================================================
     //  HELPERS
@@ -672,6 +683,15 @@
             'uncategorized': '📦'
         };
         return icons[category.toLowerCase()] || '📦';
+    }
+
+    function getTranslatedCategory(category) {
+        const key = `category_${category.toLowerCase()}`;
+        if (window.Translations && window.Translations.translate) {
+            const result = window.Translations.translate(key);
+            if (result && result !== key) return result;
+        }
+        return category.charAt(0).toUpperCase() + category.slice(1);
     }
 
     // ============================================================
@@ -800,7 +820,7 @@
         const products = await fetchAllProducts();
         const product = products.find(p => p.id === productId);
         if (!product) {
-            showToast('❌ Product not found');
+            showToast('❌ ' + t('product_not_found', 'Product not found'));
             return;
         }
 
@@ -823,7 +843,7 @@
         }
 
         await saveCart(cart);
-        showToast(`✅ ${product.name} added to cart!`);
+        showToast(`✅ ${product.name} ${t('added_to_cart', 'added to cart!')}`);
     }
 
     // ============================================================
@@ -835,7 +855,7 @@
         if (!container) return;
 
         if (!cart.length) {
-            container.innerHTML = '<div class="text-center py-8 text-gray-500">Cart empty</div>';
+            container.innerHTML = '<div class="text-center py-8 text-gray-500" data-translate="cart_empty">Cart empty</div>';
             document.getElementById('cartTotal').innerText = '0.00';
             return;
         }
@@ -885,7 +905,7 @@
 
     window.clearCart = async function() {
         await saveCart([]);
-        showToast('Cart cleared');
+        showToast(t('cart_cleared', 'Cart cleared'));
         await renderCart();
     };
 
@@ -900,9 +920,9 @@
         const reviewCount = getReviewCount(p.id);
 
         let badge = '';
-        if (p.isHot) badge = '<span class="absolute top-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">HOT</span>';
-        else if (p.isNew) badge = '<span class="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">NEW</span>';
-        else if (p.isDeal) badge = '<span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">DEAL</span>';
+        if (p.isHot) badge = `<span class="absolute top-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full" data-translate="badge_hot">HOT</span>`;
+        else if (p.isNew) badge = `<span class="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full" data-translate="badge_new">NEW</span>`;
+        else if (p.isDeal) badge = `<span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full" data-translate="badge_deal">DEAL</span>`;
 
         return `
             <div class="product-card" onclick="window.location.href='/item/?product=${p.id}'">
@@ -922,7 +942,7 @@
                     </div>
                     <div class="product-actions">
                         <span class="product-price">FCFA ${(p.price || 0).toFixed(2)}</span>
-                        <button class="btn-cart" onclick="event.stopPropagation(); addToCart('${p.id}')">
+                        <button class="btn-cart" onclick="event.stopPropagation(); addToCart('${p.id}')" data-translate="add_to_cart">
                             <i class="fas fa-shopping-cart"></i>
                         </button>
                     </div>
@@ -950,7 +970,7 @@
             sentinel.innerHTML = `
                 <div class="flex items-center gap-3 text-gray-500">
                     <div class="loader-small" style="width:1.5rem;height:1.5rem;border:3px solid rgba(230,0,18,0.15);border-top-color:#e60012;border-radius:9999px;animation:spin 1s linear infinite;"></div>
-                    <span>Loading more products...</span>
+                    <span data-translate="loading_more_products">Loading more products...</span>
                 </div>
             `;
             // Insert after products grid
@@ -1023,16 +1043,16 @@
             const categoryIcon = document.getElementById('categoryIcon');
             
             if (category === 'all') {
-                categoryTitle.textContent = 'All Categories';
-                categorySubtitle.textContent = 'Explore our complete collection';
+                categoryTitle.textContent = t('all_categories', 'All Categories');
+                categorySubtitle.textContent = t('explore_collection_full', 'Explore our complete collection');
                 categoryIcon.textContent = '🏷️';
             } else {
-                const displayName = category.charAt(0).toUpperCase() + category.slice(1);
+                const displayName = getTranslatedCategory(category);
                 categoryTitle.textContent = displayName;
-                categorySubtitle.textContent = `Discover our ${displayName} products`;
+                categorySubtitle.textContent = t('discover_products', `Discover our ${displayName} products`);
                 categoryIcon.textContent = getCategoryIcon(category);
             }
-            document.title = `${category === 'all' ? 'All Categories' : category} · Sucess Technology`;
+            document.title = `${category === 'all' ? t('all_categories', 'All Categories') : category} · Sucess Technology`;
 
             // Filter products
             let filtered = category === 'all'
@@ -1093,11 +1113,12 @@
             
             paginatedItems.forEach(item => {
                 if (item.type === 'header') {
+                    const translatedCat = getTranslatedCategory(item.category);
                     html += `
                         <div class="col-span-2 md:col-span-3 lg:col-span-4 mt-8 mb-4">
                             <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-primary pb-3 flex items-center gap-3">
                                 <span class="text-3xl">${getCategoryIcon(item.category)}</span>
-                                ${item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+                                <span data-translate="category_${item.category.toLowerCase()}">${translatedCat}</span>
                                 <span class="text-sm font-normal text-gray-500 ml-2">(${item.count})</span>
                             </h2>
                         </div>
@@ -1126,11 +1147,13 @@
 
             // Load related products
             await renderRelatedProducts(category, all);
+             translateUI();
 
         } catch (e) {
             console.error('Error loading category products:', e);
-            showToast('Error loading products');
+            showToast(t('error_loading_products', 'Error loading products'));
             hideInfiniteScrollIndicator();
+            translateUI();
         } finally {
             isLoading = false;
         }
