@@ -1090,6 +1090,37 @@ async function placeOrder(e) {
         }
 
         console.log('✅ Order saved to Supabase:', orderId);
+         try {
+        const supabaseUrl =  SUPABASE_CONFIG.url || 'https://bulprhgwuwatzobiojwz.supabase.co';
+        const supabaseAnonKey = SUPABASE_CONFIG.anonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHByaGd3dXdhdHpvYmlvand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDczNDksImV4cCI6MjA5MjA4MzM0OX0.2fcHrGX7iXw5G9nGRNkBy70W1Ex_om1C0v3qbryPmvw';
+
+        const itemCount = orderItems.reduce((sum, it) => sum + (it.qty || 1), 0);
+        const firstItem = orderItems[0]?.name || 'item';
+        const bodyText = itemCount === 1
+            ? `${name} ordered ${firstItem} — FCFA ${orderData.total.toFixed(2)}`
+            : `${name} ordered ${itemCount} items — FCFA ${orderData.total.toFixed(2)}`;
+
+        await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseAnonKey}`
+            },
+            body: JSON.stringify({
+                targetUserId: 'admin@sucesstechnology.com',
+                title: '🛒 New Order Received!',
+                body: bodyText,
+                data: {
+                    url: `/admin-orders.html?order=${encodeURIComponent(orderId)}`,
+                    orderId: orderId,
+                    type: 'new_order'
+                }
+            })
+        });
+        console.log('📤 Admin push sent for order', orderId);
+    } catch (adminPushErr) {
+        console.warn('⚠️ Admin push failed:', adminPushErr);
+    }
 
         // Clear cart
         localStorage.removeItem('st_cartcheckout');
