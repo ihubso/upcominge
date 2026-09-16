@@ -413,6 +413,8 @@ async function initRandomProducts(containerId = 'randomProducts') {
     // Show skeleton loader
     renderSkeletonLoader(container);
 
+    
+
     try {
         const allProducts = await fetchAllProducts();
         
