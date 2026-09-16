@@ -1111,7 +1111,7 @@ async function placeOrder(e) {
                 title: '🛒 New Order Received!',
                 body: bodyText,
                 data: {
-                    url: `/admin-orders.html?order=${encodeURIComponent(orderId)}`,
+                    url: `/vievorder/?order=${encodeURIComponent(orderId)}`,
                     orderId: orderId,
                     type: 'new_order'
                 }
