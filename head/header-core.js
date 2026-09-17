@@ -3,6 +3,46 @@ const SUPABASE_CONFIG = {
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHByaGd3dXdhdHpvYmlvand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDczNDksImV4cCI6MjA5MjA4MzM0OX0.2fcHrGX7iXw5G9nGRNkBy70W1Ex_om1C0v3qbryPmvw'
 };
 
+// Preserve user/session parameters for every internal navigation.
+function navigateWithUserInfo(path) {
+    try {
+        const currentUrl = new URL(window.location.href);
+        const targetUrl = new URL(path, window.location.origin);
+        const userParameterNames = [
+            'user_id', 'user_email', 'user_name', 'user_phone',
+            'user_address', 'session', 'logged_in'
+        ];
+
+        userParameterNames.forEach(name => {
+            if (currentUrl.searchParams.has(name) && !targetUrl.searchParams.has(name)) {
+                targetUrl.searchParams.set(name, currentUrl.searchParams.get(name));
+            }
+        });
+
+        window.location.href = targetUrl.pathname + targetUrl.search + targetUrl.hash;
+    } catch (err) {
+        console.warn('⚠️ Navigation error:', err.message);
+        window.location.href = path;
+    }
+}
+
+window.navigateWithUserInfo = navigateWithUserInfo;
+
+document.addEventListener('click', (event) => {
+    const link = event.target.closest('a');
+    if (!link || event.defaultPrevented || event.button !== 0 ||
+        event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ||
+        link.target === '_blank' || link.hasAttribute('download')) {
+        return;
+    }
+
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('mailto:')) return;
+
+    event.preventDefault();
+    navigateWithUserInfo(href);
+});
+
 let supabaseClient = null;
 let supabaseInitialized = false;
 

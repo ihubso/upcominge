@@ -128,7 +128,7 @@
 
             html += `
                 <div class="deal-slide" data-index="${index}">
-                    <div class="deal-card" onclick="window.location.href='/item/?product=${deal.id}'">
+                    <div class="deal-card" onclick="window.navigateWithUserInfo('/item/?product=${deal.id}')">
                         <div class="deal-card-image">
                             <img src="${image}" alt="${deal.name || 'Product'}" loading="lazy"
                                  onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Deal'">
@@ -616,7 +616,7 @@
 
         window.dealsData = deals;
         window.loadAllDeals = function() {
-            window.location.href = '/deals/';
+            window.navigateWithUserInfo('/deals/');
         };
       
 

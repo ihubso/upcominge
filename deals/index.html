@@ -1679,7 +1679,7 @@
                                 <span class="deal-savings" data-translate="save_percent">Save ${discount}%</span>
                             </div>
                             <div class="deal-actions">
-                                <button class="deal-btn-view" onclick="event.stopPropagation(); window.location.href='/item/?product=${deal.id}'" data-translate="view_details">
+                                <button class="deal-btn-view" onclick="event.stopPropagation(); window.navigateWithUserInfo('/item/?product=${deal.id}')" data-translate="view_details">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>

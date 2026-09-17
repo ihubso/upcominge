@@ -124,7 +124,7 @@ function renderProductCards(products, container) {
 
         html += `
             <div class="rp-card" data-product-id="${product.id}" >
-           <dive onclick="window.location.href='/item/?product=${product.id}'">
+            <dive onclick="window.navigateWithUserInfo('/item/?product=${product.id}')">
                 <div class="rp-card-image">
                     <img src="${image}" alt="${product.name || 'Product'}" loading="lazy" 
                          onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'">
@@ -137,7 +137,7 @@ function renderProductCards(products, container) {
                         <i class="fas fa-heart"></i>
                     </button>
                 </div>
-                <div class="rp-card-body" onclick="window.location.href='/item/?product=${product.id}'">
+                <div class="rp-card-body" onclick="window.navigateWithUserInfo('/item/?product=${product.id}')">
                     <h4 class="rp-card-title">${product.name || 'Unknown Product'}</h4>
                     ${product.brand ? `<p class="rp-card-brand">${product.brand}</p>` : ''}
                     <div class="rp-card-price">

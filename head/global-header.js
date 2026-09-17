@@ -60,6 +60,31 @@ function getCurrentCustomerId() {
 
 window.getCurrentCustomerId = getCurrentCustomerId;
 
+// Preserve user/session parameters for every internal navigation.
+function navigateWithUserInfo(path) {
+    try {
+        const currentUrl = new URL(window.location.href);
+        const targetUrl = new URL(path, window.location.origin);
+        const userParameterNames = [
+            'user_id', 'user_email', 'user_name', 'user_phone',
+            'user_address', 'session', 'logged_in'
+        ];
+
+        userParameterNames.forEach(name => {
+            if (currentUrl.searchParams.has(name) && !targetUrl.searchParams.has(name)) {
+                targetUrl.searchParams.set(name, currentUrl.searchParams.get(name));
+            }
+        });
+
+        window.location.href = targetUrl.pathname + targetUrl.search + targetUrl.hash;
+    } catch (err) {
+        console.warn('⚠️ Navigation error:', err.message);
+        window.location.href = path;
+    }
+}
+
+window.navigateWithUserInfo = navigateWithUserInfo;
+
 function loadSupabaseSDK() {
     if (document.querySelector('script[src*=\"supabase-js\"]')) return;
     
@@ -97,16 +122,16 @@ function updateUrlWithUserInfo() {
             params.set('user_id', user.id);
         }
         if (user.email && !params.has('user_email')) {
-            params.set('user_email', encodeURIComponent(user.email));
+            params.set('user_email', user.email);
         }
         if (user.name && !params.has('user_name')) {
-            params.set('user_name', encodeURIComponent(user.name));
+            params.set('user_name', user.name);
         }
         if (user.phone && !params.has('user_phone')) {
-            params.set('user_phone', encodeURIComponent(user.phone));
+            params.set('user_phone', user.phone);
         }
         if (user.address && !params.has('user_address')) {
-            params.set('user_address', encodeURIComponent(user.address));
+            params.set('user_address', user.address);
         }
         // Add session info
         if (!params.has('session')) {
@@ -172,10 +197,16 @@ function getUserInfoFromUrl() {
             userInfo.id = params.get('user_id');
         }
         if (params.has('user_email')) {
-            userInfo.email = decodeURIComponent(params.get('user_email'));
+            userInfo.email = params.get('user_email');
         }
         if (params.has('user_name')) {
-            userInfo.name = decodeURIComponent(params.get('user_name'));
+            userInfo.name = params.get('user_name');
+        }
+        if (params.has('user_phone')) {
+            userInfo.phone = params.get('user_phone');
+        }
+        if (params.has('user_address')) {
+            userInfo.address = params.get('user_address');
         }
         if (params.has('session')) {
             userInfo.session = params.get('session');
@@ -2938,19 +2969,35 @@ async function initHeader() {
     // ----- Search -----
     function handleSearch(e) {
         if (e.key === 'Enter' && e.target.value.trim() !== '') {
-            window.location.href = `/Search/?search=${encodeURIComponent(e.target.value.trim())}`;
+            navigateWithUserInfo(`/Search/?search=${encodeURIComponent(e.target.value.trim())}`);
         }
     }
     
     elements.searchInput.addEventListener('keypress', handleSearch);
     elements.mobileSearchInput.addEventListener('keypress', handleSearch);
+
+    // Apply the same preservation to links rendered by the shared header.
+    document.addEventListener('click', (event) => {
+        const link = event.target.closest('a');
+        if (!link || event.defaultPrevented || event.button !== 0 ||
+            event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ||
+            link.target === '_blank' || link.hasAttribute('download')) {
+            return;
+        }
+
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('mailto:')) return;
+
+        event.preventDefault();
+        navigateWithUserInfo(href);
+    });
     
     // ----- Cart & Wishlist -----
-    elements.cartBtn.addEventListener('click', () => window.location.href = '/Cart');
-    elements.mobileCartBtn.addEventListener('click', () => window.location.href = '/Cart');
-    elements.wishlistBtn.addEventListener('click', () => window.location.href = '/wishlist');
-    elements.mobileWishlistBtn.addEventListener('click', () => window.location.href = '/wishlist');
-        elements.foryoumobileWishlistBtn.addEventListener('click', () => window.location.href = '/ForYou');
+    elements.cartBtn.addEventListener('click', () => navigateWithUserInfo('/Cart'));
+    elements.mobileCartBtn.addEventListener('click', () => navigateWithUserInfo('/Cart'));
+    elements.wishlistBtn.addEventListener('click', () => navigateWithUserInfo('/wishlist'));
+    elements.mobileWishlistBtn.addEventListener('click', () => navigateWithUserInfo('/wishlist'));
+    elements.foryoumobileWishlistBtn.addEventListener('click', () => navigateWithUserInfo('/ForYou'));
     
     // ----- Auth Modal -----
     function openAuthModal() {
@@ -4202,7 +4249,7 @@ elements.androidLogout.addEventListener('click', () => {
     elements.myOrdersBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
         if (AppState.isLoggedIn) {
-            window.location.href = '/orders';
+            navigateWithUserInfo('/orders');
         } else {
             openLoginModal();
         }
@@ -4210,7 +4257,7 @@ elements.androidLogout.addEventListener('click', () => {
      elements.andmyOrdersBtn.addEventListener('click', () => {
        closeMobileDrawer();
         if (AppState.isLoggedIn) {
-            window.location.href = '/orders';
+            navigateWithUserInfo('/orders');
         } else {
             openLoginModal();
         }
@@ -4219,7 +4266,7 @@ elements.androidLogout.addEventListener('click', () => {
     elements.settingsBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
         if (AppState.isLoggedIn) {
-            window.location.href = '/account-settings';
+            navigateWithUserInfo('/account-settings');
         } else {
             openLoginModal();
         }
@@ -4227,7 +4274,7 @@ elements.androidLogout.addEventListener('click', () => {
         elements.andsettingsBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
         if (AppState.isLoggedIn) {
-            window.location.href = '/account-settings';
+            navigateWithUserInfo('/account-settings');
         } else {
             openLoginModal();
         }

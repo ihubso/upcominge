@@ -870,7 +870,7 @@
                 const reviewCount = product.reviewCount || 0;
 
                 return `
-                    <div class="st-product-card" onclick="window.location.href='/item/?product=${product.id}'">
+                    <div class="st-product-card" onclick="window.navigateWithUserInfo('/item/?product=${product.id}')">
                         <div class="st-product-image">
                             <img src="${image}" alt="${product.name}" loading="lazy" 
                                  onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'">
@@ -1063,7 +1063,7 @@
         // ============================================================
 
         function clearSearch() {
-            window.location.href = '/Search/';
+            window.navigateWithUserInfo('/Search/');
         }
 
         // ============================================================
@@ -1098,9 +1098,9 @@
             elements.searchBtn.addEventListener('click', function() {
                 const query = elements.searchInput.value.trim();
                 if (query) {
-                    window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
+                    window.navigateWithUserInfo(`/Search/?search=${encodeURIComponent(query)}`);
                 } else {
-                    window.location.href = '/Search/';
+                    window.navigateWithUserInfo('/Search/');
                 }
             });
 
@@ -1109,9 +1109,9 @@
                 if (e.key === 'Enter') {
                     const query = this.value.trim();
                     if (query) {
-                        window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
+                        window.navigateWithUserInfo(`/Search/?search=${encodeURIComponent(query)}`);
                     } else {
-                        window.location.href = '/Search/';
+                        window.navigateWithUserInfo('/Search/');
                     }
                 }
             });

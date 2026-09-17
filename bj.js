@@ -1501,7 +1501,7 @@ async function initHeader() {
     elements.mobileAccountBtn.addEventListener('click', () => {
         if (AppState.isLoggedIn) {
             // Go to account page
-            window.location.href = HEADER_CONFIG.pages.settings;
+            window.navigateWithUserInfo(HEADER_CONFIG.pages.settings);
         } else {
             openLoginModal();
         }
@@ -1527,7 +1527,7 @@ async function initHeader() {
     // ----- Search -----
     function handleSearch(e) {
         if (e.key === 'Enter' && e.target.value.trim() !== '') {
-            window.location.href = `${HEADER_CONFIG.pages.products}?search=${encodeURIComponent(e.target.value.trim())}`;
+            window.navigateWithUserInfo(`${HEADER_CONFIG.pages.products}?search=${encodeURIComponent(e.target.value.trim())}`);
         }
     }
     

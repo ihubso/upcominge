@@ -918,7 +918,7 @@
         else if (p.isDeal) badge = `<span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full" data-translate="badge_deal">DEAL</span>`;
 
         return `
-            <div class="product-card" onclick="window.location.href='/item/?product=${p.id}'">
+            <div class="product-card" onclick="window.navigateWithUserInfo('/item/?product=${p.id}')">
                 <div class="relative">
                     <img src="${p.image || 'https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'}" 
                          alt="${p.name}" 
@@ -1176,7 +1176,7 @@
         const grid = document.getElementById('relatedGrid');
         if (!grid) return;
         grid.insertAdjacentHTML('beforeend', items.map(p => `
-            <div class="related-card" onclick="window.location.href='/item/?product=${p.id}'">
+            <div class="related-card" onclick="window.navigateWithUserInfo('/item/?product=${p.id}')">
                 <img src="${p.image || 'https://placehold.co/200x200'}" 
                      alt="${p.name}" 
                      loading="lazy" 

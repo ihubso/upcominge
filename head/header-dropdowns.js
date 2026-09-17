@@ -86,7 +86,7 @@ function showNativeNotification(title, text, link = null, image = null) {
             event.preventDefault();
             window.focus();
             if (link) {
-                window.location.href = link;
+                window.navigateWithUserInfo(link);
             }
             notification.close();
         };
@@ -300,7 +300,7 @@ function renderNotifications() {
 
         return `
             <div class="notification-item ${isUnread ? 'unread' : ''}" 
-                 onclick="${n.link ? `window.location.href='${n.link}'` : `markNotificationAsRead('${n.id}')`}"
+                 onclick="${n.link ? `window.navigateWithUserInfo('${n.link}')` : `markNotificationAsRead('${n.id}')`}" 
                  style="${isUnread ? 'background:#f8fafc;cursor:pointer;' : 'cursor:pointer;'}">
                 ${n.image ? `
                     <div class="notif-image">
@@ -494,7 +494,7 @@ function showNotificationToast(title, text, image = null, type = 'info') {
     toast.addEventListener('click', function() {
         const latest = notifications[0];
         if (latest && latest.link) {
-            window.location.href = latest.link;
+            window.navigateWithUserInfo(latest.link);
         }
         this.remove();
     });

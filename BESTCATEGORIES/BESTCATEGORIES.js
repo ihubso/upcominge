@@ -67,7 +67,7 @@ async function loadBestCategories() {
             
             return `
                 <div class="category-card" 
-                     onclick="location.href='/category/?category=${encodeURIComponent(cat.name)}'">
+                    onclick="window.navigateWithUserInfo('/category/?category=${encodeURIComponent(cat.name)}')">
                     <img src="${imageUrl}" 
                          alt="${displayName}" 
                          loading="lazy" 

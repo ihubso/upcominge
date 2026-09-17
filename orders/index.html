@@ -1358,7 +1358,7 @@
             actionHtml = `<a href="/product/" class="st-btn-shop" data-translate="browse_products"><i class="fas fa-store"></i> Browse Products</a>`;
         } else if (type === 'login') {
             actionHtml = `
-                <button onclick="window.location.href='/account-settings'" class="st-btn-shop" data-translate="go_to_login">
+                <button onclick="window.navigateWithUserInfo('/account-settings')" class="st-btn-shop" data-translate="go_to_login">
                     <i class="fas fa-sign-in-alt"></i> Go to Login
                 </button>
             `;

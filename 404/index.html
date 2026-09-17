@@ -507,7 +507,7 @@
                 const input = document.getElementById('errorSearchInput');
                 const query = input.value.trim();
                 if (query) {
-                    window.location.href = `/product/?search=${encodeURIComponent(query)}`;
+                    window.navigateWithUserInfo(`/product/?search=${encodeURIComponent(query)}`);
                 } else {
                     // Focus the input if empty
                     input.focus();
@@ -540,7 +540,7 @@
             const input = document.getElementById('errorSearchInput');
             const query = input.value.trim();
             if (query) {
-                window.location.href = `/product/?search=${encodeURIComponent(query)}`;
+                window.navigateWithUserInfo(`/product/?search=${encodeURIComponent(query)}`);
             }
         };
     </script>

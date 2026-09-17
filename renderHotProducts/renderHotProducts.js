@@ -207,7 +207,7 @@ async function renderHotProducts(products, containerId = 'hotProducts') {
 
         html += `
             <div class="hot-product-card" data-product-id="${product.id}">
-             <div onclick="window.location.href='/item/?id=${product.id}'">
+            <div onclick="window.navigateWithUserInfo('/item/?id=${product.id}')">
                 <div class="hot-product-image">
                     <img src="${image}" alt="${product.name || 'Product'}" loading="lazy" onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'">
                     ${discountPercent > 0 ? `<span class="hot-product-discount" data-translate="discount_percent">-${discountPercent}%</span>` : ''}

@@ -323,7 +323,7 @@ async function initHeader() {
     // ----- Search -----
     function handleSearch(e) {
         if (e.key === 'Enter' && e.target.value.trim() !== '') {
-            window.location.href = `/Search/?search=${encodeURIComponent(e.target.value.trim())}`;
+            window.navigateWithUserInfo(`/Search/?search=${encodeURIComponent(e.target.value.trim())}`);
         }
     }
     
@@ -331,11 +331,11 @@ async function initHeader() {
     elements.mobileSearchInput.addEventListener('keypress', handleSearch);
     
     // ----- Cart & Wishlist -----
-    elements.cartBtn.addEventListener('click', () => window.location.href = '/Cart');
-    elements.mobileCartBtn.addEventListener('click', () => window.location.href = '/Cart');
-    elements.wishlistBtn.addEventListener('click', () => window.location.href = '/wishlist');
-    elements.mobileWishlistBtn.addEventListener('click', () => window.location.href = '/wishlist');
-        elements.foryoumobileWishlistBtn.addEventListener('click', () => window.location.href = '/ForYou');
+    elements.cartBtn.addEventListener('click', () => window.navigateWithUserInfo('/Cart'));
+    elements.mobileCartBtn.addEventListener('click', () => window.navigateWithUserInfo('/Cart'));
+    elements.wishlistBtn.addEventListener('click', () => window.navigateWithUserInfo('/wishlist'));
+    elements.mobileWishlistBtn.addEventListener('click', () => window.navigateWithUserInfo('/wishlist'));
+    elements.foryoumobileWishlistBtn.addEventListener('click', () => window.navigateWithUserInfo('/ForYou'));
     
     // ----- Auth Modal -----
     function openAuthModal() {
@@ -867,11 +867,11 @@ async function handleSearchClick(event, encodedQuery, url) {
         console.log('✅ Search analytics recorded for:', query);
         
         // Now navigate to the URL
-        window.location.href = url;
+        window.navigateWithUserInfo(url);
     } catch (err) {
         console.warn('⚠️ Search analytics failed, but continuing navigation:', err);
         // Even if analytics fails, navigate to the URL
-        window.location.href = url;
+        window.navigateWithUserInfo(url);
     }
 }
  window.handleSearchClick = handleSearchClick;
@@ -971,7 +971,7 @@ function selectCurrentSearchResult() {
     const index = selectedSearchIndex >= 0 ? selectedSearchIndex : 0;
     const item = items[index];
     if (item) {
-        window.location.href = item.href;
+        window.navigateWithUserInfo(item.href);
     }
 }
 
@@ -1046,7 +1046,7 @@ if (desktopSearch) {
                 selectCurrentSearchResult();
             } else if (query) {
                 recordHeaderSearchQuery(query).catch(() => {});
-                window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
+                window.navigateWithUserInfo(`/Search/?search=${encodeURIComponent(query)}`);
             }
         } else if (e.key === 'Escape') {
             hideSearchResults();
@@ -1094,7 +1094,7 @@ if (mobileSearch) {
             const query = mobileSearch.value.trim();
             if (query) {
                 recordHeaderSearchQuery(query).catch(() => {});
-                window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
+                window.navigateWithUserInfo(`/Search/?search=${encodeURIComponent(query)}`);
             }
         });
     }
@@ -1136,7 +1136,7 @@ if (modalSearchInput) {
             if (query) {
                 recordHeaderSearchQuery(query).catch(() => {});
                 closeMobileSearch();
-                window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
+                window.navigateWithUserInfo(`/Search/?search=${encodeURIComponent(query)}`);
             }
         } else if (e.key === 'Escape') {
             closeMobileSearch();
@@ -1200,7 +1200,7 @@ function handleSearch(e) {
         if (selectedSearchIndex >= 0) {
             selectCurrentSearchResult();
         } else {
-            window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
+            window.navigateWithUserInfo(`/Search/?search=${encodeURIComponent(query)}`);
         }
     }
 }
@@ -1256,7 +1256,7 @@ allSearchInputs.forEach(input => {
                         selectCurrentSearchResult();
                     } else if (query) {
                         recordHeaderSearchQuery(query).catch(() => {});
-                        window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
+                        window.navigateWithUserInfo(`/Search/?search=${encodeURIComponent(query)}`);
                     }
                 } else if (e.key === 'Escape') {
                     hideSearchResults();
@@ -1311,7 +1311,7 @@ allSearchInputs.forEach(input => {
                       
                         recordHeaderSearchQuery(query).catch(() => {});
                         closeMobileSearch();
-                        window.location.href = `/Search/?search=${encodeURIComponent(query)}`;
+                        window.navigateWithUserInfo(`/Search/?search=${encodeURIComponent(query)}`);
                     }
                 } else if (e.key === 'Escape') {
                     closeMobileSearch();
@@ -1395,7 +1395,7 @@ console.log('✅ Search with real-time results initialized');
                 window.clearPendingCheckout();
                 showNotification('notif_redirect_checkout');
                 setTimeout(() => {
-                    window.location.href = '/checkout/';
+                    window.navigateWithUserInfo('/checkout/');
                 }, 300);
             } else {
                 showNotification('notif_welcome_back', 'success', { name: user.name });
@@ -1543,7 +1543,7 @@ elements.registerSubmit.addEventListener('click', async () => {
             window.clearPendingCheckout();
             showNotification('notif_redirect_checkout');
             setTimeout(() => {
-                window.location.href = '/checkout/';
+                window.navigateWithUserInfo('/checkout/');
             }, 300);
         } else {
             showNotification('notif_registration_success', 'success', { name: user.name });
@@ -1614,7 +1614,7 @@ elements.androidLogout.addEventListener('click', () => {
     elements.myOrdersBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
         if (AppState.isLoggedIn) {
-            window.location.href = '/orders';
+            window.navigateWithUserInfo('/orders');
         } else {
             openLoginModal();
         }
@@ -1622,7 +1622,7 @@ elements.androidLogout.addEventListener('click', () => {
      elements.andmyOrdersBtn.addEventListener('click', () => {
        closeMobileDrawer();
         if (AppState.isLoggedIn) {
-            window.location.href = '/orders';
+            window.navigateWithUserInfo('/orders');
         } else {
             openLoginModal();
         }
@@ -1631,7 +1631,7 @@ elements.androidLogout.addEventListener('click', () => {
     elements.settingsBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
         if (AppState.isLoggedIn) {
-            window.location.href = '/account-settings';
+            window.navigateWithUserInfo('/account-settings');
         } else {
             openLoginModal();
         }
@@ -1639,7 +1639,7 @@ elements.androidLogout.addEventListener('click', () => {
         elements.andsettingsBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
         if (AppState.isLoggedIn) {
-            window.location.href = '/account-settings';
+            window.navigateWithUserInfo('/account-settings');
         } else {
             openLoginModal();
         }

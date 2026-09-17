@@ -431,7 +431,7 @@
             }
 
             html += `
-                <div class="category-product-card" onclick="window.location.href='/item/?product=${product.id}'">
+                <div class="category-product-card" onclick="window.navigateWithUserInfo('/item/?product=${product.id}')">
                     <div class="category-product-image">
                         <img src="${image}" alt="${product.name || 'Product'}" loading="lazy"
                              onerror="this.src='https://placehold.co/300x300/6C3CE1/FFFFFF?text=Product'">

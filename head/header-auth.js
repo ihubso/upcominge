@@ -18,16 +18,16 @@ function updateUrlWithUserInfo() {
             params.set('user_id', user.id);
         }
         if (user.email && !params.has('user_email')) {
-            params.set('user_email', encodeURIComponent(user.email));
+            params.set('user_email', user.email);
         }
         if (user.name && !params.has('user_name')) {
-            params.set('user_name', encodeURIComponent(user.name));
+            params.set('user_name', user.name);
         }
         if (user.phone && !params.has('user_phone')) {
-            params.set('user_phone', encodeURIComponent(user.phone));
+            params.set('user_phone', user.phone);
         }
         if (user.address && !params.has('user_address')) {
-            params.set('user_address', encodeURIComponent(user.address));
+            params.set('user_address', user.address);
         }
         // Add session info
         if (!params.has('session')) {

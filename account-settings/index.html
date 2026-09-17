@@ -1111,7 +1111,7 @@ button#stSaveProfileBtn:hover {
             const orderId = encodeURIComponent(order.id || '');
 
             return `
-                <div class="st-order-card" onclick="window.location.href='/orders/?order=${orderId}'" style="cursor:pointer;">
+                <div class="st-order-card" onclick="window.navigateWithUserInfo('/orders/?order=${orderId}')" style="cursor:pointer;">
                     <div class="st-order-header">
                         <span class="st-order-id">${dataTranslate('order_number')} #${order.id || 'N/A'}</span>
                         <span class="st-order-status ${statusClass}">${statusLabel}</span>
@@ -1565,7 +1565,7 @@ button#stSaveProfileBtn:hover {
             showToast('🗑️ Account deleted successfully');
 
             setTimeout(() => {
-                window.location.href = 'index.html';
+                window.navigateWithUserInfo('index.html');
             }, 1500);
 
         } catch (err) {
@@ -1637,7 +1637,7 @@ button#stSaveProfileBtn:hover {
             showToast('👋 Logged out successfully');
 
             setTimeout(() => {
-                window.location.href = 'index.html';
+                window.navigateWithUserInfo('index.html');
             }, 1000);
 
         } catch (err) {

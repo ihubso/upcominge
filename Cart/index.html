@@ -973,7 +973,7 @@ function renderCart() {
                 if (window.clearPendingCheckout) {
                     window.clearPendingCheckout();
                 }
-                window.location.href = '/checkout/';
+                window.navigateWithUserInfo('/checkout/');
             });
         }
     });
