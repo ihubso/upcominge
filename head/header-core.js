@@ -1,67 +1,59 @@
-const SUPABASE_CONFIG = {
-    url: 'https://bulprhgwuwatzobiojwz.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHByaGd3dXdhdHpvYmlvand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDczNDksImV4cCI6MjA5MjA4MzM0OX0.2fcHrGX7iXw5G9nGRNkBy70W1Ex_om1C0v3qbryPmvw'
-};
 
 // Preserve user/session parameters for every internal navigation.
-function navigateWithUserInfo(path) {
+function navigateWithUserInfo(path){
     try {
-        const currentUrl = new URL(window.location.href);
         const targetUrl = new URL(path, window.location.origin);
-        const userParameterNames = [
-            'user_id', 'user_email', 'user_name', 'user_phone',
-            'user_address', 'session', 'logged_in'
-        ];
-
-        userParameterNames.forEach(name => {
-            if (currentUrl.searchParams.has(name) && !targetUrl.searchParams.has(name)) {
-                targetUrl.searchParams.set(name, currentUrl.searchParams.get(name));
-            }
-        });
-
+        
+        // Get user from storage (not just URL)
+        let user = null;
+        try {
+            const stored = localStorage.getItem("st_customer") || sessionStorage.getItem("st_customer");
+            if (stored) user = JSON.parse(stored);
+        } catch(e) {}
+        
+        // Also check AppState
+        if (!user && window.STHeader?.AppState?.user) {
+            user = window.STHeader.AppState.user;
+        }
+        
+        // Add user params to URL if we have a user
+        if (user?.id) {
+            targetUrl.searchParams.set("user_id", user.id);
+            if (user.email) targetUrl.searchParams.set("user_email", user.email);
+            if (user.name) targetUrl.searchParams.set("user_name", user.name);
+            if (user.phone) targetUrl.searchParams.set("user_phone", user.phone);
+            if (user.address) targetUrl.searchParams.set("user_address", user.address);
+            targetUrl.searchParams.set("session", Date.now().toString());
+            targetUrl.searchParams.set("logged_in", "true");
+        }
+        
         window.location.href = targetUrl.pathname + targetUrl.search + targetUrl.hash;
-    } catch (err) {
-        console.warn('⚠️ Navigation error:', err.message);
+    } catch(err) {
+        console.warn("⚠️ Navigation error:", err.message);
         window.location.href = path;
     }
 }
 
 window.navigateWithUserInfo = navigateWithUserInfo;
 
-document.addEventListener('click', (event) => {
-    const link = event.target.closest('a');
-    if (!link || event.defaultPrevented || event.button !== 0 ||
+document.addEventListener("click", function(event) {
+    const link = event.target.closest("a");
+    if (!link || event.defaultPrevented || event.button !== 0 || 
         event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ||
-        link.target === '_blank' || link.hasAttribute('download')) {
-        return;
+        link.target === "_blank" || link.hasAttribute("download")) return;
+    
+    const href = link.getAttribute("href");
+    if (!href || href.startsWith("#") || href.startsWith("mailto:") || 
+        href.startsWith("tel:") || href.startsWith("http") && !href.includes(window.location.hostname)) {
+        return; // Don't intercept external links
     }
-
-    const href = link.getAttribute('href');
-    if (!href || href.startsWith('#') || href.startsWith('mailto:')) return;
-
+    
+    // Only intercept internal navigation
     event.preventDefault();
     navigateWithUserInfo(href);
 });
 
-let supabaseClient = null;
-let supabaseInitialized = false;
 
-function getSupabaseClient() {
-    if (supabaseClient) return supabaseClient;
-    
-    if (typeof supabase !== 'undefined' && supabase.createClient) {
-        supabaseClient = supabase.createClient(
-            SUPABASE_CONFIG.url, 
-            SUPABASE_CONFIG.anonKey
-        );
-        supabaseInitialized = true;
-        console.log('✅ Supabase client initialized');
-        return supabaseClient;
-    }
-    
-    loadSupabaseSDK();
-    return null;
-}
 function generateSessionId() {
 
     return 'session_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);

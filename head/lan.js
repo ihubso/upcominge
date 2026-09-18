@@ -27,7 +27,6 @@ function translate(key, params = {}) {
         if (translationObj && translationObj[keys[i]] !== undefined) {
             translationObj = translationObj[keys[i]];
         } else {
-            console.warn(`⚠️ Translation key not found: "${key}" in language: ${currentLanguage}`);
             return key;
         }
     }

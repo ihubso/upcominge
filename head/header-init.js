@@ -1764,81 +1764,112 @@ async function loadUserData(customerId, shouldMigrate = false) {
         if (elements.mobileWishlistCount) elements.mobileWishlistCount.textContent = AppState.wishlist.length;
     }
 
-    function setAuthenticatedUser(user, { remember = false, persist = true } = {}) {
-        if (!user?.id) return false;
-
-        AppState.user = user;
-        AppState.isLoggedIn = true;
-
-        if (window.STHeader) {
-            window.STHeader.AppState = AppState;
+function setAuthenticatedUser(user, {remember = false, persist = true} = {}) {
+    if (!user?.id) return false;
+    AppState.user = user;
+    AppState.isLoggedIn = true;
+    
+    if (window.STHeader) window.STHeader.AppState = AppState;
+    window.AppState = AppState;
+    
+    if (persist) {
+        // Always save to both, prefer localStorage
+        localStorage.setItem("st_customer", JSON.stringify(user));
+        if (remember) {
+            sessionStorage.setItem("st_customer", JSON.stringify(user));
         }
-
-        window.AppState = AppState;
-
-        if (persist) {
-            if (remember) {
-                localStorage.setItem('st_customer', JSON.stringify(user));
-                sessionStorage.removeItem('st_customer');
-            } else {
-                sessionStorage.setItem('st_customer', JSON.stringify(user));
-                localStorage.removeItem('st_customer');
-            }
-        }
-
-        if (typeof window.updateUrlWithUserInfo === 'function') {
-            window.updateUrlWithUserInfo();
-        }
-
-        updateAuthUI();
-        return true;
     }
+    
+    if (typeof window.updateUrlWithUserInfo === "function") {
+        window.updateUrlWithUserInfo();
+    }
+    updateAuthUI();
+    return true;
+}
+window.addEventListener("storage", function(e) {
+    if (e.key === "st_customer") {
+        if (e.newValue) {
+            try {
+                const user = JSON.parse(e.newValue);
+                if (user?.id) {
+                    setAuthenticatedUser(user, { remember: true, persist: false });
+                    loadUserData(user.id, false);
+                }
+            } catch(err) {}
+        } else {
+            // Logged out in another tab
+            AppState.user = null;
+            AppState.isLoggedIn = false;
+            updateAuthUI();
+        }
+    }
+});
     
     // ============================================================
     // AUTO-LOGIN from stored session
     // ============================================================
-    async function checkAutoLogin() {
-        // Check localStorage first (persistent "Remember Me")
-        let storedData = localStorage.getItem('st_customer');
-        let source = 'localStorage';
-        
-        // If not in localStorage, check sessionStorage
-        if (!storedData) {
-            storedData = sessionStorage.getItem('st_customer');
-            source = 'sessionStorage';
+async function checkAutoLogin(){
+    // 1. First, try URL params (most reliable for cross-page nav)
+    const urlUser = getUserInfoFromUrl();
+    if (urlUser?.id) {
+        console.log("🔑 Auto-login from URL params:", urlUser.id);
+        // Try to get full user data from DB
+        const fullUser = await getCurrentUserById(urlUser.id);
+        if (fullUser) {
+            setAuthenticatedUser(fullUser, { remember: true, persist: true });
+            await loadUserData(fullUser.id, false);
+            return;
         }
-        
-        if (!storedData) {
-            console.log('🔑 No stored session found');
+    }
+    
+    // 2. Then try storage
+    let storedData = localStorage.getItem("st_customer");
+    let source = "localStorage";
+    if (!storedData) {
+        storedData = sessionStorage.getItem("st_customer");
+        source = "sessionStorage";
+    }
+    
+    if (!storedData) {
+        console.log("🔑 No stored session found");
+        updateAuthUI();
+        return;
+    }
+    
+    try {
+        const user = JSON.parse(storedData);
+        if (!user?.id || !user?.email) {
+            console.warn("⚠️ Invalid stored session data");
+            localStorage.removeItem("st_customer");
+            sessionStorage.removeItem("st_customer");
             updateAuthUI();
             return;
         }
-        
-        try {
-            const user = JSON.parse(storedData);
-            if (!user?.id || !user?.email) {
-                console.warn('⚠️ Invalid stored session data');
-                localStorage.removeItem('st_customer');
-                sessionStorage.removeItem('st_customer');
-                updateAuthUI();
-                return;
-            }
-            
-            console.log(`🔑 Auto-login from ${source} for:`, user.email);
-            
-            // Set user state
-            setAuthenticatedUser(user, { remember: source === 'localStorage', persist: true });
-            
-            await loadUserData(user.id, false);
-            
-            console.log('✅ Auto-login successful');
-        } catch (err) {
-            console.warn('⚠️ Auto-login failed:', err.message);
-            localStorage.removeItem('st_customer');
-            sessionStorage.removeItem('st_customer');
-            updateAuthUI();
-        }
+        console.log(`🔑 Auto-login from ${source} for:`, user.email);
+        setAuthenticatedUser(user, { remember: source === "localStorage", persist: true });
+        await loadUserData(user.id, false);
+    } catch(err) {
+        console.warn("⚠️ Auto-login failed:", err.message);
+        localStorage.removeItem("st_customer");
+        sessionStorage.removeItem("st_customer");
+        updateAuthUI();
     }
+}
+async function getCurrentUserById(userId) {
+    const client = getSupabaseClient();
+    if (!client || !userId) return null;
+    try {
+        const { data, error } = await client
+            .from("customer_accounts")
+            .select("id, email, name, phone, address, country, bio")
+            .eq("id", userId)
+            .maybeSingle();
+        if (error || !data) return null;
+        return data;
+    } catch(e) {
+        return null;
+    }
+}
     
     // ----- Notification System -----
     function getTranslatedNotification(messageOrKey, params = {}) {
@@ -2005,7 +2036,7 @@ async function loadUserData(customerId, shouldMigrate = false) {
     window.fetchCartFromDB = fetchCartFromDB;
     window.fetchWishlistFromDB = fetchWishlistFromDB;
     window.getCurrentCustomerId = getCurrentCustomerId;
-    window.getSupabaseClient = getSupabaseClient;
+
      await populateDropdowns();
     // ----- Initialize -----
     await checkAutoLogin();
@@ -2046,14 +2077,13 @@ async function loadUserData(customerId, shouldMigrate = false) {
     await initNotifications();
     window.getCurrentUser = getCurrentUser;
     window.getBusinessInfo = getBusinessInfo;
-    
-    // Initialize the push manager
+        // Initialize the push manager
     window.pushManager = new PushNotificationManager();
     setTimeout(() => {
         window.pushManager.init();
     }, 2000);
  
-   
+
      
         
   

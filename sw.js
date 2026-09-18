@@ -7,7 +7,7 @@
 // ============================================
 
 // Version number = Cache name - Changing version creates new cache
-const CACHE_NAME = 'success-technology-v3.1.30'; // Increment this to create new cache
+const CACHE_NAME = 'success-technology-v3.1.450'; // Increment this to create new cache
 
 // Assets to cache on install
 const ASSETS_TO_CACHE = [
@@ -119,17 +119,7 @@ self.addEventListener('fetch', function(event) {
     }
     
     event.respondWith(
-        caches.match(event.request)
-            .then(function(response) {
-                // Cache hit - return cached response
-                if (response) {
-                    console.log('[Service Worker] Serving from cache:', event.request.url);
-                    return response;
-                }
-                
-                // Not in cache - fetch from network
-                console.log('[Service Worker] Fetching from network:', event.request.url);
-                return fetch(event.request)
+        fetch(event.request)
                     .then(function(fetchResponse) {
                         // Check if we received a valid response
                         if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
@@ -155,22 +145,19 @@ self.addEventListener('fetch', function(event) {
                     })
                     .catch(function(error) {
                         console.warn('[Service Worker] Fetch failed:', error);
-                        
-                        // Return offline page for HTML requests
-                        if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
-                            return caches.match('/offline.html')
-                                .then(function(offlineResponse) {
+                        return caches.match(event.request).then(function(response) {
+                            if (response) return response;
+                            if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
+                                return caches.match('/offline.html').then(function(offlineResponse) {
                                     return offlineResponse || new Response(
                                         '<h1>You are offline</h1><p>Please check your internet connection.</p>',
                                         { headers: { 'Content-Type': 'text/html' } }
                                     );
                                 });
-                        }
-                        
-                        // Return fallback for other resources
-                        return new Response('Network error occurred', { status: 503 });
-                    });
-            })
+                            }
+                            return new Response('Network error occurred', { status: 503 });
+                        });
+                    })
             .catch(function(error) {
                 console.error('[Service Worker] Fetch error:', error);
                 

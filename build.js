@@ -4,7 +4,6 @@ const path = require('path');
 const { minify } = require('terser');
 
 const headerFiles = [
-  'Translate.js',
   'lan.js',
   'header-core.js',
   'header-database.js',

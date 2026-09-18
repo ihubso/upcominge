@@ -188,7 +188,7 @@ class PushNotificationManager {
             this.swRegistration = await navigator.serviceWorker.ready;
             return this.swRegistration;
         }
-        this.swRegistration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        this.swRegistration = await navigator.serviceWorker.register('/sw.js?v=3.1.31', { scope: '/' });
         return this.swRegistration;
     }
     
