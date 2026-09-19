@@ -1267,6 +1267,30 @@
 .category-chip-side:active {
     transform: scale(0.95); /* Slight "press" effect when clicked */
 }
+/* Lock the main page scroll */
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Make the main container fill the screen */
+main.categories-container {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Make the right content section scrollable */
+section.content-right {
+  height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth mobile scroll */
+}
+
+/* Optional: Make sidebar scrollable too if it's long */
+aside#sidebarLeft {
+  height: 100vh;
+  overflow-y: auto;
+}
     </style>
 </head>
 <body>

@@ -16,976 +16,1131 @@
    <script src="/head/Translate.js"></script>
 <script src="/head/header.min.js" defer></script>
 <script src="/head/st-pjax.js" defer></script>
-    <style>
-        
-.zoommodal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(12px);
-    z-index: 20000000000000;
-    display: hidden;
-    align-items: center;
-    justify-content: center;
-}
+<style>
+    body {
+        padding-top: 80px;
+        padding-bottom: 40px;
+    }
 
-#imageZoomModal {
-    cursor: zoom-out;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-#imageZoomModal.active {
-    opacity: 1;
-    cursor: default;
-}
-
-#imageZoomModal.active img {
-    cursor: grab;
-}
-
-#imageZoomModal.active img:active {
-    cursor: grabbing;
-}
-
-.zoom-control-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: white;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    backdrop-filter: blur(4px);
-}
-
-.zoom-control-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
-}
-
-.zoom-control-btn:active {
-    transform: scale(0.95);
-}
-
-#zoomedImage {
-    -webkit-user-drag: none;
-    user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-}
-
-        /* Product page styles */
-        .product-page-hero {
-            background: linear-gradient(135deg, #fef9e6 0%, #eef2ff 100%);
-            padding: 2rem 0;
+    @media (max-width: 768px) {
+        body {
+            padding-top: 68px;
+            padding-bottom: 80px;
         }
+    }
 
+    @media (max-width: 480px) {
+        body {
+            padding-top: 62px;
+            padding-bottom: 76px;
+        }
+    }
+
+    /* ============================================
+       ZOOM MODAL
+       ============================================ */
+    .zoommodal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(12px);
+        z-index: 20000000000000;
+        display: none;              /* was 'hidden' — invalid CSS value */
+        align-items: center;
+        justify-content: center;
+    }
+
+    #imageZoomModal {
+        cursor: zoom-out;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    #imageZoomModal.active {
+        display: flex;              /* turned on when .active is added */
+        opacity: 1;
+        cursor: default;
+    }
+
+    #imageZoomModal.active img {
+        cursor: grab;
+    }
+
+    #imageZoomModal.active img:active {
+        cursor: grabbing;
+    }
+
+    .zoom-control-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        backdrop-filter: blur(4px);
+    }
+
+    .zoom-control-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.05);
+    }
+
+    .zoom-control-btn:active {
+        transform: scale(0.95);
+    }
+
+    #zoomedImage {
+        -webkit-user-drag: none;
+        user-select: none;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+    }
+
+    /* ============================================
+       PRODUCT PAGE HERO + BREADCRUMB
+       ============================================ */
+    .product-page-hero {
+        background: linear-gradient(135deg, #fef9e6 0%, #eef2ff 100%);
+        padding: 2rem 0;
+    }
+
+    .product-page-hero h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    /* ============================================
+       SHARED SKELETON / SHIMMER
+       ============================================ */
+    .shimmer-loading {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s ease-in-out infinite;
+        border-radius: 12px;
+    }
+
+    @keyframes shimmer {
+        0%   { background-position: -200% 0; }
+        100% { background-position:  200% 0; }
+    }
+
+    .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s ease-in-out infinite;
+        border-radius: 8px;
+    }
+
+    .skeleton-text {
+        height: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .skeleton-text.w-75 { width: 75%; }
+    .skeleton-text.w-50 { width: 50%; }
+    .skeleton-text.w-25 { width: 25%; }
+
+    .skeleton-image {
+        aspect-ratio: 1/1;
+        border-radius: 1.5rem;
+    }
+
+    .skeleton-title {
+        height: 2rem;
+        width: 60%;
+        margin-bottom: 1rem;
+    }
+
+    .skeleton-price {
+        height: 2.5rem;
+        width: 40%;
+        margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ============================================
+       VARIANTS
+       ============================================ */
+    .variant-option.selected {
+        background: #e60012 !important;
+        color: white !important;
+        border-color: #e60012 !important;
+    }
+
+    /* ============================================
+       THUMBNAIL GALLERY
+       ============================================ */
+    .thumb-gallery {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .thumb-gallery::-webkit-scrollbar {
+        height: 4px;
+    }
+    .thumb-gallery::-webkit-scrollbar-thumb {
+        background: #ddd;
+        border-radius: 4px;
+    }
+
+    .thumb-gallery img {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .thumb-gallery img:hover,
+    .thumb-gallery img.active {
+        border-color: #e60012;
+        transform: scale(1.05);
+    }
+
+    /* ============================================
+       MAIN IMAGE CONTAINER
+       ============================================ */
+    .main-image-container {
+        position: relative;
+        cursor: zoom-in;
+        overflow: hidden;
+        border-radius: 2rem;
+        background: white;
+        aspect-ratio: 1 / 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #f0f0f0;
+    }
+
+    .main-image-container img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        padding: 2rem;
+        transition: transform 0.3s ease;
+    }
+
+    .main-image-container:hover img {
+        transform: scale(1.05);
+    }
+
+    .dealBadge-Overlay {
+        border: 3px solid #e2e8f0;
+        border-top-color: #e60012;
+        background: #e60012;
+        color: white;
+    }
+
+    /* ============================================
+       QUANTITY SELECTOR
+       ============================================ */
+    .qty-selector {
+        display: flex;
+        align-items: center;
+        border: 1px solid #e5e7eb;
+        border-radius: 9999px;
+        overflow: hidden;
+    }
+
+    .qty-selector button {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        font-size: 1.25rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .qty-selector button:hover {
+        background: #f3f4f6;
+    }
+
+    .qty-selector input {
+        width: 3rem;
+        text-align: center;
+        border: none;
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 0;
+        -moz-appearance: textfield;
+    }
+
+    .qty-selector input::-webkit-outer-spin-button,
+    .qty-selector input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* ============================================
+       STAR RATING
+       ============================================ */
+    .star-rating {
+        color: #f59e0b;
+        font-size: 1.1rem;
+    }
+
+    .star-rating .empty {
+        color: #d1d5db;
+    }
+
+    /* ============================================
+       REVIEWS DROPDOWN
+       ============================================ */
+    .reviews-dropdown-section .reviews-toggle {
+        border: none;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0;
+        cursor: pointer;
+    }
+
+    .reviews-dropdown-section .reviews-toggle-icon {
+        display: inline-flex;
+        transition: transform 0.25s ease;
+    }
+
+    .reviews-dropdown-section.collapsed .reviews-toggle-icon {
+        transform: rotate(-90deg);
+    }
+
+    .reviews-dropdown-section .reviews-content {
+        transition: max-height 0.3s ease, opacity 0.3s ease;
+    }
+
+    /* ============================================
+       TOAST
+       ============================================ */
+    .toast-msg {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1f2937;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 9999px;
+        font-size: 0.9rem;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        white-space: nowrap;
+    }
+
+    .toast-msg.show {
+        opacity: 1;
+    }
+
+    /* ============================================
+       LOADERS
+       ============================================ */
+    .loader {
+        width: 3rem;
+        height: 3rem;
+        border: 5px solid rgba(236, 72, 153, 0.15);
+        border-top-color: #e60012;
+        border-radius: 9999px;
+        animation: spin 1s linear infinite;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1.25rem;
+        border-radius: 9999px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        font-weight: 500;
+        transition: all 0.2s;
+        text-decoration: none;
+        color: #1f2937;
+    }
+
+    .back-btn:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+        transform: translateX(-2px);
+    }
+
+    .add-to-cart-content {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .add-to-cart-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255,255,255,0.35);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    /* ============================================
+       RELATED PRODUCTS
+       ============================================ */
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .related-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1rem;
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .related-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .related-card img {
+        width: 100%;
+        aspect-ratio: 1/1;
+        object-fit: contain;
+        margin-bottom: 0.75rem;
+    }
+
+    .related-card h4 {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .related-card .price {
+        color: #e60012;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .related-skeleton-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .related-skeleton-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1rem;
+        border: 1px solid #f0f0f0;
+    }
+
+    .related-skeleton-card .skeleton-img {
+        width: 100%;
+        aspect-ratio: 1/1;
+        background: #e2e8f0;
+        border-radius: 0.75rem;
+        margin-bottom: 0.75rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .related-skeleton-card .skeleton-img .shimmer {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0) 100%);
+        animation: shimmer 1.5s ease-in-out infinite;
+    }
+
+    .related-skeleton-card .skeleton-text {
+        height: 0.9rem;
+        background: #e2e8f0;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .related-skeleton-card .skeleton-text::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.4) 50%,
+            transparent 100%);
+        animation: shimmer 1.5s ease-in-out infinite;
+    }
+
+    .related-skeleton-card .skeleton-text.w-75 { width: 75%; }
+    .related-skeleton-card .skeleton-text.w-50 { width: 50%; }
+    .related-skeleton-card .skeleton-text.w-60 { width: 60%; }
+
+    .related-skeleton-card .skeleton-price {
+        height: 1.2rem;
+        width: 40%;
+        background: #e2e8f0;
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .related-skeleton-card .skeleton-price::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.4) 50%,
+            transparent 100%);
+        animation: shimmer 1.5s ease-in-out infinite;
+    }
+
+    /* Related load-more */
+    .related-loadmore {
+        text-align: center;
+        padding: 2rem 0;
+        margin-top: 1rem;
+    }
+
+    .related-loadmore .loader-skeleton {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .related-loadmore .loader-skeleton .skeleton-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .related-loadmore .loader-skeleton .skeleton-card-mini {
+        background: white;
+        border-radius: 1rem;
+        padding: 0.75rem;
+        border: 1px solid #f0f0f0;
+    }
+
+    .related-loadmore .loader-skeleton .skeleton-card-mini .skeleton-img-mini {
+        width: 100%;
+        aspect-ratio: 1/1;
+        background: #e2e8f0;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .related-loadmore .loader-skeleton .skeleton-card-mini .skeleton-img-mini .shimmer {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0) 100%);
+        animation: shimmer 1.5s ease-in-out infinite;
+    }
+
+    .related-loadmore .loader-skeleton .skeleton-card-mini .skeleton-line {
+        height: 0.8rem;
+        background: #e2e8f0;
+        border-radius: 4px;
+        margin-bottom: 0.4rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .related-loadmore .loader-skeleton .skeleton-card-mini .skeleton-line::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.4) 50%,
+            transparent 100%);
+        animation: shimmer 1.5s ease-in-out infinite;
+    }
+
+    .related-loadmore .loader-skeleton .skeleton-card-mini .skeleton-line.w-75 { width: 75%; }
+    .related-loadmore .loader-skeleton .skeleton-card-mini .skeleton-line.w-50 { width: 50%; }
+
+    .related-loadmore .loader-skeleton .loading-text {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #94a3b8;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-top: 0.5rem;
+    }
+
+    .related-loadmore .loader-skeleton .loading-text .mini-spinner {
+        width: 1.5rem;
+        height: 1.5rem;
+        border: 3px solid #e2e8f0;
+        border-top-color: #e60012;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    .related-loadmore .loader-skeleton .loading-text i {
+        color: #e60012;
+    }
+
+    /* ============================================
+       DEALS SLIDER
+       ============================================ */
+    .deals-slider-wrapper {
+        position: relative;
+        overflow: hidden;
+        border-radius: 16px;
+        padding: 8px 0;
+    }
+
+    .deals-slider-track {
+        display: flex;
+        gap: 20px;
+        transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+    }
+
+    .deal-slide {
+        flex: 0 0 220px;
+        min-width: 220px;
+    }
+
+    .deal-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 1px solid transparent;
+        position: relative;
+        height: 100%;
+    }
+
+    .deal-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        border-color: #6C3CE1;
+    }
+
+    .deal-card .deal-card-image {
+        position: relative;
+        width: 100%;
+        padding-top: 100%;
+        overflow: hidden;
+        background: #f8fafc;
+    }
+
+    .deal-card .deal-card-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .deal-card:hover .deal-card-image img {
+        transform: scale(1.05);
+    }
+
+    .deal-discount-badge {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: #EF4444;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 800;
+        z-index: 2;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .deal-card .deal-card-body {
+        padding: 14px 16px;
+    }
+
+    .deal-card .deal-card-title {
+        font-weight: 700;
+        font-size: 15px;
+        color: #0F172A;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin: 0;
+    }
+
+    .deal-card .deal-card-brand {
+        font-size: 12px;
+        color: #94A3B8;
+        margin: 2px 0 6px;
+    }
+
+    .deal-card .deal-card-price {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .deal-card .deal-current-price {
+        font-weight: 700;
+        font-size: 18px;
+        color: #EF4444;
+    }
+
+    .deal-card .deal-original-price {
+        font-size: 14px;
+        color: #94A3B8;
+        text-decoration: line-through;
+        font-weight: 400;
+    }
+
+    .deal-card .deal-card-actions {
+        margin-top: 10px;
+    }
+
+    .deal-card .deal-btn-cart {
+        width: 100%;
+        padding: 8px 14px;
+        background: linear-gradient(135deg, #EF4444, #DC2626);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: inherit;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .deal-card .deal-btn-cart:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+    }
+
+    .deals-section {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+        overflow: hidden;
+    }
+
+    .deals-section .deals-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .deals-section .deals-header h2 {
+        font-size: 28px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .deals-section .deals-header h2 i {
+        color: #EF4444;
+    }
+
+    .deals-section .deals-header .deals-subtitle {
+        font-size: 14px;
+        color: #94A3B8;
+        font-weight: 500;
+    }
+
+    /* ============================================
+       IMAGE ZOOM — TOUCH BEHAVIOUR
+       ============================================ */
+    #imageZoomModal.active #zoomedImage,
+    #imageZoomModal.active #zoomGalleryContainer,
+    #imageZoomModal.active .zoom-nav-btn {
+        touch-action: none !important;
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        pointer-events: auto !important;
+    }
+
+    #imageZoomModal.active .zoom-image-container {
+        touch-action: none !important;
+        pointer-events: auto !important;
+    }
+
+    #imageZoomModal.active {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        overscroll-behavior: none;
+        touch-action: none;
+    }
+
+    #imageZoomModal.active .zoom-controls button {
+        min-width: 44px;
+        min-height: 44px;
+        touch-action: manipulation;
+    }
+
+    #zoomedImage {
+        will-change: transform;
+        transition: transform 0.2s ease;
+    }
+
+    #zoomedImage.loading {
+        opacity: 0.5;
+    }
+
+    #zoomGalleryContainer img {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ============================================
+       PAGE STATE WRAPPERS
+       Give loading + not-found the same width
+       and centering as the real content.
+       ============================================ */
+    #loadingState,
+    #notFoundState {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 3rem 1rem;
+    }
+
+    #productContent {
+        /* No margin-top — the body padding handles
+           the offset so loading state and content
+           don't jump when product loads. */
+        margin-top: 0;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+
+    /* --- Tablet --- */
+    @media (max-width: 768px) {
         .product-page-hero h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-        }
-
-        .shimmer-loading {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s ease-in-out infinite;
-            border-radius: 12px;
-        }
-
-        @keyframes shimmer {
-            0% {
-                background-position: -200% 0;
-            }
-            100% {
-                background-position: 200% 0;
-            }
-        }
-
-        .variant-option.selected {
-            background: #e60012 !important;
-            color: white !important;
-            border-color: #e60012 !important;
-        }
-
-        .thumb-gallery {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1rem;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-        }
-
-        .thumb-gallery::-webkit-scrollbar {
-            height: 4px;
-        }
-        .thumb-gallery::-webkit-scrollbar-thumb {
-            background: #ddd;
-            border-radius: 4px;
-        }
-
-        .thumb-gallery img {
-            width: 70px;
-            height: 70px;
-            object-fit: cover;
-            border-radius: 12px;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-        }
-
-        .thumb-gallery img:hover,
-        .thumb-gallery img.active {
-            border-color: #e60012;
-            transform: scale(1.05);
+            font-size: 1.8rem;
         }
 
         .main-image-container {
-            position: relative;
-            cursor: zoom-in;
-            overflow: hidden;
-            border-radius: 2rem;
-            background: white;
-            aspect-ratio: 1 / 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #f0f0f0;
-        }
-
-        .main-image-container img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            padding: 2rem;
-            transition: transform 0.3s ease;
-        }
-
-        .main-image-container:hover img {
-            transform: scale(1.05);
-        }
-
-        .qty-selector {
-            display: flex;
-            align-items: center;
-            border: 1px solid #e5e7eb;
-            border-radius: 9999px;
-            overflow: hidden;
-        }
-
-        .qty-selector button {
-            width: 2.5rem;
-            height: 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            border: none;
-            font-size: 1.25rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .qty-selector button:hover {
-            background: #f3f4f6;
-        }
-
-        .qty-selector input {
-            width: 3rem;
-            text-align: center;
-            border: none;
-            font-size: 1rem;
-            font-weight: 600;
-            padding: 0;
-            -moz-appearance: textfield;
-        }
-
-        .qty-selector input::-webkit-outer-spin-button,
-        .qty-selector input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .related-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .related-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 1rem;
-            border: 1px solid #f0f0f0;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .related-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        .related-card img {
-            width: 100%;
             aspect-ratio: 1/1;
-            object-fit: contain;
-            margin-bottom: 0.75rem;
+            min-height: 320px;
         }
 
-        .related-card h4 {
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
+        .thumb-gallery img {
+            width: 56px;
+            height: 56px;
+        }
+
+        .related-grid,
+        .related-skeleton-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        #productDetailContainer {
+            grid-template-columns: 1fr;
+        }
+
+        .related-loadmore .loader-skeleton .skeleton-cards {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .deals-section {
+            padding: 0 16px;
+        }
+
+        .deals-section .deals-header h2 {
+            font-size: 22px;
+        }
+
+        .deal-slide {
+            flex: 0 0 160px;
+            min-width: 160px;
+        }
+
+        .deal-card .deal-card-title {
+            font-size: 13px;
+        }
+
+        .deal-card .deal-current-price {
+            font-size: 15px;
+        }
+
+        .deal-card .deal-original-price {
+            font-size: 12px;
+        }
+
+        .deal-card .deal-btn-cart {
+            font-size: 11px;
+            padding: 6px 10px;
+        }
+
+        .deal-discount-badge {
+            font-size: 12px;
+            padding: 2px 10px;
+        }
+    }
+
+    /* --- Small phones --- */
+    @media (max-width: 480px) {
+        .product-page-hero h1 {
+            font-size: 1.6rem;
+        }
+
+        .related-grid,
+        .related-skeleton-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+        }
+
+        .related-card,
+        .related-skeleton-card {
+            padding: 0.75rem;
+        }
+
+        .thumb-gallery img {
+            width: 48px;
+            height: 48px;
+        }
+
+        .related-loadmore .loader-skeleton .skeleton-cards {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+        }
+
+        .related-loadmore .loader-skeleton .skeleton-card-mini {
+            padding: 0.5rem;
+        }
+
+        .deal-slide {
+            flex: 0 0 140px;
+            min-width: 140px;
+        }
+
+        .deal-card .deal-card-body {
+            padding: 10px 12px;
+        }
+
+        .deal-card .deal-card-title {
+            font-size: 12px;
+            -webkit-line-clamp: 1;
+        }
+
+        .deal-card .deal-current-price {
+            font-size: 14px;
+        }
+
+        .deal-card .deal-original-price {
+            font-size: 11px;
+        }
+
+        .deal-card .deal-btn-cart {
+            font-size: 10px;
+            padding: 4px 8px;
+        }
+
+        .deals-section .deals-header h2 {
+            font-size: 18px;
+        }
+    }
+
+    /* --- Action buttons row on narrow screens --- */
+    @media (max-width: 639px) {
+        .flex.flex-col.sm\:flex-row.gap-4 {
+            flex-direction: row !important;
+            flex-wrap: nowrap;
+        }
+
+        #addToCartBtn,
+        #wishlistBtn,
+        #shareBtn {
+            flex: 1 1 0%;
+            min-width: 0;
+            padding-left: 4px;
+            padding-right: 4px;
+            font-size: 14px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
+    }
 
-        .related-card .price {
-            color: #e60012;
-            font-weight: 700;
-            font-size: 0.95rem;
+    /* ============================================
+       PRODUCT PAGE SKELETON (self-contained, no Tailwind)
+       Used by .pdp-skeleton-wrap markup.
+       ============================================ */
+    .pdp-skeleton-wrap {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 3rem 1rem;
+    }
+
+    .pdp-skeleton-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .pdp-skeleton-left,
+    .pdp-skeleton-right {
+        min-width: 0;
+    }
+
+    .pdp-skeleton-image {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 1.5rem;
+    }
+
+    .pdp-skeleton-thumbs {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .pdp-skeleton-thumb {
+        width: 70px;
+        height: 70px;
+        border-radius: 0.75rem;
+        flex: 0 0 auto;
+    }
+
+    .pdp-skeleton-title {
+        height: 2rem;
+        width: 60%;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .pdp-skeleton-line {
+        height: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .pdp-skeleton-line.w-100 { width: 100%; }
+    .pdp-skeleton-line.w-75  { width: 75%;  }
+    .pdp-skeleton-line.w-50  { width: 50%;  }
+
+    .pdp-skeleton-price {
+        height: 2.5rem;
+        width: 40%;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .pdp-skeleton-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .pdp-skeleton-btn {
+        height: 3rem;
+        width: 8rem;
+        border-radius: 9999px;
+        flex: 0 0 auto;
+    }
+
+    @media (min-width: 1024px) {
+        .pdp-skeleton-wrap {
+            padding: 3rem 2rem;
         }
-
-        .related-skeleton-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1.5rem;
+        .pdp-skeleton-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
         }
+    }
 
-        .related-skeleton-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 1rem;
-            border: 1px solid #f0f0f0;
+    @media (max-width: 480px) {
+        .pdp-skeleton-wrap {
+            padding: 1.5rem 0.75rem;
         }
-
-        .related-skeleton-card .skeleton-img {
-            width: 100%;
-            aspect-ratio: 1/1;
-            background: #e2e8f0;
-            border-radius: 0.75rem;
+        .pdp-skeleton-grid {
+            gap: 1.25rem;
+        }
+        .pdp-skeleton-thumb {
+            width: 52px;
+            height: 52px;
+        }
+        .pdp-skeleton-title {
+            height: 1.6rem;
+            width: 70%;
             margin-bottom: 0.75rem;
-            position: relative;
-            overflow: hidden;
         }
-
-        .related-skeleton-card .skeleton-img .shimmer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.4) 50%,
-                rgba(255, 255, 255, 0) 100%
-            );
-            animation: shimmer 1.5s ease-in-out infinite;
-        }
-
-        .related-skeleton-card .skeleton-text {
-            height: 0.9rem;
-            background: #e2e8f0;
-            border-radius: 4px;
-            margin-bottom: 0.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .related-skeleton-card .skeleton-text::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent 0%,
-                rgba(255, 255, 255, 0.4) 50%,
-                transparent 100%
-            );
-            animation: shimmer 1.5s ease-in-out infinite;
-        }
-
-        .related-skeleton-card .skeleton-text.w-75 {
-            width: 75%;
-        }
-        .related-skeleton-card .skeleton-text.w-50 {
-            width: 50%;
-        }
-        .related-skeleton-card .skeleton-text.w-60 {
-            width: 60%;
-        }
-
-        .related-skeleton-card .skeleton-price {
-            height: 1.2rem;
-            width: 40%;
-            background: #e2e8f0;
-            border-radius: 4px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .related-skeleton-card .skeleton-price::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent 0%,
-                rgba(255, 255, 255, 0.4) 50%,
-                transparent 100%
-            );
-            animation: shimmer 1.5s ease-in-out infinite;
-        }
-
-        .star-rating {
-            color: #f59e0b;
-            font-size: 1.1rem;
-        }
-
-        .star-rating .empty {
-            color: #d1d5db;
-        }
-
-        .reviews-dropdown-section .reviews-toggle {
-            border: none;
-            background: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            padding: 0;
-            cursor: pointer;
-        }
-
-        .reviews-dropdown-section .reviews-toggle-icon {
-            display: inline-flex;
-            transition: transform 0.25s ease;
-        }
-
-        .reviews-dropdown-section.collapsed .reviews-toggle-icon {
-            transform: rotate(-90deg);
-        }
-
-        .reviews-dropdown-section .reviews-content {
-            transition: max-height 0.3s ease, opacity 0.3s ease;
-        }
-
-        .toast-msg {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1f2937;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            font-size: 0.9rem;
-            z-index: 9999;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-
-        .toast-msg.show {
-            opacity: 1;
-        }
-
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s ease-in-out infinite;
-            border-radius: 8px;
-        }
-
-        .skeleton-text {
-            height: 1rem;
-            margin-bottom: 0.5rem;
-        }
-        .skeleton-text.w-75 {
-            width: 75%;
-        }
-        .skeleton-text.w-50 {
-            width: 50%;
-        }
-        .skeleton-text.w-25 {
-            width: 25%;
-        }
-
-        .skeleton-image {
-            aspect-ratio: 1/1;
-            border-radius: 1.5rem;
-        }
-
-        .skeleton-title {
-            height: 2rem;
-            width: 60%;
-            margin-bottom: 1rem;
-        }
-
-        .skeleton-price {
-            height: 2.5rem;
-            width: 40%;
-            margin-bottom: 1rem;
-        }
-
-        .loader {
-            width: 3rem;
-            height: 3rem;
-            border: 5px solid rgba(236, 72, 153, 0.15);
-            border-top-color: #e60012;
-            border-radius: 9999px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1.25rem;
-            border-radius: 9999px;
-            background: white;
-            border: 1px solid #e5e7eb;
-            font-weight: 500;
-            transition: all 0.2s;
-            text-decoration: none;
-            color: #1f2937;
-        }
-
-        .back-btn:hover {
-            background: #f9fafb;
-            border-color: #d1d5db;
-            transform: translateX(-2px);
-        }
-
-        .add-to-cart-content {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .add-to-cart-spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.35);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        .related-loadmore {
-            text-align: center;
-            padding: 2rem 0;
-            margin-top: 1rem;
-        }
-
-        .related-loadmore .loader-skeleton {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .related-loadmore .loader-skeleton .skeleton-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1.5rem;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .related-loadmore .loader-skeleton .skeleton-card-mini {
-            background: white;
-            border-radius: 1rem;
-            padding: 0.75rem;
-            border: 1px solid #f0f0f0;
-        }
-
-        .related-loadmore .loader-skeleton .skeleton-card-mini .skeleton-img-mini {
-            width: 100%;
-            aspect-ratio: 1/1;
-            background: #e2e8f0;
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .related-loadmore .loader-skeleton .skeleton-card-mini .skeleton-img-mini .shimmer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.4) 50%,
-                rgba(255, 255, 255, 0) 100%
-            );
-            animation: shimmer 1.5s ease-in-out infinite;
-        }
-
-        .related-loadmore .loader-skeleton .skeleton-card-mini .skeleton-line {
-            height: 0.8rem;
-            background: #e2e8f0;
-            border-radius: 4px;
+        .pdp-skeleton-line {
+            height: 0.85rem;
             margin-bottom: 0.4rem;
-            position: relative;
-            overflow: hidden;
         }
-
-        .related-loadmore .loader-skeleton .skeleton-card-mini .skeleton-line::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent 0%,
-                rgba(255, 255, 255, 0.4) 50%,
-                transparent 100%
-            );
-            animation: shimmer 1.5s ease-in-out infinite;
+        .pdp-skeleton-price {
+            height: 2rem;
+            width: 45%;
         }
-
-        .related-loadmore .loader-skeleton .skeleton-card-mini .skeleton-line.w-75 {
-            width: 75%;
-        }
-        .related-loadmore .loader-skeleton .skeleton-card-mini .skeleton-line.w-50 {
-            width: 50%;
-        }
-.dealBadge-Overlay{
-                border: 3px solid #e2e8f0;
-            border-top-color: #e60012;
-            background: #e60012;
-            color: white;
-                  }
-
-        .related-loadmore .loader-skeleton .loading-text {
-            display: flex;
-            align-items: center;
+        .pdp-skeleton-actions {
+            margin-top: 1rem;
             gap: 0.75rem;
-            color: #94a3b8;
-            font-weight: 500;
-            font-size: 0.95rem;
-            margin-top: 0.5rem;
         }
-
-        .related-loadmore .loader-skeleton .loading-text .mini-spinner {
-            width: 1.5rem;
-            height: 1.5rem;
-            border: 3px solid #e2e8f0;
-            border-top-color: #e60012;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+        .pdp-skeleton-btn {
+            height: 2.5rem;
+            flex: 1 1 45%;
+            width: auto;
         }
-
-        .related-loadmore .loader-skeleton .loading-text i {
-            color: #e60012;
-        }
-
-        #productContent {
-            margin-top: 90px;
-        }
-
-        /* Deals Slider Styles */
-        .deals-slider-wrapper {
-            position: relative;
-            overflow: hidden;
-            border-radius: 16px;
-            padding: 8px 0;
-        }
-
-        .deals-slider-track {
-            display: flex;
-            gap: 20px;
-            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            will-change: transform;
-        }
-
-        .deal-slide {
-            flex: 0 0 220px;
-            min-width: 220px;
-        }
-
-        .deal-card {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 1px solid transparent;
-            position: relative;
-            height: 100%;
-        }
-
-        .deal-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-            border-color: #6C3CE1;
-        }
-
-        .deal-card .deal-card-image {
-            position: relative;
-            width: 100%;
-            padding-top: 100%;
-            overflow: hidden;
-            background: #f8fafc;
-        }
-
-        .deal-card .deal-card-image img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        .deal-card:hover .deal-card-image img {
-            transform: scale(1.05);
-        }
-
-        .deal-discount-badge {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: #EF4444;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 800;
-            z-index: 2;
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-        }
-
-        .deal-card .deal-card-body {
-            padding: 14px 16px;
-        }
-
-        .deal-card .deal-card-title {
-            font-weight: 700;
-            font-size: 15px;
-            color: #0F172A;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            margin: 0;
-        }
-
-        .deal-card .deal-card-brand {
-            font-size: 12px;
-            color: #94A3B8;
-            margin: 2px 0 6px;
-        }
-
-        .deal-card .deal-card-price {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .deal-card .deal-current-price {
-            font-weight: 700;
-            font-size: 18px;
-            color: #EF4444;
-        }
-
-        .deal-card .deal-original-price {
-            font-size: 14px;
-            color: #94A3B8;
-            text-decoration: line-through;
-            font-weight: 400;
-        }
-
-        .deal-card .deal-card-actions {
-            margin-top: 10px;
-        }
-
-        .deal-card .deal-btn-cart {
-            width: 100%;
-            padding: 8px 14px;
-            background: linear-gradient(135deg, #EF4444, #DC2626);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .deal-card .deal-btn-cart:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
-        }
-
-        .deals-section {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-            overflow: hidden;
-        }
-
-        .deals-section .deals-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .deals-section .deals-header h2 {
-            font-size: 28px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .deals-section .deals-header h2 i {
-            color: #EF4444;
-        }
-
-        .deals-section .deals-header .deals-subtitle {
-            font-size: 14px;
-            color: #94A3B8;
-            font-weight: 500;
-        }
-        /* ===============================================
-   IMAGE ZOOM TOUCH FIXES
-   =============================================== */
-
-/* Prevent default touch behaviors on zoomed image */
-#imageZoomModal.active #zoomedImage,
-#imageZoomModal.active #zoomGalleryContainer,
-#imageZoomModal.active .zoom-nav-btn {
-    touch-action: none !important;
-    -webkit-touch-callout: none !important;
-    -webkit-user-select: none !important;
-    user-select: none !important;
-    pointer-events: auto !important;
-}
-
-/* Ensure image container doesn't trigger modal close on touch */
-#imageZoomModal.active .zoom-image-container {
-    touch-action: none !important;
-    pointer-events: auto !important;
-}
-
-/* Prevent text selection during zoom */
-#imageZoomModal.active {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-}
-
-/* Make zoom controls touch-friendly */
-#imageZoomModal.active .zoom-controls button {
-    min-width: 44px;
-    min-height: 44px;
-    touch-action: manipulation;
-}
-
-/* Prevent scrolling while zooming */
-#imageZoomModal.active {
-    overscroll-behavior: none;
-    touch-action: none;
-}
-
-/* Smooth transitions for zoom */
-#zoomedImage {
-    will-change: transform;
-    transition: transform 0.2s ease;
-}
-
-/* Loading state */
-#zoomedImage.loading {
-    opacity: 0.5;
-}
-
-/* Gallery thumbnails touch improvements */
-#zoomGalleryContainer img {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-}
-
-        @media (max-width: 768px) {
-            .deals-section {
-                padding: 0 16px;
-            }
-
-            .deals-section .deals-header h2 {
-                font-size: 22px;
-            }
-
-            .deal-slide {
-                flex: 0 0 160px;
-                min-width: 160px;
-            }
-
-            .deal-card .deal-card-title {
-                font-size: 13px;
-            }
-
-            .deal-card .deal-current-price {
-                font-size: 15px;
-            }
-
-            .deal-card .deal-original-price {
-                font-size: 12px;
-            }
-
-            .deal-card .deal-btn-cart {
-                font-size: 11px;
-                padding: 6px 10px;
-            }
-
-            .deal-discount-badge {
-                font-size: 12px;
-                padding: 2px 10px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .deal-slide {
-                flex: 0 0 140px;
-                min-width: 140px;
-            }
-
-            .deal-card .deal-card-body {
-                padding: 10px 12px;
-            }
-
-            .deal-card .deal-card-title {
-                font-size: 12px;
-                -webkit-line-clamp: 1;
-            }
-
-            .deal-card .deal-current-price {
-                font-size: 14px;
-            }
-
-            .deal-card .deal-original-price {
-                font-size: 11px;
-            }
-
-            .deal-card .deal-btn-cart {
-                font-size: 10px;
-                padding: 4px 8px;
-            }
-
-            .deals-section .deals-header h2 {
-                font-size: 18px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .product-page-hero h1 {
-                font-size: 1.8rem;
-            }
-            .main-image-container {
-                aspect-ratio: 1/1;
-                min-height: 320px;
-            }
-            .thumb-gallery img {
-                width: 56px;
-                height: 56px;
-            }
-            .related-grid,
-            .related-skeleton-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 1rem;
-            }
-            #productDetailContainer {
-                grid-template-columns: 1fr;
-            }
-            .related-loadmore .loader-skeleton .skeleton-cards {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 1rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .product-page-hero h1 {
-                font-size: 1.6rem;
-            }
-            .related-grid,
-            .related-skeleton-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.75rem;
-            }
-            .related-card,
-            .related-skeleton-card {
-                padding: 0.75rem;
-            }
-            .thumb-gallery img {
-                width: 48px;
-                height: 48px;
-            }
-            .related-loadmore .loader-skeleton .skeleton-cards {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.75rem;
-            }
-            .related-loadmore .loader-skeleton .skeleton-card-mini {
-                padding: 0.5rem;
-            }
-        }
-
-        @media (max-width: 639px) {
-            .flex.flex-col.sm\:flex-row.gap-4 {
-                flex-direction: row !important;
-                flex-wrap: nowrap;
-            }
-            #addToCartBtn, 
-            #wishlistBtn, 
-            #shareBtn {
-                flex: 1 1 0%;
-                min-width: 0;
-                padding-left: 4px;
-                padding-right: 4px;
-                font-size: 14px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-        }
-    </style>
+    }
+</style>
 </head>
 <body>
 
@@ -995,31 +1150,35 @@
     <!-- ===== MAIN CONTENT ===== -->
     <main>
         <!-- Loading State -->
-        <div id="loadingState" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div>
-                    <div class="skeleton skeleton-image w-full"></div>
-                    <div class="thumb-gallery mt-4">
-                        <div class="skeleton w-[70px] h-[70px] rounded-xl"></div>
-                        <div class="skeleton w-[70px] h-[70px] rounded-xl"></div>
-                        <div class="skeleton w-[70px] h-[70px] rounded-xl"></div>
-                        <div class="skeleton w-[70px] h-[70px] rounded-xl"></div>
-                    </div>
-                </div>
-                <div>
-                    <div class="skeleton skeleton-title"></div>
-                    <div class="skeleton skeleton-text w-75"></div>
-                    <div class="skeleton skeleton-price"></div>
-                    <div class="skeleton skeleton-text w-100"></div>
-                    <div class="skeleton skeleton-text w-100"></div>
-                    <div class="skeleton skeleton-text w-50"></div>
-                    <div class="mt-6 flex gap-4">
-                        <div class="skeleton h-12 w-32 rounded-full"></div>
-                        <div class="skeleton h-12 w-32 rounded-full"></div>
-                    </div>
-                </div>
+<!-- Loading State -->
+<div id="loadingState" class="pdp-skeleton-wrap">
+    <div class="pdp-skeleton-grid">
+        <!-- Left: image + thumbnails -->
+        <div class="pdp-skeleton-left">
+            <div class="skeleton pdp-skeleton-image"></div>
+            <div class="pdp-skeleton-thumbs">
+                <div class="skeleton pdp-skeleton-thumb"></div>
+                <div class="skeleton pdp-skeleton-thumb"></div>
+                <div class="skeleton pdp-skeleton-thumb"></div>
+                <div class="skeleton pdp-skeleton-thumb"></div>
             </div>
         </div>
+
+        <!-- Right: title, price, specs -->
+        <div class="pdp-skeleton-right">
+            <div class="skeleton pdp-skeleton-title"></div>
+            <div class="skeleton pdp-skeleton-line w-75"></div>
+            <div class="skeleton pdp-skeleton-price"></div>
+            <div class="skeleton pdp-skeleton-line w-100"></div>
+            <div class="skeleton pdp-skeleton-line w-100"></div>
+            <div class="skeleton pdp-skeleton-line w-50"></div>
+            <div class="pdp-skeleton-actions">
+                <div class="skeleton pdp-skeleton-btn"></div>
+                <div class="skeleton pdp-skeleton-btn"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
         <!-- Product Not Found -->
         <div id="notFoundState" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">

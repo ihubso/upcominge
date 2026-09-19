@@ -181,6 +181,7 @@
         filterProducts(categoryName);
         // Hide "For You" section once a category is chosen
         if (els.foryouGrid) els.foryouGrid.style.display = 'none';
+        
     }
 
     /* ============================================================
@@ -434,7 +435,24 @@
 
         console.log('📄 Categories page ready');
     }
+    
+const contentRight = document.querySelector('section.content-right');
+const categoryList = document.querySelector('div#categoryList');
 
+if (categoryList && contentRight) {
+  categoryList.addEventListener('click', (event) => {
+    // Check if a category was clicked
+    const isChip = event.target.closest('.category-chip-side');
+    
+    if (isChip) {
+      // Scroll the CONTENT section (right side) to the top
+      contentRight.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  });
+}
     /* ============================================================
        GLOBAL EXPORTS
        ============================================================ */
