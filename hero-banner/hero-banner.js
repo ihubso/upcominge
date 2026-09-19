@@ -157,7 +157,7 @@ function renderHeroBanner(products, containerId = 'heroBanner') {
                             ` : ''}
                         </div>
                         <div class="hero-description">${product.description || ''}</div>
-                        <a href="/item/?id=${product.id}" class="hero-btn" data-translate="view_details">
+                        <a onclick="window.navigateWithUserInfo('/item/?product=${product.id}'); return false;" class="hero-btn" data-translate="view_details">
                             <i class="fas fa-eye"></i> View Details
                         </a>
                     </div>

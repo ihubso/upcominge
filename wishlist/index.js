@@ -1,396 +1,426 @@
+(function () {
+    'use strict';
 
+    /* ============================================================
+       MODULE STATE
+       ============================================================ */
+    let wishlistItems = [];
+    let wishlistIds = [];
+    let productCache = {};
 
-        let wishlistItems = [];
-        let wishlistIds = [];
+    /* ============================================================
+       ELEMENT LOOKUP — fresh each time
+       ============================================================ */
+    function getEls() {
+        return {
+            page:  document.getElementById('stWishlistPage'),
+            grid:  document.getElementById('stWishlistGrid'),
+            count: document.getElementById('stWishlistPageCount'),
+            clear: document.getElementById('stClearWishlistBtn'),
+        };
+    }
 
+    /* ============================================================
+       IDENTIFIER  — who owns this wishlist?
+       ============================================================ */
+    function getOwner() {
+        // Prefer the logged-in customer id if available
+        const customerId =
+            window.STHeader?.AppState?.user?.id ||
+            (function () {
+                try {
+                    const s = localStorage.getItem('st_customer') || sessionStorage.getItem('st_customer');
+                    if (s) { const u = JSON.parse(s); if (u?.id) return u.id; }
+                } catch (_) {}
+                return null;
+            })();
 
+        if (customerId) return { id: customerId, isCustomer: true };
 
-        function renderSkeletonLoader() {
-            const grid = document.getElementById('stWishlistGrid');
-            if (!grid) return;
-
-            const skeletonCards = Array(8).fill(0).map(() => `
-                <div class="st-skeleton-card">
-                    <div class="st-skeleton-image">
-                        <div class="st-shimmer"></div>
-                    </div>
-                    <div class="st-skeleton-body">
-                        <div class="st-skeleton-text st-skeleton-name"></div>
-                        <div class="st-skeleton-text st-skeleton-brand"></div>
-                        <div class="st-skeleton-text st-skeleton-price"></div>
-                        <div class="st-skeleton-rating">
-                            <div class="st-skeleton-text st-skeleton-stars"></div>
-                            <div class="st-skeleton-text st-skeleton-reviews"></div>
-                        </div>
-                        <div class="st-skeleton-actions">
-                            <div class="st-skeleton-btn-cart"></div>
-                            <div class="st-skeleton-btn-view"></div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            grid.innerHTML = `
-                <div class="st-skeleton-grid">
-                    ${skeletonCards}
-                </div>
-            `;
+        // Fall back to a stable session id
+        let sessionId = localStorage.getItem('st_session_id');
+        if (!sessionId) {
+            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+            localStorage.setItem('st_session_id', sessionId);
         }
+        return { id: sessionId, isCustomer: false };
+    }
 
-        // ============================================================
-        // 4. PRODUCT DATA
-        // ============================================================
+    /* ============================================================
+       SKELETON
+       ============================================================ */
+    function renderSkeletonLoader() {
+        const { grid } = getEls();
+        if (!grid) return;
+        const skeletonCards = Array(8).fill(0).map(() => `
+            <div class="st-skeleton-card">
+                <div class="st-skeleton-image"><div class="st-shimmer"></div></div>
+                <div class="st-skeleton-body">
+                    <div class="st-skeleton-text st-skeleton-name"></div>
+                    <div class="st-skeleton-text st-skeleton-brand"></div>
+                    <div class="st-skeleton-text st-skeleton-price"></div>
+                    <div class="st-skeleton-rating">
+                        <div class="st-skeleton-text st-skeleton-stars"></div>
+                        <div class="st-skeleton-text st-skeleton-reviews"></div>
+                    </div>
+                    <div class="st-skeleton-actions">
+                        <div class="st-skeleton-btn-cart"></div>
+                        <div class="st-skeleton-btn-view"></div>
+                    </div>
+                </div>
+            </div>`).join('');
+        grid.innerHTML = `<div class="st-skeleton-grid">${skeletonCards}</div>`;
+    }
 
-        let productCache = {};
+    /* ============================================================
+       PRODUCT FETCH
+       ============================================================ */
+    async function fetchProductDetails(productId) {
+        if (productCache[productId]) return productCache[productId];
 
-        async function fetchProductDetails(productId) {
-            if (productCache[productId]) return productCache[productId];
-            
-            try {
-                const client = getSupabaseClient();
-                if (client) {
-                    const { data, error } = await client
-                        .from('products')
-                        .select('*')
-                        .eq('id', productId)
-                        .single();
-                    
-                    if (!error && data) {
-                        productCache[productId] = data;
-                        return data;
-                    }
+        try {
+            const client = window.getSupabaseClient?.();
+            if (client) {
+                const { data, error } = await client
+                    .from('products').select('*').eq('id', productId).single();
+                if (!error && data) {
+                    productCache[productId] = data;
+                    return data;
                 }
-            } catch (err) {
-                console.warn('⚠️ Failed to fetch product:', err.message);
             }
-            
-            try {
-                const allProducts = JSON.parse(localStorage.getItem('st_products') || '[]');
-                const product = allProducts.find(p => p.id === productId || p.id === productId);
-                if (product) {
-                    productCache[productId] = product;
-                    return product;
-                }
-            } catch (e) {}
-            
-            return {
-                id: productId,
-                name: 'Product ' + productId,
-                price: 0,
-                image: 'https://placehold.co/600x400',
-                brand: 'Unknown Brand',
-                description: 'Product details not available'
-            };
+        } catch (err) {
+            console.warn('⚠️ Failed to fetch product:', err.message);
         }
 
-        // ============================================================
-        // 5. RENDER WISHLIST
-        // ============================================================
+        try {
+            const allProducts = JSON.parse(localStorage.getItem('st_products') || '[]');
+            const product = allProducts.find(p => p.id === productId);
+            if (product) { productCache[productId] = product; return product; }
+        } catch (_) {}
 
-        async function renderWishlist() {
-            const grid = document.getElementById('stWishlistGrid');
-            const countEl = document.getElementById('stWishlistPageCount');
+        return {
+            id: productId, name: 'Product ' + productId, price: 0,
+            image: 'https://placehold.co/600x400', brand: 'Unknown Brand',
+            description: 'Product details not available'
+        };
+    }
 
-            // Show skeleton while loading
-            renderSkeletonLoader();
+    /* ============================================================
+       RENDER WISHLIST
+       ============================================================ */
+    async function renderWishlist() {
+        const { grid, count } = getEls();
+        if (!grid) return;
 
-            if (!wishlistIds || wishlistIds.length === 0) {
-                grid.innerHTML = `
-                    <div class="st-empty-wishlist">
-                        <div class="st-empty-icon"><i class="fas fa-heart"></i></div>
-                        <h2 data-translate="empty_wishlist_title">Your wishlist is empty</h2>
-                        <p data-translate="empty_wishlist_sub">Save your favorite items and come back to them anytime.</p>
-                        <a href="/product/" class="st-btn-shop" data-translate="start_exploring">
-                            <i class="fas fa-store"></i> Start Exploring
-                        </a>
-                    </div>
-                `;
-                countEl.textContent = '0 items';
+        renderSkeletonLoader();
+
+        if (!wishlistIds || wishlistIds.length === 0) {
+            grid.innerHTML = emptyMarkup();
+            if (count) count.textContent = '0 items';
+            if (typeof translateUI === 'function') translateUI();
+            return;
+        }
+
+        if (count) count.textContent = wishlistIds.length + ' item' + (wishlistIds.length > 1 ? 's' : '');
+
+        try {
+            const products = await Promise.all(wishlistIds.map(id => fetchProductDetails(id)));
+            wishlistItems = products.filter(Boolean);
+
+            if (wishlistItems.length === 0) {
+                grid.innerHTML = emptyMarkup();
+                if (typeof translateUI === 'function') translateUI();
                 return;
             }
 
-            countEl.textContent = wishlistIds.length + ' item' + (wishlistIds.length > 1 ? 's' : '');
+            grid.innerHTML = wishlistItems.map((product, index) => {
+                const isDeal = product.isDeal || false;
+                const isNew  = product.isNew  || false;
+                const isHot  = product.isHot  || false;
+                const discount = product.discount || 0;
+                const originalPrice = product.originalPrice || product.price || 0;
+                const currentPrice  = product.price || 0;
+                const rating        = product.rating || 0;
+                const reviewCount   = product.reviewCount || 0;
 
-            try {
-                const productPromises = wishlistIds.map(id => fetchProductDetails(id));
-                const products = await Promise.all(productPromises);
-                wishlistItems = products.filter(p => p !== null);
+                let badge = '';
+                if (isDeal)      badge = `<span class="st-card-badge st-deal" data-translate="badge_deal">🔥 Deal</span>`;
+                else if (isNew)  badge = `<span class="st-card-badge st-new"  data-translate="badge_new">✨ New</span>`;
+                else if (isHot)  badge = `<span class="st-card-badge st-hot"  data-translate="badge_hot">⚡ Hot</span>`;
 
-                if (wishlistItems.length === 0) {
-                    grid.innerHTML = `
-                        <div class="st-empty-wishlist">
-                            <div class="st-empty-icon"><i class="fas fa-heart"></i></div>
-                            <h2 data-translate="empty_wishlist_title">Your wishlist is empty</h2>
-                            <p data-translate="empty_wishlist_sub">Save your favorite items and come back to them anytime.</p>
-                            <a href="/product/" class="st-btn-shop" data-translate="start_exploring">
-                                <i class="fas fa-store"></i> Start Exploring
+                const starsHtml = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
+
+                return `
+                    <div class="st-wishlist-card" data-index="${index}">
+                        <div class="st-card-image">
+                            <img src="${product.image || product.images?.[0] || 'https://placehold.co/600x400'}"
+                                 alt="${product.name || 'Product'}"
+                                 onerror="this.src='https://placehold.co/600x400'">
+                            ${badge}
+                            <button class="st-card-remove"
+                                    onclick="removeFromWishlist('${product.id}')"
+                                    title="Remove from wishlist" data-translate="remove">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="st-card-body">
+                            <a onclick="window.navigateWithUserInfo('/item/?product=${product.id}'); return false;" class="st-card-name">
+                                ${product.name || 'Unknown Product'}
                             </a>
-                        </div>
-                    `;
-                    return;
-                }
-
-                grid.innerHTML = wishlistItems.map((product, index) => {
-                    const isDeal = product.isDeal || false;
-                    const isNew = product.isNew || false;
-                    const isHot = product.isHot || false;
-                    const discount = product.discount || 0;
-                    const originalPrice = product.originalPrice || product.price || 0;
-                    const currentPrice = product.price || 0;
-                    const rating = product.rating || 0;
-                    const reviewCount = product.reviewCount || 0;
-
-                    let badge = '';
-                    if (isDeal) badge = `<span class="st-card-badge st-deal" data-translate="badge_deal">🔥 Deal</span>`;
-                    else if (isNew) badge = `<span class="st-card-badge st-new" data-translate="badge_new">✨ New</span>`;
-                    else if (isHot) badge = `<span class="st-card-badge st-hot" data-translate="badge_hot">⚡ Hot</span>`;
-
-                    const starsHtml = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
-
-                    return `
-                        <div class="st-wishlist-card" data-index="${index}">
-                            <div class="st-card-image">
-                                <img src="${product.image || product.images?.[0] || 'https://placehold.co/600x400'}" 
-                                     alt="${product.name || 'Product'}" 
-                                     onerror="this.src='https://placehold.co/600x400'">
-                                ${badge}
-                                <button class="st-card-remove" onclick="removeFromWishlist('${product.id}')" title="Remove from wishlist" data-translate="remove">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                            ${product.brand ? `<div class="st-card-brand">${product.brand}</div>` : ''}
+                            <div class="st-card-price">
+                                FCFA ${currentPrice.toFixed(2)}
+                                ${discount > 0 && originalPrice > currentPrice
+                                    ? `<span class="st-original-price">FCFA ${originalPrice.toFixed(2)}</span>`
+                                    : ''}
                             </div>
-                            <div class="st-card-body">
-                                <a href="/item/?id=${product.id}" class="st-card-name">
-                                    ${product.name || 'Unknown Product'}
+                            ${rating > 0 ? `
+                                <div class="st-card-rating">
+                                    <span class="st-stars">${starsHtml}</span>
+                                    <span>(${reviewCount || 0})</span>
+                                </div>` : ''}
+                            <div class="st-card-actions">
+                                <a onclick="window.navigateWithUserInfo('/item/?product=${product.id}'); return false;"
+                                   class="st-btn-view" data-translate="view_details">
+                                    <i class="fas fa-eye"></i>
                                 </a>
-                                ${product.brand ? `<div class="st-card-brand">${product.brand}</div>` : ''}
-                                <div class="st-card-price">
-                                    FCFA${currentPrice.toFixed(2)}
-                                    ${discount > 0 && originalPrice > currentPrice ? `
-                                        <span class="st-original-price">FCFA${originalPrice.toFixed(2)}</span>
-                                    ` : ''}
-                                </div>
-                                ${rating > 0 ? `
-                                    <div class="st-card-rating">
-                                        <span class="st-stars">${starsHtml}</span>
-                                        <span>(${reviewCount || 0})</span>
-                                    </div>
-                                ` : ''}
-                                <div class="st-card-actions">
-                                    <a href="/item/?id=${product.id}" class="st-btn-view" data-translate="view_details">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </div>
                             </div>
                         </div>
-                    `;
-                }).join('');
+                    </div>`;
+            }).join('');
 
+            if (typeof translateUI === 'function') translateUI();
+        } catch (err) {
+            console.error('❌ Error rendering wishlist:', err);
+            grid.innerHTML = `
+                <div class="st-empty-wishlist">
+                    <div class="st-empty-icon"><i class="fas fa-exclamation-circle"></i></div>
+                    <h2 data-translate="error_title">Something went wrong</h2>
+                    <p data-translate="error_sub">We couldn't load your wishlist. Please try again later.</p>
+                    <button class="st-btn-shop" onclick="window.location.reload()" data-translate="retry">
+                        <i class="fas fa-sync"></i> Retry
+                    </button>
+                </div>`;
+        }
+    }
+
+    function emptyMarkup() {
+        return `
+            <div class="st-empty-wishlist">
+                <div class="st-empty-icon"><i class="fas fa-heart"></i></div>
+                <h2 data-translate="empty_wishlist_title">Your wishlist is empty</h2>
+                <p data-translate="empty_wishlist_sub">Save your favorite items and come back to them anytime.</p>
+                <a href="/product/" class="st-btn-shop" data-translate="start_exploring">
+                    <i class="fas fa-store"></i> Start Exploring
+                </a>
+            </div>`;
+    }
+
+    /* ============================================================
+       REMOVE / CLEAR
+       ============================================================ */
+    async function removeFromWishlist(productId) {
+        const index = wishlistIds.indexOf(productId);
+        if (index === -1) return;
+
+        wishlistIds.splice(index, 1);
+        wishlistItems = wishlistItems.filter(item => item.id !== productId);
+        localStorage.setItem('st_wishlist', JSON.stringify(wishlistIds));
+
+        const owner = getOwner();
+        const client = window.getSupabaseClient?.();
+        if (client) {
+            try {
+                const col = owner.isCustomer ? 'customer_id' : 'session_id';
+                await client.from('wishlist').delete().eq(col, owner.id).eq('product_id', productId);
             } catch (err) {
-                console.error('❌ Error rendering wishlist:', err);
-                grid.innerHTML = `
-                    <div class="st-empty-wishlist">
-                        <div class="st-empty-icon"><i class="fas fa-exclamation-circle"></i></div>
-                        <h2 data-translate="error_title">Something went wrong</h2>
-                        <p data-translate="error_sub">We couldn't load your wishlist. Please try again later.</p>
-                        <button class="st-btn-shop" onclick="location.reload()" data-translate="retry">
-                            <i class="fas fa-sync"></i> Retry
-                        </button>
-                    </div>
-                `;
+                console.warn('Wishlist remove sync failed:', err.message);
             }
         }
 
-        // ============================================================
-        // 6. WISHLIST OPERATIONS
-        // ============================================================
+        if (window.STHeader) {
+            window.STHeader.AppState.wishlist = wishlistIds;
+            window.STHeader.updateCounts?.();
+        }
 
-        async function removeFromWishlist(productId) {
-            const index = wishlistIds.indexOf(productId);
-            if (index === -1) return;
-            
-            wishlistIds.splice(index, 1);
-            wishlistItems = wishlistItems.filter(item => item.id !== productId);
-            
-            localStorage.setItem('st_wishlist', JSON.stringify(wishlistIds));
-            
-            const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-            const client = getSupabaseClient();
-            if (client) {
-                await saveWishlistToDB(sessionId, wishlistIds);
+        await renderWishlist();
+        showNotification('❤️ Removed from wishlist', 'info');
+    }
+
+    async function clearWishlist() {
+        if (wishlistIds.length === 0) return;
+        if (!confirm('Are you sure you want to clear your entire wishlist?')) return;
+
+        wishlistIds = [];
+        wishlistItems = [];
+        localStorage.setItem('st_wishlist', JSON.stringify(wishlistIds));
+
+        const owner = getOwner();
+        const client = window.getSupabaseClient?.();
+        if (client) {
+            try {
+                const col = owner.isCustomer ? 'customer_id' : 'session_id';
+                await client.from('wishlist').delete().eq(col, owner.id);
+            } catch (err) {
+                console.warn('Wishlist clear sync failed:', err.message);
             }
-            
-            if (window.STHeader && window.STHeader.updateCounts) {
+        }
+
+        if (window.STHeader) {
+            window.STHeader.AppState.wishlist = wishlistIds;
+            window.STHeader.updateCounts?.();
+        }
+
+        await renderWishlist();
+        showNotification('🗑️ Wishlist cleared', 'info');
+    }
+
+    /* ============================================================
+       SUPABASE I/O
+       ============================================================ */
+    async function fetchWishlistFromDB(identifier, hasCustomerId = false) {
+        const client = window.getSupabaseClient?.();
+        if (!client) return [];
+        try {
+            const col = hasCustomerId ? 'customer_id' : 'session_id';
+            const { data, error } = await client
+                .from('wishlist').select('product_id').eq(col, identifier);
+            if (error) throw error;
+            return (data || []).map(r => r.product_id);
+        } catch (err) {
+            console.error('❌ Error fetching wishlist:', err.message);
+            return [];
+        }
+    }
+
+    async function saveWishlistToDB(identifier, list, hasCustomerId = false) {
+        const client = window.getSupabaseClient?.();
+        if (!client) return;
+        const col = hasCustomerId ? 'customer_id' : 'session_id';
+        try {
+            await client.from('wishlist').delete().eq(col, identifier);
+            if (list.length > 0) {
+                const rows = list.map(pid => ({ [col]: identifier, product_id: pid }));
+                const { error } = await client.from('wishlist').insert(rows);
+                if (error) console.error('❌ Error saving wishlist:', error.message);
+            }
+        } catch (err) {
+            console.error('❌ Error:', err.message);
+        }
+    }
+
+    /* ============================================================
+       LOAD
+       ============================================================ */
+    async function loadWishlistData() {
+        try {
+            const owner = getOwner();
+
+            // Prefer DB (authoritative)
+            const dbWishlist = await fetchWishlistFromDB(owner.id, owner.isCustomer);
+
+            // Local copy as fallback / merge source
+            let localWishlist = [];
+            try { localWishlist = JSON.parse(localStorage.getItem('st_wishlist') || '[]'); } catch (_) {}
+
+            // If DB has items → use it. If DB is empty but local has items →
+            // push local up to DB (this is the "just logged in, migrate" path).
+            if (dbWishlist.length > 0) {
+                wishlistIds = dbWishlist;
+                localStorage.setItem('st_wishlist', JSON.stringify(dbWishlist));
+            } else if (localWishlist.length > 0) {
+                wishlistIds = localWishlist;
+                await saveWishlistToDB(owner.id, localWishlist, owner.isCustomer);
+            } else {
+                wishlistIds = [];
+            }
+
+            if (window.STHeader) {
                 window.STHeader.AppState.wishlist = wishlistIds;
-                window.STHeader.updateCounts();
+                window.STHeader.updateCounts?.();
             }
-            
+
             await renderWishlist();
-            showNotification('❤️ Removed from wishlist', 'info');
-        }
-
-        async function clearWishlist() {
-            if (wishlistIds.length === 0) return;
-            
-            if (!confirm('Are you sure you want to clear your entire wishlist?')) return;
-            
-            wishlistIds = [];
-            wishlistItems = [];
-            
-            localStorage.setItem('st_wishlist', JSON.stringify(wishlistIds));
-            
-            const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-            const client = getSupabaseClient();
-            if (client) {
-                await saveWishlistToDB(sessionId, wishlistIds);
-            }
-            
-            if (window.STHeader && window.STHeader.updateCounts) {
-                window.STHeader.AppState.wishlist = wishlistIds;
-                window.STHeader.updateCounts();
-            }
-            
+        } catch (err) {
+            console.warn('⚠️ Failed to load wishlist:', err.message);
+            try { wishlistIds = JSON.parse(localStorage.getItem('st_wishlist') || '[]'); }
+            catch (_) { wishlistIds = []; }
             await renderWishlist();
-            showNotification('🗑️ Wishlist cleared', 'info');
         }
+    }
 
+    /* ============================================================
+       NOTIFICATION
+       ============================================================ */
+    function showNotification(message, type = 'success') {
+        document.querySelector('.st-notification')?.remove();
+        const notif = document.createElement('div');
+        notif.className = `st-notification ${type}`;
+        notif.textContent = message;
+        document.body.appendChild(notif);
+        setTimeout(() => {
+            notif.style.opacity = '0';
+            notif.style.transform = 'translateX(-50%) translateY(-20px)';
+            notif.style.transition = 'all .3s ease';
+            setTimeout(() => notif.remove(), 300);
+        }, 3000);
+    }
 
-        // ============================================================
-        // 8. SUPABASE SYNC FUNCTIONS
-        // ============================================================
+    /* ============================================================
+       CLEANUP / INIT
+       ============================================================ */
+    function cleanup() {
+        wishlistItems = [];
+        wishlistIds = [];
+        productCache = {};
+    }
 
-        async function fetchWishlistFromDB(identifier, hasCustomerId = false) {
-            const client = getSupabaseClient();
-            if (!client) return [];
-            const customerId = hasCustomerId ? identifier : null;
-            const sessionId = hasCustomerId ? null : identifier;
-            
-            try {
-                const query = client.from('wishlist').select('product_id');
-                if (customerId) {
-                    query.eq('customer_id', customerId);
-                } else {
-                    query.eq('session_id', sessionId);
-                }
-                const { data, error } = await query;
-                
-                if (error) throw error;
-                return (data || []).map(row => row.product_id);
-            } catch (err) {
-                console.error('❌ Error fetching wishlist:', err.message);
-                return [];
-            }
-        }
+    async function init() {
+        const els = getEls();
+        if (!els.page) return;      // not on the wishlist page
+        cleanup();
 
-        async function saveWishlistToDB(identifier, wishlist, hasCustomerId = false) {
-            const client = getSupabaseClient();
-            if (!client) return;
-            const customerId = hasCustomerId ? identifier : null;
-            const sessionId = hasCustomerId ? null : identifier;
-            
-            try {
-                if (customerId) {
-                    await client.from('wishlist').delete().eq('customer_id', customerId);
-                } else {
-                    await client.from('wishlist').delete().eq('session_id', sessionId);
-                }
-                
-                if (wishlist.length > 0) {
-                    const rows = wishlist.map(pid => ({
-                        ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
-                        product_id: pid
-                    }));
-                    const { error } = await client.from('wishlist').insert(rows);
-                    if (error) console.error('❌ Error saving wishlist:', error.message);
-                }
-            } catch (err) {
-                console.error('❌ Error:', err.message);
-            }
-        }
+        console.log('📄 Wishlist page: init');
 
+        // bind handlers with .onclick so repeated inits don't stack
+        if (els.clear) els.clear.onclick = clearWishlist;
 
-        // ============================================================
-        // 9. LOAD WISHLIST DATA
-        // ============================================================
+        await loadWishlistData();
 
-        async function loadWishlistData() {
-            try {
-                const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-                
-                const dbWishlist = await fetchWishlistFromDB(sessionId);
-                if (dbWishlist && dbWishlist.length > 0) {
-                    wishlistIds = dbWishlist;
-                    localStorage.setItem('st_wishlist', JSON.stringify(dbWishlist));
-                } else {
-                    const localWishlist = JSON.parse(localStorage.getItem('st_wishlist') || '[]');
-                    wishlistIds = localWishlist;
-                }
-                
-                if (window.STHeader) {
-                    window.STHeader.AppState.wishlist = wishlistIds;
-                    if (window.STHeader.updateCounts) {
-                        window.STHeader.updateCounts();
-                    }
-                }
-                
-                await renderWishlist();
-            } catch (err) {
-                console.warn('⚠️ Failed to load wishlist:', err.message);
-                try {
-                    wishlistIds = JSON.parse(localStorage.getItem('st_wishlist') || '[]');
-                    await renderWishlist();
-                } catch (e) {
-                    wishlistIds = [];
-                    await renderWishlist();
-                }
-            }
-        }
+        console.log('📄 Wishlist page ready');
+    }
 
-        // ============================================================
-        // 10. NOTIFICATION
-        // ============================================================
+    /* ============================================================
+       GLOBAL BINDINGS  (rebound each init)
+       ============================================================ */
+    function bindGlobals() {
+        window.removeFromWishlist   = removeFromWishlist;
+        window.clearWishlist        = clearWishlist;
+        window.renderWishlist       = renderWishlist;
+        window.showNotification     = showNotification;
+        window.fetchProductDetails  = fetchProductDetails;
+        window.fetchWishlistFromDB  = fetchWishlistFromDB;
+        window.saveWishlistToDB     = saveWishlistToDB;
+       
+    }
 
-        function showNotification(message, type = 'success') {
-            const existing = document.querySelector('.st-notification');
-            if (existing) existing.remove();
-            
-            const notif = document.createElement('div');
-            notif.className = `st-notification ${type}`;
-            notif.textContent = message;
-            document.body.appendChild(notif);
-            
-            setTimeout(() => {
-                notif.style.opacity = '0';
-                notif.style.transform = 'translateX(-50%) translateY(-20px)';
-                notif.style.transition = 'all 0.3s ease';
-                setTimeout(() => notif.remove(), 300);
-            }, 3000);
-        }
+    /* ============================================================
+       BOOTSTRAP
+       ============================================================ */
+    function start() {
+        bindGlobals();
+        init();
+    }
 
-        // ============================================================
-        // 11. INJECT HEADER
-        // ============================================================
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start, { once: true });
+    } else {
+        start();
+    }
 
+    window.addEventListener('st:page-loaded', () => { bindGlobals(); init(); });
+    window.addEventListener('st:pjax-before', cleanup);
+    window.addEventListener('beforeunload',  cleanup);
 
-        // ============================================================
-        // 12. INITIALIZATION
-        // ============================================================
-
-        document.addEventListener('DOMContentLoaded', () => {
-         
-            loadWishlistData();
-            
-            document.getElementById('stClearWishlistBtn').addEventListener('click', clearWishlist);
-            
-            window.removeFromWishlist = removeFromWishlist;
-            window.clearWishlist = clearWishlist;
-            window.renderWishlist = renderWishlist;
-            window.showNotification = showNotification;
-            window.fetchProductDetails = fetchProductDetails;
-            window.getSupabaseClient = getSupabaseClient;
-            window.fetchWishlistFromDB = fetchWishlistFromDB;
-            window.saveWishlistToDB = saveWishlistToDB;
-          
-           
-        });
-
-        console.log('✅ Wishlist Page Loaded');
+    console.log('✅ Wishlist page script loaded');
+})();

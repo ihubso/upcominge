@@ -1,384 +1,305 @@
-/**
- * ============================================================
- * HOT PRODUCTS - Featured Products Grid
- * Fetches and displays products marked as "Hot" from Supabase
- * ============================================================
- */
+(function () {
+    'use strict';
 
-// ============================================================
-// 2. FETCH HOT PRODUCTS
-// ============================================================
+    /* ============================================================
+       MODULE STATE
+       ============================================================ */
+    let _cachedReviews = {};       // renamed from window.productReviews
+    let _initialized   = false;
 
-async function fetchHotProducts() {
-    const client = getSupabaseClient();
-    if (!client) {
-        console.warn('⚠️ Supabase not available for hot products');
-        return [];
+    /* ============================================================
+       HELPERS
+       ============================================================ */
+    function getClient() {
+        return window.getSupabaseClient?.() || window.supabaseClient || null;
     }
 
-    try {
-        const { data, error } = await client
-            .from('products')
-            .select('*')
-            .eq('isHot', true)
-            .order('created_at', { ascending: false });
+    function t(key, fallback) {
+        if (window.Translations?.translate) {
+            const r = window.Translations.translate(key);
+            if (r && r !== key) return r;
+        }
+        return fallback || key;
+    }
 
-        if (error) {
-            console.error('❌ Error fetching hot products:', error.message);
+    /* ============================================================
+       FETCHERS
+       ============================================================ */
+    async function fetchHotProducts() {
+        const client = getClient();
+        if (!client) return [];
+        try {
+            const { data, error } = await client
+                .from('products')
+                .select('*')
+                .eq('isHot', true)
+                .order('created_at', { ascending: false });
+            if (error) { console.error('❌ Error fetching hot products:', error.message); return []; }
+            return data || [];
+        } catch (err) {
+            console.error('❌ Error fetching hot products:', err.message);
             return [];
         }
-
-        console.log(`✅ Loaded ${data?.length || 0} hot products`);
-        return data || [];
-
-    } catch (err) {
-        console.error('❌ Error fetching hot products:', err.message);
-        return [];
     }
-}
 
-// ============================================================
-// 3. FETCH REVIEWS (FIXED - uses the same client)
-// ============================================================
-
-async function fetchReviewsFromDB() {
-    const client = getSupabaseClient(); // ✅ FIXED: Use the same client
-    if (!client) return {};
-    
-    try {
-        const { data, error } = await client.from('reviews').select('*');
-        
-        if (error) {
-            console.error('❌ Error fetching reviews:', error.message);
+    async function fetchReviewsFromDB() {
+        const client = getClient();
+        if (!client) return {};
+        try {
+            const { data, error } = await client.from('reviews').select('*');
+            if (error) { console.error('❌ Error fetching reviews:', error.message); return {}; }
+            const reviews = {};
+            (data || []).forEach(r => {
+                if (!reviews[r.product_id]) reviews[r.product_id] = [];
+                reviews[r.product_id].push({
+                    id: r.id, user: r.user_name, rating: r.rating,
+                    comment: r.comment, date: r.date
+                });
+            });
+            return reviews;
+        } catch (err) {
+            console.error('❌ Error fetching reviews:', err.message);
             return {};
         }
-        
-        const reviews = {};
-        (data || []).forEach(r => {
-            if (!reviews[r.product_id]) reviews[r.product_id] = [];
-            reviews[r.product_id].push({
-                id: r.id,
-                user: r.user_name,
-                rating: r.rating,
-                comment: r.comment,
-                date: r.date
-            });
-        });
-        return reviews;
-    } catch (err) {
-        console.error('❌ Error fetching reviews:', err.message);
-        return {};
-    }
-}
-
-// ============================================================
-// 3.5. RENDER SKELETON LOADER
-// ============================================================
-
-function renderHotSkeletonLoader(containerId = 'hotProducts') {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    const skeletonCards = Array(8).fill(0).map(() => `
-        <div class="hot-product-card skeleton">
-            <div class="hot-product-image skeleton-image">
-                <div class="skeleton-shimmer"></div>
-            </div>
-            <div class="hot-product-info">
-                <div class="skeleton-text skeleton-name"></div>
-                <div class="skeleton-text skeleton-brand"></div>
-                <div class="skeleton-price-row">
-                    <div class="skeleton-text skeleton-current-price"></div>
-                    <div class="skeleton-text skeleton-original-price"></div>
-                </div>
-                <div class="skeleton-rating">
-                    <div class="skeleton-text skeleton-stars"></div>
-                    <div class="skeleton-text skeleton-reviews"></div>
-                </div>
-                <div class="skeleton-actions">
-                    <div class="skeleton-text skeleton-btn-cart"></div>
-                    <div class="skeleton-text skeleton-btn-view"></div>
-                </div>
-            </div>
-        </div>
-    `).join('');
-
-    container.innerHTML = `
-        <div class="hot-products-header">
-            <h2><i class="fas fa-fire"></i> Hot Products</h2>
-            <a href="/product/?filter=hot" class="hot-view-all">View All <i class="fas fa-arrow-right"></i></a>
-        </div>
-        <div class="hot-products-grid skeleton-grid">
-            ${skeletonCards}
-        </div>
-    `;
-}
-
-// ============================================================
-// 4. RENDER STARS
-// ============================================================
-
-function renderStars(rating) {
-    const full = Math.floor(rating);
-    const half = (rating % 1) >= 0.5;
-    let html = '';
-    for (let i = 0; i < full; i++) html += '★';
-    if (half) html += '½';
-    for (let i = html.length; i < 5; i++) html += '<span class="empty">☆</span>';
-    return html;
-}
-
-// ============================================================
-// 5. RENDER HOT PRODUCTS (FIXED)
-// ============================================================
-
-// Helper function to get reviews for a product
-function getProductReviews(productId) {
-    const reviews = window.productReviews || {};
-    return reviews[productId] || [];
-}
-
-function getAverageRating(productId) {
-    const revs = getProductReviews(productId);
-    if (!revs.length) return 0;
-    const sum = revs.reduce((s, r) => s + r.rating, 0);
-    return sum / revs.length;
-}
-
-function getReviewCount(productId) {
-    const revs = getProductReviews(productId);
-    return revs.length;
-}
-
-async function renderHotProducts(products, containerId = 'hotProducts') {
-    const container = document.getElementById(containerId);
-    if (!container) {
-        console.warn(`⚠️ Container #${containerId} not found`);
-        return;
     }
 
-    if (!products || products.length === 0) {
+    /* ============================================================
+       REVIEW LOOKUP (uses module-scoped cache)
+       ============================================================ */
+    function getProductReviews(productId) {
+        return _cachedReviews[productId] || [];
+    }
+    function getAverageRating(productId) {
+        const revs = getProductReviews(productId);
+        if (!revs.length) return 0;
+        return revs.reduce((s, r) => s + r.rating, 0) / revs.length;
+    }
+    function getReviewCount(productId) {
+        return getProductReviews(productId).length;
+    }
+
+    /* ============================================================
+       STARS
+       ============================================================ */
+    function renderStars(rating) {
+        const full  = Math.floor(rating);
+        const half  = (rating % 1) >= 0.5;
+        let html = '★'.repeat(full);
+        if (half) html += '½';
+        const empty = 5 - full - (half ? 1 : 0);
+        html += '<span class="empty">☆</span>'.repeat(Math.max(0, empty));
+        return html;
+    }
+
+    /* ============================================================
+       SKELETON
+       ============================================================ */
+    function renderHotSkeletonLoader(containerId = 'hotProducts') {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const skeletonCards = Array(8).fill(0).map(() => `
+            <div class="hot-product-card skeleton">
+                <div class="hot-product-image skeleton-image"><div class="skeleton-shimmer"></div></div>
+                <div class="hot-product-info">
+                    <div class="skeleton-text skeleton-name"></div>
+                    <div class="skeleton-text skeleton-brand"></div>
+                    <div class="skeleton-price-row">
+                        <div class="skeleton-text skeleton-current-price"></div>
+                        <div class="skeleton-text skeleton-original-price"></div>
+                    </div>
+                    <div class="skeleton-rating">
+                        <div class="skeleton-text skeleton-stars"></div>
+                        <div class="skeleton-text skeleton-reviews"></div>
+                    </div>
+                    <div class="skeleton-actions">
+                        <div class="skeleton-text skeleton-btn-cart"></div>
+                        <div class="skeleton-text skeleton-btn-view"></div>
+                    </div>
+                </div>
+            </div>`).join('');
+
         container.innerHTML = `
             <div class="hot-products-header">
                 <h2><i class="fas fa-fire"></i> <span data-translate="hot_products_title">Hot Products</span></h2>
                 <a href="/product/?filter=hot" class="hot-view-all" data-translate="view_all">View All <i class="fas fa-arrow-right"></i></a>
             </div>
-            <div style="text-align:center;padding:40px 20px;background:#f8fafc;border-radius:16px;">
-                <p style="color:#94A3B8;font-size:16px;" data-translate="no_hot_products">No hot products available</p>
-            </div>
+            <div class="hot-products-grid skeleton-grid">${skeletonCards}</div>
         `;
-        return;
     }
 
-    // Fetch reviews first
-    const reviews = await fetchReviewsFromDB();
-    window.productReviews = reviews; // Make available globally for helper functions
+    /* ============================================================
+       RENDER HOT PRODUCTS
+       ============================================================ */
+    async function renderHotProducts(products, containerId = 'hotProducts') {
+        const container = document.getElementById(containerId);
+        if (!container) return;
 
-    // Build the HTML
-    let html = `
-        <div class="hot-products-header">
-            <h2><i class="fas fa-fire"></i> <span data-translate="hot_products_title">Hot Products</span></h2>
-            <a href="/product/?filter=hot" class="hot-view-all" data-translate="view_all">View All <i class="fas fa-arrow-right"></i></a>
-        </div>
-        <div class="hot-products-grid">
-    `;
-
-    products.forEach((product) => {
-        const image = product.image || product.images?.[0] || 'https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product';
-        const price = product.price || 0;
-        const originalPrice = product.originalPrice || price;
-        const discount = product.discount || 0;
-        const rating = getAverageRating(product.id);
-        const reviewCount = getReviewCount(product.id);
-
-        // Calculate discount percentage
-        let discountPercent = 0;
-        if (discount > 0) {
-            discountPercent = discount;
-        } else if (originalPrice > price && originalPrice > 0) {
-            discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
+        if (!products?.length) {
+            container.innerHTML = `
+                <div class="hot-products-header">
+                    <h2><i class="fas fa-fire"></i> <span data-translate="hot_products_title">Hot Products</span></h2>
+                    <a href="/product/?filter=hot" class="hot-view-all" data-translate="view_all">View All <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div style="text-align:center;padding:40px 20px;background:#f8fafc;border-radius:16px;">
+                    <p style="color:#94A3B8;font-size:16px;" data-translate="no_hot_products">No hot products available</p>
+                </div>`;
+            if (typeof translateUI === 'function') translateUI();
+            return;
         }
 
-        // Star rating
-        const starsHtml = renderStars(rating);
+        _cachedReviews = await fetchReviewsFromDB();
 
-        // Check if product is in wishlist
-        const isInWishlist = window.STHeader?.AppState?.wishlist?.includes(product.id) || false;
+        let html = `
+            <div class="hot-products-header">
+                <h2><i class="fas fa-fire"></i> <span data-translate="hot_products_title">Hot Products</span></h2>
+                <a href="/product/?filter=hot" class="hot-view-all" data-translate="view_all">View All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="hot-products-grid">`;
 
-        html += `
-            <div class="hot-product-card" data-product-id="${product.id}">
-            <div onclick="window.navigateWithUserInfo('/item/?id=${product.id}')">
-                <div class="hot-product-image">
-                    <img src="${image}" alt="${product.name || 'Product'}" loading="lazy" onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'">
-                    ${discountPercent > 0 ? `<span class="hot-product-discount" data-translate="discount_percent">-${discountPercent}%</span>` : ''}
-                    <button class="hot-product-wishlist ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')" aria-label="Add to wishlist">
-                        <i class="fas fa-heart"></i>
-                    </button>
-                </div>
-                <div class="hot-product-info" a href="/item/?id=${product.id}" >
-                    <a href="/item/?id=${product.id}" class="hot-product-name">
-                        ${product.name || 'Unknown Product'}
-                    </a>
-                    ${product.brand ? `<span class="hot-product-brand">${product.brand}</span>` : ''}
-                    <div class="hot-product-price">
-                        <span class="hot-current-price">FCFA${price.toFixed(2)}</span>
-                        ${discountPercent > 0 ? `
-                            <span class="hot-original-price">FCFA${originalPrice.toFixed(2)}</span>
-                        ` : ''}
+        products.forEach(product => {
+            const image = product.image || product.images?.[0] || 'https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product';
+            const price = product.price || 0;
+            const originalPrice = product.originalPrice || price;
+            const discount = product.discount || 0;
+            const rating = getAverageRating(product.id);
+            const reviewCount = getReviewCount(product.id);
+
+            let discountPercent = 0;
+            if (discount > 0) discountPercent = discount;
+            else if (originalPrice > price && originalPrice > 0)
+                discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
+
+            const starsHtml = renderStars(rating);
+            const isInWishlist = window.STHeader?.AppState?.wishlist?.includes(product.id) || false;
+
+            html += `
+                <div class="hot-product-card" data-product-id="${product.id}">
+                    <div class="hot-product-image" onclick="window.navigateWithUserInfo('/item/?product=${product.id}')">
+                        <img src="${image}" alt="${product.name || 'Product'}" loading="lazy"
+                             onerror="this.src='https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product'">
+                        ${discountPercent > 0 ? `<span class="hot-product-discount" data-translate="discount_percent">-${discountPercent}%</span>` : ''}
+                        <button class="hot-product-wishlist ${isInWishlist ? 'active' : ''}"
+                                onclick="event.stopPropagation(); window.hotProducts.toggleWishlist('${product.id}')"
+                                aria-label="Add to wishlist">
+                            <i class="fas fa-heart"></i>
+                        </button>
                     </div>
-                    ${rating > 0 ? `
-                        <div class="hot-product-rating">
-                            <span class="hot-stars">${starsHtml}</span>
-                            <span class="hot-reviews">(${reviewCount || 0})</span>
+                    <div class="hot-product-info" onclick="window.navigateWithUserInfo('/item/?product=${product.id}')">
+                        <a class="hot-product-name">${product.name || 'Unknown Product'}</a>
+                        ${product.brand ? `<span class="hot-product-brand">${product.brand}</span>` : ''}
+                        <div class="hot-product-price">
+                            <span class="hot-current-price">FCFA ${price.toFixed(2)}</span>
+                            ${discountPercent > 0 ? `<span class="hot-original-price">FCFA ${originalPrice.toFixed(2)}</span>` : ''}
                         </div>
-                    ` : ''}
+                        ${rating > 0 ? `
+                            <div class="hot-product-rating">
+                                <span class="hot-stars">${starsHtml}</span>
+                                <span class="hot-reviews">(${reviewCount || 0})</span>
+                            </div>` : ''}
                     </div>
                     <div class="hot-product-actions">
-                        <a href="/item/?id=${product.id}" class="hot-btn-view" data-translate="view_details">
+                        <a class="hot-btn-view"
+                           onclick="window.navigateWithUserInfo('/item/?product=${product.id}'); return false;"
+                           data-translate="view_details">
                             <i class="fas fa-eye"></i>
                         </a>
                     </div>
-                </div>
-            </div>
-        `;
-    });
-
-    html += `</div>`;
-    container.innerHTML = html;
-     translateUI();
-}
-
-// ============================================================
-// 6. WISHLIST TOGGLE
-// ============================================================
-
-async function toggleWishlist(productId) {
-    try {
-        // Get current wishlist
-        let wishlist = JSON.parse(localStorage.getItem('st_wishlist') || '[]');
-        const index = wishlist.indexOf(productId);
-
-        if (index !== -1) {
-            // Remove from wishlist
-            wishlist.splice(index, 1);
-            showToast('❤️ Removed from wishlist', 'info');
-        } else {
-            // Add to wishlist
-            wishlist.push(productId);
-            showToast('❤️ Added to wishlist', 'success');
-        }
-
-        // Save to localStorage
-        localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
-
-        // Save to Supabase
-        const customerId = window.getCurrentCustomerId?.();
-        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-        const client = getSupabaseClient();
-        if (client) {
-            await saveWishlistToDB(customerId || sessionId, wishlist, !!customerId);
-        }
-
-        // Update header
-        if (window.STHeader) {
-            window.STHeader.AppState.wishlist = wishlist;
-            window.STHeader.updateCounts();
-        }
-
-        // Update UI - toggle heart icon
-        const buttons = document.querySelectorAll(`.hot-product-wishlist[onclick*="${productId}"]`);
-        buttons.forEach(btn => {
-            btn.classList.toggle('active');
+                </div>`;
         });
 
-    } catch (err) {
-        console.error('❌ Error toggling wishlist:', err);
-        showToast('❌ Failed to update wishlist', 'error');
+        html += `</div>`;
+        container.innerHTML = html;
+        if (typeof translateUI === 'function') translateUI();
     }
-}
 
+    /* ============================================================
+       WISHLIST
+       ============================================================ */
+    async function toggleWishlist(productId) {
+        try {
+            let wishlist = JSON.parse(localStorage.getItem('st_wishlist') || '[]');
+            const index = wishlist.indexOf(productId);
 
-// ============================================================
-// 8. SUPABASE SYNC FUNCTIONS
-// ============================================================
+            if (index !== -1) { wishlist.splice(index, 1); showToast('❤️ Removed from wishlist', 'info'); }
+            else              { wishlist.push(productId);   showToast('❤️ Added to wishlist',   'success'); }
 
-async function saveWishlistToDB(identifier, wishlist, hasCustomerId = false) {
-    const client = getSupabaseClient();
-    if (!client) return;
+            localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
 
-    const customerId = hasCustomerId ? identifier : null;
-    const sessionId = hasCustomerId ? null : identifier;
+            const customerId = window.getCurrentCustomerId?.();
+            const sessionId  = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+            const client = getClient();
+            if (client) {
+                await saveWishlistToDB(customerId || sessionId, wishlist, !!customerId);
+            }
 
-    try {
-        if (customerId) {
-            await client.from('wishlist').delete().eq('customer_id', customerId);
-        } else {
-            await client.from('wishlist').delete().eq('session_id', sessionId);
+            if (window.STHeader) {
+                window.STHeader.AppState.wishlist = wishlist;
+                window.STHeader.updateCounts?.();
+            }
+
+            // Toggle the active class in-place
+            document.querySelectorAll(`.hot-product-card[data-product-id="${productId}"] .hot-product-wishlist`)
+                .forEach(btn => btn.classList.toggle('active'));
+        } catch (err) {
+            console.error('❌ Error toggling wishlist:', err);
+            showToast('❌ Failed to update wishlist', 'error');
         }
-
-        if (wishlist.length > 0) {
-            const rows = wishlist.map(pid => ({
-                ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
-                product_id: pid
-            }));
-            const { error } = await client.from('wishlist').insert(rows);
-            if (error) console.error('❌ Error saving wishlist:', error.message);
-        }
-    } catch (err) {
-        console.error('❌ Error:', err.message);
     }
-}
 
-
-// ============================================================
-// 9. TOAST NOTIFICATION
-// ============================================================
-
-function showToast(message, type = 'success') {
-    const existing = document.querySelector('.hot-toast');
-    if (existing) existing.remove();
-
-    const toast = document.createElement('div');
-    toast.className = 'hot-toast';
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 80px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 14px 24px;
-        background: ${type === 'error' ? '#EF4444' : type === 'info' ? '#3B82F6' : '#10B981'};
-        color: white;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 14px;
-        z-index: 30000;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-        max-width: 90%;
-        text-align: center;
-        animation: toastSlideUp 0.3s ease;
-        font-family: 'Inter', sans-serif;
-    `;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-
-    // Add animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes toastSlideUp {
-            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    async function saveWishlistToDB(identifier, wishlist, hasCustomerId = false) {
+        const client = getClient();
+        if (!client) return;
+        const col = hasCustomerId ? 'customer_id' : 'session_id';
+        try {
+            await client.from('wishlist').delete().eq(col, identifier);
+            if (wishlist.length > 0) {
+                const rows = wishlist.map(pid => ({ [col]: identifier, product_id: pid }));
+                const { error } = await client.from('wishlist').insert(rows);
+                if (error) console.error('❌ Error saving wishlist:', error.message);
+            }
+        } catch (err) {
+            console.error('❌ Error:', err.message);
         }
-    `;
-    document.head.appendChild(style);
+    }
 
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(-50%) translateY(-20px)';
-        toast.style.transition = 'all 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
+    /* ============================================================
+       TOAST
+       ============================================================ */
+    function showToast(message, type = 'success') {
+        document.querySelector('.hot-toast')?.remove();
+        const toast = document.createElement('div');
+        toast.className = 'hot-toast';
+        toast.style.cssText = `
+            position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+            padding:14px 24px;
+            background:${type === 'error' ? '#EF4444' : type === 'info' ? '#3B82F6' : '#10B981'};
+            color:white;border-radius:12px;font-weight:600;font-size:14px;
+            z-index:30000;box-shadow:0 8px 32px rgba(0,0,0,0.2);
+            max-width:90%;text-align:center;
+            animation:hotToastSlideUp .3s ease;font-family:'Inter',sans-serif;`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
 
+        // Ensure the keyframes exist, but only once
+        if (!document.getElementById('hot-toast-keyframes')) {
+            const style = document.createElement('style');
+            style.id = 'hot-toast-keyframes';
+            style.textContent = `
+                @keyframes hotToastSlideUp {
+                    from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+                    to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+                }`;
+            document.head.appendChild(style);
+        }
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(-20px)';
+            toast.style.transition = 'all .3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
 // ============================================================
 // 10. HOT PRODUCTS STYLES (Includes Skeleton)
 // ============================================================
@@ -1034,75 +955,71 @@ function injectHotStyles() {
     `;
     document.head.appendChild(style);
 }
+    /* ============================================================
+       INITIALIZE
+       ============================================================ */
+    async function initHotProducts(containerId = 'hotProducts', limit = 8) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
 
-// ============================================================
-// 11. INITIALIZE HOT PRODUCTS
-// ============================================================
+        injectHotStyles();
+        renderHotSkeletonLoader(containerId);
 
-async function initHotProducts(containerId = 'hotProducts', limit = 8) {
-    // Inject styles
-    injectHotStyles();
+        let products = await fetchHotProducts();
+        if (limit > 0 && products.length > limit) products = products.slice(0, limit);
 
-    // Get container
-    const container = document.getElementById(containerId);
-    if (!container) {
-        console.warn(`⚠️ Container #${containerId} not found. Hot products not initialized.`);
-        return;
+        await renderHotProducts(products, containerId);
+        console.log('✅ Hot products initialized with', products.length, 'products');
     }
 
-    // Show skeleton loader
-    renderHotSkeletonLoader(containerId);
-
-    // Fetch hot products
-    let products = await fetchHotProducts();
-
-    // Apply limit if specified
-    if (limit > 0 && products.length > limit) {
-        products = products.slice(0, limit);
+    /* ============================================================
+       CLEANUP / INIT
+       ============================================================ */
+    function cleanup() {
+        _cachedReviews = {};
+        _initialized = false;
     }
 
-    // Re-render with products
-    await renderHotProducts(products, containerId);
+    async function init() {
+        // Detect any of the possible containers
+        const candidates = ['hotProducts', 'hotProductsGrid', 'featuredHot', 'hotProductsContainer'];
+        const found = candidates.find(id => document.getElementById(id));
+        if (!found) return;      // not on a page with hot products
 
-    // Expose functions globally for onclick handlers
+        cleanup();
+        console.log('📄 Hot Products: init');
+
+        await initHotProducts(found, 8);
+
+        _initialized = true;
+    }
+
+    /* ============================================================
+       GLOBAL EXPORTS
+       ============================================================ */
+    window.hotProducts = {
+        init: initHotProducts,
+        fetch: fetchHotProducts,
+        render: renderHotProducts,
+        toggleWishlist,
+        showToast
+    };
+    // Backwards-compat: inline onclick uses toggleWishlist()
     window.toggleWishlist = toggleWishlist;
 
-    console.log('✅ Hot products initialized with', products.length, 'products');
-}
+    /* ============================================================
+       BOOTSTRAP
+       ============================================================ */
+    function start() { init(); }
 
-// ============================================================
-// 12. AUTO-INITIALIZE ON DOM READY
-// ============================================================
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Check if hot products container exists
-    const container = document.getElementById('hotProducts');
-    if (container) {
-        // Auto-initialize
-        initHotProducts('hotProducts', 8);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start, { once: true });
     } else {
-        // Check for alternative container IDs
-        const altContainers = ['hotProductsGrid', 'featuredHot', 'hotProductsContainer'];
-        for (const id of altContainers) {
-            const alt = document.getElementById(id);
-            if (alt) {
-                initHotProducts(id, 8);
-                break;
-            }
-        }
+        start();
     }
-});
+    window.addEventListener('st:page-loaded', init);
+    window.addEventListener('st:pjax-before', cleanup);
+    window.addEventListener('beforeunload',  cleanup);
 
-// ============================================================
-// 13. EXPOSE FOR USE IN OTHER SCRIPTS
-// ============================================================
-
-window.hotProducts = {
-    init: initHotProducts,
-    fetch: fetchHotProducts,
-    render: renderHotProducts,
-    toggleWishlist: toggleWishlist,
-    showToast: showToast
-};
-
-console.log('✅ Hot Products System Loaded');
+    console.log('✅ Hot Products System Loaded');
+})();

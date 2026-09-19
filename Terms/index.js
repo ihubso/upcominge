@@ -1,265 +1,300 @@
+(function () {
+    'use strict';
 
+    /* ============================================================
+       MODULE STATE
+       ============================================================ */
+    let sectionObserver = null;
+    let _fallbackTimer   = null;
 
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 Terms & Conditions page loaded');
+    /* ============================================================
+       ELEMENT LOOKUP — fresh each init
+       ============================================================ */
+    function getEls() {
+        return {
+            root:          document.querySelector('.terms-page')          // ← page root
+                        || document.getElementById('termsPage')
+                        || document.getElementById('companyName'),         // fallback marker
+            acceptBtn:     document.getElementById('acceptBtn'),
+            declineBtn:    document.getElementById('declineBtn'),
+            companyName:   document.getElementById('companyName'),
+            companyTagline: document.getElementById('companyTagline'),
+            effectiveDate: document.getElementById('effectiveDate'),
+            lastUpdated:   document.getElementById('lastUpdatedDate'),
+            contactEmail:  document.getElementById('contactEmail'),
+            contactPhone:  document.getElementById('contactPhone'),
+            contactAddress: document.getElementById('contactAddress'),
+            contactHours:  document.getElementById('contactHours'),
+            governingCountry:    document.getElementById('governingCountry'),
+            jurisdictionCountry: document.getElementById('jurisdictionCountry'),
+            lawCountry:          document.getElementById('lawCountry'),
+            courtCountry:        document.getElementById('courtCountry'),
+            tocItems:      document.querySelectorAll('.toc-item'),
+            sections:      document.querySelectorAll('.term-section'),
+        };
+    }
 
-            // --- Fetch and render business info ---
-            fetchBusinessInfo();
+    /* ============================================================
+       TRANSLATION
+       ============================================================ */
+    function t(key, fallback) {
+        if (window.Translations?.translate) {
+            const r = window.Translations.translate(key);
+            if (r && r !== key) return r;
+        }
+        return fallback || key;
+    }
 
-            // --- Smooth scroll for TOC links ---
-            document.querySelectorAll('.toc-item').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('href').substring(1);
-                    const target = document.getElementById(targetId);
-                    if (target) {
-                        const headerOffset = 100;
-                        const elementPosition = target.getBoundingClientRect().top;
-                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    /* ============================================================
+       TOAST
+       ============================================================ */
+    function showToast(message, type = 'success') {
+        document.querySelector('.toast-msg')?.remove();
+        const toast = document.createElement('div');
+        toast.className = `toast-msg ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(-20px)';
+            toast.style.transition = 'all .3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
 
-                        window.scrollTo({
-                            top: offsetPosition,
-                            behavior: 'smooth'
-                        });
-                    }
+    /* ============================================================
+       BUSINESS INFO
+       ============================================================ */
+    async function fetchBusinessInfo() {
+        try {
+            const supabase = window.getSupabaseClient?.();
+            if (!supabase || typeof supabase.from !== 'function') {
+                showFallbackData();
+                return;
+            }
+
+            const [bizRes, contactRes] = await Promise.all([
+                supabase.from('business_info').select('*').eq('id', 1).single(),
+                supabase.from('contact_info').select('*').eq('id', 1).single(),
+            ]);
+
+            if (bizRes.error)     console.warn('⚠️ Business info fetch error:', bizRes.error.message);
+            if (contactRes.error) console.warn('⚠️ Contact info fetch error:', contactRes.error.message);
+
+            const combined = { ...(bizRes.data || {}), ...(contactRes.data || {}) };
+
+            if (combined && Object.keys(combined).length > 0) {
+                renderBusinessInfo(combined);
+            } else {
+                showFallbackData();
+            }
+        } catch (err) {
+            console.error('❌ Error fetching business info:', err);
+            showFallbackData();
+        }
+    }
+
+    function renderBusinessInfo(data) {
+        const els = getEls();
+
+        const companyName = data.name || data.company_name || 'Sucess Technology';
+        if (els.companyName) {
+            els.companyName.textContent = `${t('terms_and', 'Terms &')} Conditions · ${companyName}`;
+        }
+        document.querySelectorAll('#businessName1, #businessName7, #businessName9').forEach(el => {
+            el.textContent = companyName;
+        });
+
+        if (data.description && els.companyTagline) {
+            els.companyTagline.textContent = data.description;
+        }
+
+        if ((data.established_date || data.created_at) && els.effectiveDate) {
+            const d = new Date(data.established_date || data.created_at);
+            if (!isNaN(d)) {
+                els.effectiveDate.textContent =
+                    `${t('effective', 'Effective')} ${d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+            }
+        }
+
+        if (data.updated_at && els.lastUpdated) {
+            const d = new Date(data.updated_at);
+            if (!isNaN(d)) {
+                els.lastUpdated.textContent = d.toLocaleDateString('en-US', {
+                    month: 'long', day: 'numeric', year: 'numeric'
                 });
-            });
+            }
+        }
 
-            // --- Accept Button ---
-            document.getElementById('acceptBtn').addEventListener('click', function() {
+        if (data.email && els.contactEmail)   els.contactEmail.textContent = data.email;
+        if ((data.phone || data.phone_number) && els.contactPhone)
+            els.contactPhone.textContent = data.phone || data.phone_number;
+
+        const addr = [data.address, data.city, data.country].filter(Boolean);
+        if (addr.length && els.contactAddress) els.contactAddress.textContent = addr.join(', ');
+
+        if ((data.hours || data.business_hours) && els.contactHours)
+            els.contactHours.textContent = data.hours || data.business_hours;
+
+        if (data.country) {
+            if (els.governingCountry)    els.governingCountry.textContent    = `the ${data.country}`;
+            if (els.jurisdictionCountry) els.jurisdictionCountry.textContent = data.country;
+            if (els.lawCountry)          els.lawCountry.textContent          = data.country;
+            if (els.courtCountry)        els.courtCountry.textContent        = data.country;
+        }
+
+        try { sessionStorage.setItem('st_business_info', JSON.stringify(data)); } catch (_) {}
+    }
+
+    function showFallbackData() {
+        const els = getEls();
+        if (els.companyName) {
+            els.companyName.textContent = 'Terms & Conditions · Sucess Technology';
+        }
+        document.querySelectorAll('#businessName1, #businessName7, #businessName9').forEach(el => {
+            el.textContent = 'Sucess Technology';
+        });
+    }
+
+    /* ============================================================
+       TOC SMOOTH SCROLL + BUTTONS
+       ============================================================ */
+    function bindTOC() {
+        document.querySelectorAll('.toc-item').forEach(link => {
+            link.onclick = function (e) {                     // assignment, not addEventListener
+                e.preventDefault();
+                const id = this.getAttribute('href')?.substring(1);
+                const target = id && document.getElementById(id);
+                if (!target) return;
+                const headerOffset = 100;
+                const top = target.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+                window.scrollTo({ top, behavior: 'smooth' });
+            };
+        });
+    }
+
+    function bindAcceptDecline() {
+        const { acceptBtn, declineBtn } = getEls();
+        if (acceptBtn) {
+            acceptBtn.onclick = function () {                 // assignment
                 showToast('✅ ' + t('thank_you_accept', 'Thank you for accepting our Terms & Conditions!'));
                 this.innerHTML = '<i class="fas fa-check"></i> ' + t('accepted', 'Accepted');
                 this.style.background = '#10B981';
                 this.disabled = true;
-                document.getElementById('declineBtn').style.opacity = '0.5';
-                document.getElementById('declineBtn').disabled = true;
-
+                if (declineBtn) { declineBtn.style.opacity = '0.5'; declineBtn.disabled = true; }
                 localStorage.setItem('st_terms_accepted', 'true');
                 localStorage.setItem('st_terms_accepted_date', new Date().toISOString());
-            });
-
-            // --- Decline Button ---
-            document.getElementById('declineBtn').addEventListener('click', function() {
+            };
+        }
+        if (declineBtn) {
+            declineBtn.onclick = function () {                 // assignment
                 showToast('⚠️ ' + t('must_accept', 'You must accept the Terms & Conditions to use our platform.'), 'error');
-            });
+            };
+        }
+    }
 
-            // --- Check if already accepted ---
-            const termsAccepted = localStorage.getItem('st_terms_accepted');
-            if (termsAccepted === 'true') {
-                const btn = document.getElementById('acceptBtn');
-                btn.innerHTML = '<i class="fas fa-check"></i> ' + t('already_accepted', 'Already Accepted');
-                btn.style.background = '#10B981';
-                btn.disabled = true;
-                document.getElementById('declineBtn').style.opacity = '0.5';
-                document.getElementById('declineBtn').disabled = true;
-            }
+    function applyAcceptedState() {
+        if (localStorage.getItem('st_terms_accepted') !== 'true') return;
+        const { acceptBtn, declineBtn } = getEls();
+        if (!acceptBtn) return;
+        acceptBtn.innerHTML = '<i class="fas fa-check"></i> ' + t('already_accepted', 'Already Accepted');
+        acceptBtn.style.background = '#10B981';
+        acceptBtn.disabled = true;
+        if (declineBtn) { declineBtn.style.opacity = '0.5'; declineBtn.disabled = true; }
+    }
 
-            // --- Toast ---
-            function showToast(message, type = 'success') {
-                const existing = document.querySelector('.toast-msg');
-                if (existing) existing.remove();
+    /* ============================================================
+       SECTION ANIMATIONS
+       ============================================================ */
+    function animateSections() {
+        const sections = document.querySelectorAll('.term-section');
 
-                const toast = document.createElement('div');
-                toast.className = `toast-msg ${type}`;
-                toast.textContent = message;
-                document.body.appendChild(toast);
-
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    toast.style.transform = 'translateX(-50%) translateY(-20px)';
-                    toast.style.transition = 'all 0.3s ease';
-                    setTimeout(() => toast.remove(), 300);
-                }, 3000);
-            }
-
-            // --- Animation on scroll for sections ---
-            const sections = document.querySelectorAll('.term-section');
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            }, {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            });
-
-            sections.forEach((section, index) => {
-                section.style.opacity = '0';
-                section.style.transform = 'translateY(20px)';
-                section.style.transition = `all 0.5s ease ${index * 0.05}s`;
-                observer.observe(section);
-            });
-
-            setTimeout(() => {
-                sections.forEach(section => {
-                    section.style.opacity = '1';
-                    section.style.transform = 'translateY(0)';
-                });
-            }, 200);
-
-            console.log('✅ Terms & Conditions page ready');
+        // Set initial hidden state
+        sections.forEach((section, index) => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(20px)';
+            section.style.transition = `all .5s ease ${index * 0.05}s`;
         });
 
-        // Helper translation function for dynamic content
-        function t(key, fallback) {
-            if (window.Translations && window.Translations.translate) {
-                const result = window.Translations.translate(key);
-                if (result && result !== key) return result;
-            }
-            return fallback || key;
-        }
+        if (sectionObserver) sectionObserver.disconnect();
 
-        // ============================================================
-        //  FETCH BUSINESS INFO FROM SUPABASE
-        // ============================================================
-
-        async function fetchBusinessInfo() {
-            console.log('📡 Fetching business info...');
-
-            try {
-                // Get Supabase client - use the helper so we get an initialized client,
-                // not the raw Supabase SDK object.
-                const supabase = getSupabaseClient();
-
-                if (!supabase || typeof supabase.from !== 'function') {
-                    console.warn('⚠️ Supabase client not available, using fallback data');
-                    showFallbackData();
-                    return;
-                }
-
-                // Fetch from business_info
-                const { data: businessData, error: businessError } = await supabase
-                    .from('business_info')
-                    .select('*')
-                    .eq('id', 1)
-                    .single();
-
-                if (businessError) {
-                    console.warn('⚠️ Business info fetch error:', businessError.message);
-                    // Still try contact_info
-                }
-
-                // Fetch from contact_info
-                const { data: contactData, error: contactError } = await supabase
-                    .from('contact_info')
-                    .select('*')
-                    .eq('id', 1)
-                    .single();
-
-                if (contactError) {
-                    console.warn('⚠️ Contact info fetch error:', contactError.message);
-                }
-
-                // Combine data (contact_info takes precedence for overlapping fields)
-                const combinedData = {
-                    ...(businessData || {}),
-                    ...(contactData || {})
-                };
-
-                if (combinedData && Object.keys(combinedData).length > 0) {
-                    renderBusinessInfo(combinedData);
-                } else {
-                    showFallbackData();
-                }
-
-            } catch (err) {
-                console.error('❌ Error fetching business info:', err);
-                showFallbackData();
-            }
-        }
-
-        // ============================================================
-        //  RENDER BUSINESS INFO
-        // ============================================================
-
-        function renderBusinessInfo(data) {
-            console.log('✅ Rendering business info:', data);
-
-            // Company name
-            const companyName = data.name || data.company_name || 'Sucess Technology';
-            document.getElementById('companyName').textContent = `${t('terms_and', 'Terms &')} Conditions · ${companyName}`;
-            document.querySelectorAll('#businessName1, #businessName7, #businessName9').forEach(el => {
-                el.textContent = companyName;
+        if (!('IntersectionObserver' in window)) {
+            // Very old browsers: just reveal
+            sections.forEach(s => {
+                s.style.opacity = '1';
+                s.style.transform = 'translateY(0)';
             });
-
-            // Tagline / description
-            if (data.description) {
-                document.getElementById('companyTagline').textContent = data.description;
-            }
-
-            // Effective date
-            if (data.established_date || data.created_at) {
-                const date = new Date(data.established_date || data.created_at);
-                if (!isNaN(date)) {
-                    document.getElementById('effectiveDate').textContent = `${t('effective', 'Effective')} ${date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
-                }
-            }
-
-            // Last updated
-            if (data.updated_at) {
-                const date = new Date(data.updated_at);
-                if (!isNaN(date)) {
-                    document.getElementById('lastUpdatedDate').textContent = date.toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric'
-                    });
-                }
-            }
-
-            // Contact Email
-            if (data.email) {
-                document.getElementById('contactEmail').textContent = data.email;
-            }
-
-            // Contact Phone
-            if (data.phone || data.phone_number) {
-                document.getElementById('contactPhone').textContent = data.phone || data.phone_number;
-            }
-
-            // Address
-            const addressParts = [];
-            if (data.address) addressParts.push(data.address);
-            if (data.city) addressParts.push(data.city);
-            if (data.country) addressParts.push(data.country);
-            if (addressParts.length > 0) {
-                document.getElementById('contactAddress').textContent = addressParts.join(', ');
-            }
-
-            // Business Hours
-            if (data.hours || data.business_hours) {
-                document.getElementById('contactHours').textContent = data.hours || data.business_hours;
-            }
-
-            // Governing Law - Country
-            if (data.country) {
-                document.getElementById('governingCountry').textContent = `the ${data.country}`;
-                document.getElementById('jurisdictionCountry').textContent = data.country;
-                document.getElementById('lawCountry').textContent = data.country;
-                document.getElementById('courtCountry').textContent = data.country;
-            }
-
-            // Store in session for other pages
-            try {
-                sessionStorage.setItem('st_business_info', JSON.stringify(data));
-            } catch (e) { /* ignore */ }
+            return;
         }
 
-        // ============================================================
-        //  FALLBACK DATA
-        // ============================================================
-
-        function showFallbackData() {
-            console.log('📋 Using fallback business data');
-
-            document.getElementById('companyName').textContent = `Terms & Conditions · Sucess Technology`;
-            document.querySelectorAll('#businessName1, #businessName7, #businessName9').forEach(el => {
-                el.textContent = 'Sucess Technology';
+        sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    sectionObserver.unobserve(entry.target);   // one-shot per section
+                }
             });
-        }
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
- 
+        sections.forEach(s => sectionObserver.observe(s));
+
+        // Fallback: reveal everything after 200ms in case IO never fires (hidden tabs etc.)
+        if (_fallbackTimer) clearTimeout(_fallbackTimer);
+        _fallbackTimer = setTimeout(() => {
+            sections.forEach(s => {
+                s.style.opacity = '1';
+                s.style.transform = 'translateY(0)';
+            });
+        }, 200);
+    }
+
+    /* ============================================================
+       INIT / CLEANUP
+       ============================================================ */
+    function cleanup() {
+        if (sectionObserver) { sectionObserver.disconnect(); sectionObserver = null; }
+        if (_fallbackTimer)  { clearTimeout(_fallbackTimer); _fallbackTimer = null; }
+    }
+
+    async function init() {
+        // 1. Bail if we're not on the terms page
+        const marker = document.getElementById('companyName')
+                    || document.getElementById('acceptBtn');
+        if (!marker) return;
+
+        // 2. Tear down previous instance
+        cleanup();
+
+        console.log('📄 Terms & Conditions: init');
+
+        // 3. Async data
+        await fetchBusinessInfo();
+
+        // 4. Bind interactions (assignment = idempotent)
+        bindTOC();
+        bindAcceptDecline();
+        applyAcceptedState();
+
+        // 5. Animations
+        animateSections();
+
+        if (typeof translateUI === 'function') translateUI();
+
+        console.log('✅ Terms & Conditions ready');
+    }
+
+    /* ============================================================
+       BOOTSTRAP
+       ============================================================ */
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init, { once: true });
+    } else {
+        init();
+    }
+    window.addEventListener('st:page-loaded', init);
+    window.addEventListener('st:pjax-before', cleanup);
+    window.addEventListener('beforeunload',  cleanup);
+
+    console.log('✅ Terms page script loaded');
+})();

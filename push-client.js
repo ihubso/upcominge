@@ -102,7 +102,7 @@ function renderCart() {
                          onerror="this.src='https://placehold.co/600x400'">
                 </div>
                 <div class="st-cart-item-details">
-                    <a href="/item/?product=${item.product_id || item.id}" class="st-item-name">
+                    <a onclick="window.navigateWithUserInfo('/item/?product=${item.product_id || item.id}'); return false;"  class="st-item-name">
                         ${item.name || 'Unknown Product'}
                     </a>
                     ${item.brand ? `<span class="st-item-brand">${item.brand}</span>` : ''}

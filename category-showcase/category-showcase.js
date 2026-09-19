@@ -449,7 +449,7 @@
                             ${isDeal && originalPrice > price ? 
                                 `<span class="original-price">${formatPrice(originalPrice)}</span>` : ''}
                         </div>
-                        <a href="/item/?id=${product.id}" class="st-btn-view">
+                        <a onclick="window.navigateWithUserInfo('/item/?product=${product.id}'); return false;"  class="st-btn-view">
                             <i class="fas fa-eye"></i>
                         </a>
                     </div>

@@ -57,7 +57,8 @@ async function populateDropdowns() {
 
                 if (!error && data && data.length > 0) {
                     productsGrid.innerHTML = data.map(product => `
-                        <a href="/item/?product=${product.id}" class="st-dropdown-item">
+                        <a onclick="window.navigateWithUserInfo('/item/?product=${product.id}'); return false;"  class="st-dropdown-item">
+                        
                             <div class="st-item-icon">
                                 <img src="${product.image || 'https://placehold.co/100x100/6C3CE1/FFFFFF?text=Product'}" 
                                      alt="${product.name}" 
@@ -800,7 +801,7 @@ function renderSearchResults(results, query) {
         container.style.display = 'block';
     } else {
         container.innerHTML = results.map((item, index) => `
-            <a href="/item/?product=${item.id}" class="st-search-item" data-index="${index}" onclick="handleSearchClick(event, '${encodedQuery}', '/item/?product=${item.id}');">
+            <a onclick="window.navigateWithUserInfo('/item/?product=${item.id}'); return false;"  class="st-search-item" data-index="${index}" onclick="handleSearchClick(event, '${encodedQuery}', '/item/?product=${item.id}');">
                 <img src="${item.image || 'https://placehold.co/40x40/6C3CE1/FFFFFF?text=Product'}" 
                      alt="${item.name.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}" 
                      onerror="this.src='https://placehold.co/40x40/6C3CE1/FFFFFF?text=Product'">
@@ -833,7 +834,7 @@ function renderSearchResults(results, query) {
             `;
         } else {
             mobileContainer.innerHTML = results.map(item => `
-                <a href="/item/?product=${item.id}" class="st-search-item" onclick="handleSearchClick(event, '${encodedQuery}', '/item/?product=${item.id}');">
+                <aonclick="window.navigateWithUserInfo('/item/?product=${item.id}'); return false;"  class="st-search-item" onclick="handleSearchClick(event, '${encodedQuery}', '/item/?product=${item.id}');">
                     <img src="${item.image || 'https://placehold.co/50x50/6C3CE1/FFFFFF?text=Product'}" 
                          alt="${item.name.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}" 
                          onerror="this.src='https://placehold.co/50x50/6C3CE1/FFFFFF?text=Product'">
@@ -2067,6 +2068,10 @@ async function getCurrentUserById(userId) {
         checkRateLimit,
         checkAutoLogin
     };
+    // After the user is (or isn't) restored, tell the world
+window.dispatchEvent(new CustomEvent('st:auth-ready', {
+    detail: { user: AppState.user, isLoggedIn: AppState.isLoggedIn }
+}));
     
     console.log('✅ Success Technology Header Initialized (Customer-based Auth)');
     console.log('👤 User:', AppState.isLoggedIn ? AppState.user?.email : 'Guest');

@@ -17,6 +17,7 @@
     <script src="/head/env/enx.js"></script>
    <script src="/head/Translate.js"></script>
   <script src="/head/header.min.js" defer></script>
+     <script src="/head/st-pjax.js" defer></script>
     <style>
         /* ============================================
            WISHLIST PAGE STYLES (Includes Skeleton)
@@ -720,6 +721,68 @@
                 width: 40px;
             }
         }
+
+        /* 1. Container for the section to handle centering */
+.related-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 20px 0;
+}
+
+/* 2. The Glossy Heading (Pill Shape) */
+.related-section h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px;
+  margin: 20px auto;
+  
+  /* Glassmorphism / Glossy Effect */
+  background: linear-gradient(135deg, rgba(197, 0, 247, 0.8) 0%, rgba(241, 245, 249, 0.5) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05), inset 0 0 20px rgba(255, 255, 255, 0.5);
+  
+  /* Typography */
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #1E293B;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* 3. Heading Hover Effect (Lift Up) */
+.related-section h2:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1), inset 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+/* 4. The Icon (Animated) */
+.related-section h2 i {
+  color: #6366F1;
+  font-size: 1.2em;
+  text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+  display: inline-block;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 5. Icon Rotation on Hover */
+.related-section h2:hover i {
+  transform: rotate(360deg);
+}
+
+/* 6. The Text (Gradient Effect) */
+.related-section h2 span {
+  background: linear-gradient(to right, #1E293B, #475569);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
     </style>
 </head>
 <body>
@@ -768,8 +831,9 @@
          SCRIPTS
          ============================================ -->
 
-  <script src="index.js" defer></script>
+  <script src="/wishlist/index.js" defer></script>
 
+  
       <script src="/related-products/related-products.js" defer></script>
 </body>
 </html>

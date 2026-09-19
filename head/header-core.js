@@ -1,41 +1,46 @@
 
 // Preserve user/session parameters for every internal navigation.
-function navigateWithUserInfo(path){
+function navigateWithUserInfo(path) {
     try {
-        const targetUrl = new URL(path, window.location.origin);
-        
-        // Get user from storage (not just URL)
-        let user = null;
-        try {
-            const stored = localStorage.getItem("st_customer") || sessionStorage.getItem("st_customer");
-            if (stored) user = JSON.parse(stored);
-        } catch(e) {}
-        
-        // Also check AppState
-        if (!user && window.STHeader?.AppState?.user) {
-            user = window.STHeader.AppState.user;
+        const normalized = (path.startsWith('/') || path.startsWith('http'))
+            ? path
+            : '/' + path;
+
+        const targetUrl = new URL(normalized, window.location.origin);
+
+        if (sessionStorage.getItem('st_user_synced') !== '1') {
+            let user = null;
+            try {
+                const stored = localStorage.getItem('st_customer')
+                            || sessionStorage.getItem('st_customer');
+                if (stored) user = JSON.parse(stored);
+            } catch (_) {}
+
+            if (!user && window.STHeader?.AppState?.user) {
+                user = window.STHeader.AppState.user;
+            }
+
+            if (user?.id) {
+                targetUrl.searchParams.set('user_id', user.id);
+                if (user.email)   targetUrl.searchParams.set('user_email',   user.email);
+                if (user.name)    targetUrl.searchParams.set('user_name',    user.name);
+                if (user.phone)   targetUrl.searchParams.set('user_phone',   user.phone);
+                if (user.address) targetUrl.searchParams.set('user_address', user.address);
+                targetUrl.searchParams.set('session', Date.now().toString());
+                targetUrl.searchParams.set('logged_in', 'true');
+                sessionStorage.setItem('st_user_synced', '1');
+            }
         }
-        
-        // Add user params to URL if we have a user
-        if (user?.id) {
-            targetUrl.searchParams.set("user_id", user.id);
-            if (user.email) targetUrl.searchParams.set("user_email", user.email);
-            if (user.name) targetUrl.searchParams.set("user_name", user.name);
-            if (user.phone) targetUrl.searchParams.set("user_phone", user.phone);
-            if (user.address) targetUrl.searchParams.set("user_address", user.address);
-            targetUrl.searchParams.set("session", Date.now().toString());
-            targetUrl.searchParams.set("logged_in", "true");
-        }
-        
+
+        // 3. Navigate
         window.location.href = targetUrl.pathname + targetUrl.search + targetUrl.hash;
-    } catch(err) {
-        console.warn("⚠️ Navigation error:", err.message);
+    } catch (err) {
+        console.warn('⚠️ Navigation error:', err.message);
         window.location.href = path;
     }
 }
-
 window.navigateWithUserInfo = navigateWithUserInfo;
-
+if (!window.__stPjaxLoaded) {
 document.addEventListener("click", function(event) {
     const link = event.target.closest("a");
     if (!link || event.defaultPrevented || event.button !== 0 || 
@@ -52,6 +57,7 @@ document.addEventListener("click", function(event) {
     event.preventDefault();
     navigateWithUserInfo(href);
 });
+}
 
 
 function generateSessionId() {
