@@ -1294,7 +1294,7 @@ window.clearCart = async function() {
 
         // --- Load Product ---
         async function loadProduct() {
-            const id = getProductIdFromUrl();
+            const id = await getProductIdFromUrl();
             if (!id) {
                 document.getElementById('loadingState').classList.add('hidden');
                 document.getElementById('notFoundState').classList.remove('hidden');

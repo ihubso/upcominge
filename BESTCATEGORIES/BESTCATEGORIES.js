@@ -46,19 +46,23 @@ async function loadBestCategories() {
             }
         });
 
-        const categories = Array.from(categoryMap.values())
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 4);
+// 1. Determine the limit based on the screen width (768px is the standard mobile breakpoint)
+const limit = window.innerWidth < 768 ? 4 : 8;
 
-        if (categories.length === 0) {
-            grid.innerHTML = `
-                <div class="col-span-full text-center py-12 text-gray-400">
-                    <i class="fas fa-box-open text-4xl block mb-3"></i>
-                    <p>No categories available</p>
-                </div>
-            `;
-            return;
-        }
+// 2. Sort and slice the array using the dynamic limit
+const categories = Array.from(categoryMap.values())
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+
+if (categories.length === 0) {
+    grid.innerHTML = `
+        <div class="col-span-full text-center py-12 text-gray-400">
+            <i class="fas fa-box-open text-4xl block mb-3"></i>
+            <p>No categories available</p>
+        </div>
+    `;
+    return;
+}
 
         // Generate HTML
         grid.innerHTML = categories.map((cat) => {
