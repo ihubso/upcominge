@@ -39,7 +39,19 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 24px;
-        }
+        }/* Prevent horizontal scrolling globally */
+html, body {
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
+/* Ensure cart components don't exceed screen width */
+#stCartItems, 
+#stCartSummary {
+  max-width: 100%;
+  box-sizing: border-box;
+}
 
         .st-cart-header {
             display: flex;
