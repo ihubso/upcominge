@@ -298,20 +298,20 @@
             if (!client) throw new Error('Supabase client not available');
 
             // ✅ SECURE: Use RPC to create order. The DB will validate the customer_id.
-            const { data, error } = await client.rpc('create_order', {
-                p_id:             uuid,
-                p_ORDERid:        orderId,
-                p_customer_id:    customerId,
-                p_customer_name:  name,
-                p_phone:          formattedPhone || phone,
-                p_address:        addr,
-                p_email:          safeEmail,
-                p_items:          orderItems,
-                p_total:          parseFloat(orderTotal) || 0,
-                p_status:         'pending',
-                p_payment_method: pay,
-                p_notes:          els.orderNotes?.value.trim() || ''
-            });
+const { data, error } = await client.rpc('create_order', {
+    p_id:             uuid,
+    p_orderid:        orderId, // ✅ CORRECT CASING (matches database)
+    p_customer_id:    customerId,
+    p_customer_name:  name,
+    p_phone:          formattedPhone || phone,
+    p_address:        addr,
+    p_email:          safeEmail,
+    p_items:          orderItems,
+    p_total:          parseFloat(orderTotal) || 0,
+    p_status:         'pending',
+    p_payment_method: pay,
+    p_notes:          els.orderNotes?.value.trim() || ''
+});
 
             if (error) throw error;
 
