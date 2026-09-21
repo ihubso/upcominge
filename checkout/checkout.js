@@ -212,7 +212,27 @@
         els.whatsappBtn.href = url;
         if (els.whatsappSuccess) els.whatsappSuccess.href = url;
     }
-
+// ✅ Safe UUID generator (works on HTTP, older browsers, and secure contexts)
+function generateUUID() {
+    // 1. Native (modern, secure context only)
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        try { return crypto.randomUUID(); } catch (_) {}
+    }
+    // 2. crypto.getRandomValues (works on HTTP)
+    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+        const b = crypto.getRandomValues(new Uint8Array(16));
+        b[6] = (b[6] & 0x0f) | 0x40; // version 4
+        b[8] = (b[8] & 0x3f) | 0x80; // variant
+        const h = [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+        return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
+    }
+    // 3. Math.random fallback (last resort)
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
     /* ============================================================
        PLACE ORDER
        ============================================================ */
@@ -276,7 +296,7 @@
 
         const formattedPhone = formatPhoneNumber(phone);
         const orderId = 'ORD-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8).toUpperCase();
-        const uuid = crypto.randomUUID?.() ||  Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        const uuid = await generateUUID();
 
         const orderItems = cartItems.map(item => ({
             id:       item.product_id || item.id || 'unknown',
@@ -297,21 +317,21 @@
             const client = getSupabase();
             if (!client) throw new Error('Supabase client not available');
 
-            // ✅ SECURE: Use RPC to create order. The DB will validate the customer_id.
-const { data, error } = await client.rpc('create_order', {
-    p_id:             uuid,
-    p_orderid:        orderId, // ✅ CORRECT CASING (matches database)
-    p_customer_id:    customerId,
-    p_customer_name:  name,
-    p_phone:          formattedPhone || phone,
-    p_address:        addr,
-    p_email:          safeEmail,
-    p_items:          orderItems,
-    p_total:          parseFloat(orderTotal) || 0,
-    p_status:         'pending',
-    p_payment_method: pay,
-    p_notes:          els.orderNotes?.value.trim() || ''
-});
+           
+            const { data, error } = await client.rpc('create_order', {
+                p_id:             uuid,
+                p_orderid:        orderId, // ✅ CORRECT CASING (matches database)
+                p_customer_id:    customerId,
+                p_customer_name:  name,
+                p_phone:          formattedPhone || phone,
+                p_address:        addr,
+                p_email:          safeEmail,
+                p_items:          orderItems,
+                p_total:          parseFloat(orderTotal) || 0,
+                p_status:         'pending',
+                p_payment_method: pay,
+                p_notes:          els.orderNotes?.value.trim() || ''
+            });
 
             if (error) throw error;
 
