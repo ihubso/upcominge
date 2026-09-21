@@ -178,19 +178,24 @@ async function loadOrders() {
         const client = getSupabase();
         let orders = [];
 
-        if (client) {
-            try {
-                const { data, error } = await client.rpc('get_customer_orders', { 
-                    p_customer_id: user.id 
-                });
-                
-                if (!error && data?.length) {
-                    orders = data;
-                }
-            } catch (e) { 
-                console.warn('⚠️ Supabase RPC fetch error:', e); 
-            }
+    if (client) {
+    try {
+        const { data, error } = await client.rpc('get_customer_orders', { 
+            p_customer_id: user.id 
+        });
+
+        if (error) {
+            console.error('❌ RPC error:', error);      // ← was hidden before
+            throw new Error(error.message);
         }
+        if (data?.length) {
+            orders = data;
+        }
+    } catch (e) {
+        console.error('❌ get_customer_orders failed:', e.message);
+        // Do NOT rethrow — fall through to localStorage
+    }
+}
 
         // Fallback to local storage if DB fails or is empty
         if (!orders.length) {
