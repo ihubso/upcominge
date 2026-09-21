@@ -42,7 +42,7 @@
        FETCH
        ============================================================ */
     async function fetchBusinessInfo() {
-        const client = getSupabase();
+        const client = getSupabaseClient();
         if (!client) { showFallbackData(); return; }
 
         try {

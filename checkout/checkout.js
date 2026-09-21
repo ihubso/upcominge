@@ -92,7 +92,7 @@
        ============================================================ */
     async function getBusinessInfo() {
         if (businessInfo) return businessInfo;
-        const client = getSupabase();
+        const client = getSupabaseClient();
         if (!client) return getFallbackBusinessInfo();
 
         try {
@@ -314,7 +314,7 @@ function generateUUID() {
         els.placeOrderBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('placing_order', 'Placing Order...')}`;
 
         try {
-            const client = getSupabase();
+            const client = getSupabaseClient();
             if (!client) throw new Error('Supabase client not available');
 
            

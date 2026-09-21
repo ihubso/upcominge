@@ -175,7 +175,7 @@ async function loadOrders() {
             return;
         }
 
-        const client = getSupabase();
+        const client = getSupabaseClient();
         let orders = [];
 
     if (client) {

@@ -254,7 +254,7 @@
     
     // ✅ SECURE: Fetch cart using RPC
     async function fetchCartFromDB(identifier, hasCustomerId = false) {
-        const client = getSupabase();
+        const client = getSupabaseClient();
         if (!client) return [];
         try {
             const { data, error } = await client.rpc('get_user_cart', {
@@ -284,7 +284,7 @@
 
     // ✅ SECURE: Sync (replace) cart using RPC
     async function syncCartToDB(identifier, hasCustomerId = false, items = []) {
-        const client = getSupabase();
+        const client = getSupabaseClient();
         if (!client) return;
         try {
             const cartItemsPayload = items.map(item => ({

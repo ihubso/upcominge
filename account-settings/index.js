@@ -216,7 +216,7 @@ async function loadOrders() {
             return;
         }
 
-        const client = getSupabase();
+        const client = getSupabaseClient();
         let orders = [];
 
         if (client) {
@@ -408,7 +408,7 @@ async function loadOrders() {
         els.profileNameError.classList.remove('visible');
 
         try {
-            const client = getSupabase();
+            const client = getSupabaseClient();
             if (!client) return showToast('❌ Supabase client not available', 'error');
 
             const user = await getUserData();
@@ -485,7 +485,7 @@ async function loadOrders() {
         if (!isValid) return;
 
         try {
-            const client = getSupabase();
+            const client = getSupabaseClient();
             if (client) {
                 // Note: This updates the Supabase Auth password, not the customer_accounts table
                 // If you are using custom auth, you might need a different RPC here.
@@ -505,7 +505,7 @@ async function loadOrders() {
        ============================================================ */
     async function deleteAccount() {
         try {
-            const client = getSupabase();
+            const client = getSupabaseClient();
             const user = await getUserData();
             
             if (client && user?.id) {
@@ -582,7 +582,7 @@ async function loadOrders() {
        ============================================================ */
     async function handleLogout() {
         try {
-            const client = getSupabase();
+            const client = getSupabaseClient();
             if (client) await client.auth.signOut();
 
             localStorage.removeItem('st_cart');
