@@ -276,6 +276,7 @@
 
         const formattedPhone = formatPhoneNumber(phone);
         const orderId = 'ORD-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+        const uuid = crypto.randomUUID?.() ||  Date.now() + '_' + Math.random().toString(36).slice(2, 8);
 
         const orderItems = cartItems.map(item => ({
             id:       item.product_id || item.id || 'unknown',
@@ -298,7 +299,8 @@
 
             // ✅ SECURE: Use RPC to create order. The DB will validate the customer_id.
             const { data, error } = await client.rpc('create_order', {
-                p_id:             orderId,
+                p_id:             uuid,
+                p_ORDERid:        orderId,
                 p_customer_id:    customerId,
                 p_customer_name:  name,
                 p_phone:          formattedPhone || phone,
