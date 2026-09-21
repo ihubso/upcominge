@@ -33,14 +33,14 @@
     /* ============================================================
        FETCH PRODUCTS
        ============================================================ */
-    async function fetchAllProducts() {
+   async function fetchAllProducts() {
         if (allProductsCache.length > 0) return allProductsCache;
-        const client = getClient();
+        const client = window.getSupabaseClient?.();
         if (!client) return [];
         try {
-            const { data, error } = await client
-                .from('products').select('*')
-                .order('created_at', { ascending: false });
+        
+            const { data, error } = await client.rpc('get_all_products');
+            
             if (error) throw error;
             allProductsCache = data || [];
             return allProductsCache;
@@ -49,6 +49,7 @@
             return [];
         }
     }
+
 
     function getRandomProducts(allProducts) {
         if (!allProducts?.length) return [];

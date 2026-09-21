@@ -4,65 +4,28 @@
 
 async function loadBestCategories() {
     const grid = document.getElementById('bestCategoriesGrid');
+    if (!grid) return;
 
     try {
         const client = getSupabaseClient();
         if (!client) {
-            grid.innerHTML = `
-                <div class="col-span-full text-center py-12 text-gray-400">
-                    <i class="fas fa-database text-4xl block mb-3"></i>
-                    <p>Unable to load categories</p>
-                </div>
-            `;
+            grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400"><i class="fas fa-database text-4xl block mb-3"></i><p>Unable to load categories</p></div>`;
             return;
         }
-
-        const { data: products, error } = await client
-            .from('products')
-            .select('category, brand, image, id, name');
+        const { data, error } = await client.rpc('get_best_categories');
 
         if (error) throw error;
 
-        const categoryMap = new Map();
-        products.forEach(p => {
-            if (p.category) {
-                const key = p.category.toLowerCase();
-                if (!categoryMap.has(key)) {
-                    categoryMap.set(key, {
-                        name: p.category,
-                        count: 0,
-                        brands: new Set(),
-                        image: p.image || null,
-                        productId: p.id
-                    });
-                }
-                const cat = categoryMap.get(key);
-                cat.count++;
-                if (p.brand) cat.brands.add(p.brand);
-                if (!cat.image && p.image) {
-                    cat.image = p.image;
-                    cat.productId = p.id;
-                }
-            }
-        });
+        // 1. Determine the limit based on screen width
+        const limit = window.innerWidth < 768 ? 4 : 8;
+        
+        // 2. Slice the array (RPC already returns them sorted by count DESC)
+        const categories = data ? data.slice(0, limit) : [];
 
-// 1. Determine the limit based on the screen width (768px is the standard mobile breakpoint)
-const limit = window.innerWidth < 768 ? 4 : 8;
-
-// 2. Sort and slice the array using the dynamic limit
-const categories = Array.from(categoryMap.values())
-    .sort((a, b) => b.count - a.count)
-    .slice(0, limit);
-
-if (categories.length === 0) {
-    grid.innerHTML = `
-        <div class="col-span-full text-center py-12 text-gray-400">
-            <i class="fas fa-box-open text-4xl block mb-3"></i>
-            <p>No categories available</p>
-        </div>
-    `;
-    return;
-}
+        if (categories.length === 0) {
+            grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400"><i class="fas fa-box-open text-4xl block mb-3"></i><p>No categories available</p></div>`;
+            return;
+        }
 
         // Generate HTML
         grid.innerHTML = categories.map((cat) => {
@@ -88,17 +51,14 @@ if (categories.length === 0) {
             `;
         }).join('');
 
-        // Initialize auto-slide on mobile
-        initMobileAutoSlide();
+        // Initialize auto-slide on mobile if needed
+        if (typeof initMobileAutoSlide === 'function') {
+            initMobileAutoSlide();
+        }
 
     } catch (err) {
         console.error('❌ Error loading categories:', err);
-        grid.innerHTML = `
-            <div class="col-span-full text-center py-12 text-gray-400">
-                <i class="fas fa-exclamation-circle text-4xl block mb-3"></i>
-                <p>Failed to load categories. Please refresh.</p>
-            </div>
-        `;
+        grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400"><i class="fas fa-exclamation-circle text-4xl block mb-3"></i><p>Failed to load categories. Please refresh.</p></div>`;
     }
 }
 

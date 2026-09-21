@@ -38,7 +38,7 @@
     }
 
     /* ============================================================
-       ELEMENT LOOKUP  —  always fresh, never cached
+       ELEMENT LOOKUP
        ============================================================ */
     function getEls() {
         return {
@@ -112,54 +112,82 @@
     }
 
     /* ============================================================
-       CART / WISHLIST  (unchanged logic)
+       CART / WISHLIST
+       ============================================================ */
+    /* ============================================================
+       CART (SECURED)
        ============================================================ */
     async function getCart() {
-        try { return JSON.parse(localStorage.getItem('st_cart') || '[]'); } catch { return []; }
-    }
-
-    async function saveCart(cart) {
         const customerId = window.getCurrentCustomerId?.();
-        const sessionId  = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
         const client = getSupabaseClient();
 
         if (client) {
             try {
-                if (customerId) await client.from('cart').delete().eq('customer_id', customerId);
-                else            await client.from('cart').delete().eq('session_id', sessionId);
-
-                for (const item of cart) {
-                    const variantsJson = item.variants ? JSON.stringify(item.variants) : '{}';
-                    let q = client.from('cart').select('*')
-                        .eq('product_id', item.product_id || item.id || '')
-                        .eq('variants', variantsJson);
-                    q = customerId ? q.eq('customer_id', customerId) : q.eq('session_id', sessionId);
-                    const { data: existingItems, error } = await q;
-                    if (error) throw error;
-
-                    const row = {
-                        ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
-                        product_id:     item.product_id || item.id || '',
-                        name:           item.name || 'Unknown Product',
-                        price:          item.price || 0,
-                        qty:            item.qty || 1,
-                        image:          item.image || 'https://placehold.co/400x400',
-                        variants:       item.variants || {},
-                        is_deal:        item.is_deal ?? item.isDeal ?? false,
-                        original_price: item.original_price ?? item.originalPrice ?? null,
-                        discount:       item.discount || null,
-                        brand:          item.brand || null
-                    };
-
-                    if (existingItems?.length) {
-                        const newQty = (existingItems[0].qty || 0) + (item.qty || 1);
-                        await client.from('cart').update({ qty: newQty }).eq('id', existingItems[0].id);
-                    } else {
-                        await client.from('cart').insert([row]);
-                    }
+                // ✅ SECURE: Fetch cart via RPC
+                const { data, error } = await client.rpc('get_user_cart', {
+                    p_customer_id: customerId || null,
+                    p_session_id: !customerId ? sessionId : null
+                });
+                
+                if (!error && data) {
+                    // Map DB columns back to the format expected by the app
+                    const mappedCart = data.map(item => ({
+                        id: item.id,
+                        product_id: item.product_id,
+                        name: item.name,
+                        price: item.price,
+                        qty: item.qty,
+                        image: item.image,
+                        variants: item.variants || {},
+                        isDeal: item.is_deal,
+                        originalPrice: item.original_price,
+                        discount: item.discount,
+                        brand: item.brand
+                    }));
+                    // Sync local storage to match DB
+                    localStorage.setItem('st_cart', JSON.stringify(mappedCart));
+                    return mappedCart;
                 }
             } catch (err) {
-                console.warn('Cart sync error:', err.message);
+                console.warn('⚠️ Cart fetch error, falling back to local:', err.message);
+            }
+        }
+        
+        // Fallback to local storage
+        try { return JSON.parse(localStorage.getItem('st_cart') || '[]'); } 
+        catch { return []; }
+    }
+
+    async function saveCart(cart) {
+        const customerId = window.getCurrentCustomerId?.();
+        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+        const client = getSupabaseClient();
+
+        // Format cart items for the RPC payload
+        const cartItemsPayload = cart.map(item => ({
+            product_id: item.product_id || item.id || '',
+            name: item.name || 'Unknown Product',
+            price: item.price || 0,
+            qty: item.qty || 1,
+            image: item.image || 'https://placehold.co/400x400',
+            variants: item.variants || {},
+            is_deal: item.isDeal ?? false,
+            original_price: item.originalPrice ?? null,
+            discount: item.discount ?? null,
+            brand: item.brand || null
+        }));
+
+        if (client) {
+            try {
+                // ✅ SECURE: Single RPC call replaces the entire delete + insert loop
+                await client.rpc('sync_user_cart', {
+                    p_customer_id: customerId || null,
+                    p_session_id: !customerId ? sessionId : null,
+                    p_cart_items: cartItemsPayload
+                });
+            } catch (err) {
+                console.warn('⚠️ Cart sync error:', err.message);
             }
         }
 
@@ -171,36 +199,30 @@
         await renderCart();
     }
 
-    async function getWishlist() {
-        try { return JSON.parse(localStorage.getItem('st_wishlist') || '[]'); } catch { return []; }
-    }
-
-    async function saveWishlist(wishlist) {
-        localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
+    window.clearCart = async function () {
         const customerId = window.getCurrentCustomerId?.();
-        const sessionId  = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
         const client = getSupabaseClient();
+        
         if (client) {
             try {
-                if (customerId) await client.from('wishlist').delete().eq('customer_id', customerId);
-                else            await client.from('wishlist').delete().eq('session_id', sessionId);
-                if (wishlist.length > 0) {
-                    const rows = wishlist.map(pid => ({
-                        ...(customerId ? { customer_id: customerId } : { session_id: sessionId }),
-                        product_id: pid
-                    }));
-                    await client.from('wishlist').insert(rows);
-                }
-            } catch (err) { console.warn('Wishlist sync error:', err.message); }
+                // ✅ SECURE: Clear cart by passing an empty array to the sync RPC
+                await client.rpc('sync_user_cart', {
+                    p_customer_id: customerId || null,
+                    p_session_id: !customerId ? sessionId : null,
+                    p_cart_items: [] 
+                });
+            } catch (err) { 
+                console.warn('Failed to clear cart from DB:', err.message); 
+            }
         }
-        if (window.STHeader) {
-            window.STHeader.AppState.wishlist = wishlist;
-            window.STHeader.updateCounts?.();
-        }
-    }
-
+        
+        await saveCart([]);
+        showToast(t('cart_cleared', 'Cart cleared'));
+        await renderCart();
+    };
     /* ============================================================
-       QUANTITY
+       QUANTITY & IMAGES
        ============================================================ */
     window.incrementQty = function (max) {
         const input = document.getElementById('qtyInput');
@@ -224,58 +246,71 @@
     };
 
     /* ============================================================
-       PRODUCT FETCH
+       PRODUCT FETCH (SECURED & OPTIMIZED)
        ============================================================ */
     async function fetchProductDetails(productId) {
         const client = getSupabaseClient();
         if (!client) return null;
         try {
-            const { data, error } = await client.from('products').select('*').eq('id', productId).single();
-            if (error) { console.error('Error fetching product:', error.message); return null; }
-            if (typeof data.variants === 'string') { try { data.variants = JSON.parse(data.variants); } catch { data.variants = []; } }
-            if (typeof data.images   === 'string') { try { data.images   = JSON.parse(data.images);   } catch { data.images = [data.image]; } }
-            if (!Array.isArray(data.images)) data.images = [data.image];
-            const deal = await checkProductDeal(productId);
-            if (deal) { data.isDeal = true; data.discount = deal.discount; }
-            return data;
-        } catch (err) { console.error('Error:', err.message); return null; }
-    }
-
-    async function checkProductDeal(productId) {
-        const client = getSupabaseClient();
-        if (!client) return null;
-        try {
-            const { data, error } = await client
-                .from('deals').select('discount').eq('product_id', productId).maybeSingle();
-            if (error) {
-                if (error.code !== 'PGRST116') console.warn('⚠️ Deal lookup error:', error.message);
-                return null;
+            // ✅ SECURE: Single RPC call gets details, deal info, and increments views
+            const { data, error } = await client.rpc('get_product_details_and_increment_views', { 
+                p_product_id: productId 
+            });
+            
+            if (error) { 
+                console.error('Error fetching product:', error.message); 
+                return null; 
             }
-            return data || null;
-        } catch { return null; }
+            if (!data || data.length === 0) return null;
+
+            const product = data[0];
+
+            // Parse JSON strings if necessary
+            if (typeof product.variants === 'string') { 
+                try { product.variants = JSON.parse(product.variants); } catch { product.variants = []; } 
+            }
+            if (typeof product.images === 'string') { 
+                try { product.images = JSON.parse(product.images); } catch { product.images = [product.image]; } 
+            }
+            if (!Array.isArray(product.images)) product.images = [product.image];
+            
+            // Map deal info from RPC response
+            if (product.is_deal) {
+                product.isDeal = true;
+                product.discount = product.deal_discount;
+                product.originalPrice = product.price;
+            } else {
+                product.isDeal = false;
+                product.discount = 0;
+            }
+            
+            return product;
+        } catch (err) { 
+            console.error('Error:', err.message); 
+            return null; 
+        }
     }
 
     async function fetchAllDeals() {
         const client = getSupabaseClient();
         if (!client) return [];
         try {
-            const { data: dealsData, error } = await client.from('deals').select('product_id, discount');
+            // ✅ SECURE: Use RPC
+            const { data, error } = await client.rpc('get_active_deals');
             if (error) throw error;
-            if (!dealsData?.length) return [];
-            const ids = dealsData.map(d => d.product_id).filter(Boolean);
-            if (!ids.length) return [];
-            const { data: productsData, error: perr } = await client.from('products').select('*').in('id', ids);
-            if (perr) throw perr;
-            return dealsData.map(deal => {
-                const product = productsData?.find(p => p.id === deal.product_id);
-                if (!product) return null;
-                return {
-                    ...product, dealDiscount: deal.discount, isDeal: true,
-                    originalPrice: product.price,
-                    discountedPrice: product.price * (1 - deal.discount / 100)
-                };
-            }).filter(Boolean);
-        } catch (err) { console.error('❌ Error fetching deals:', err.message); return []; }
+            
+            return (data || []).map(item => ({
+                ...item,
+                dealDiscount: item.deal_discount,
+                isDeal: true,
+                originalPrice: item.original_price,
+                discountedPrice: item.discounted_price,
+                price: item.price
+            }));
+        } catch (err) { 
+            console.error('❌ Error fetching deals:', err.message); 
+            return []; 
+        }
     }
 
     async function getAllProducts() {
@@ -283,12 +318,18 @@
         const client = getSupabaseClient();
         if (!client) return [];
         try {
-            const { data, error } = await client.from('products').select('*')
-                .order('created_at', { ascending: false });
-            if (error) { console.error('Error fetching products:', error.message); return []; }
+            // ✅ SECURE: Use RPC
+            const { data, error } = await client.rpc('get_all_products');
+            if (error) { 
+                console.error('Error fetching products:', error.message); 
+                return []; 
+            }
             allProductsCache = data || [];
             return allProductsCache;
-        } catch (err) { console.error('Error:', err.message); return []; }
+        } catch (err) { 
+            console.error('Error:', err.message); 
+            return []; 
+        }
     }
 
     /* ============================================================
@@ -526,8 +567,9 @@
             if (existingIndex !== -1) {
                 cart[existingIndex].qty = (cart[existingIndex].qty || 0) + qty;
             } else {
-                const deal = await checkProductDeal(product.id);
-                const dealDiscount = deal ? deal.discount : 0;
+                // ✅ Use the already fetched deal info from the product object
+                const dealDiscount = product.isDeal ? (product.discount || 0) : 0;
+                
                 cart.push({
                     product_id: product.id, id: product.id,
                     name: product.name,
@@ -794,6 +836,12 @@
             const stockColor = product.stock > 0 ? 'text-green-600' : 'text-red-600';
             specItems.push({ label: t('stock_status', 'Stock Status'), value: `<span class="${stockColor} font-semibold">${stockText}</span>` });
         }
+        
+        // Display View Count
+        if (product.view !== undefined) {
+            specItems.push({ label: t('views', 'Views'), value: `<span class="text-blue-600 font-semibold">${product.view}</span>` });
+        }
+
         if (specItems.length === 0) {
             els.specsGrid.innerHTML = '<p class="text-sm text-gray-400 col-span-2" data-translate="no_specs">No specifications available.</p>';
         } else {
@@ -848,10 +896,6 @@
         const wishlist = await getWishlist();
         isWished = wishlist.includes(product.id);
         updateWishlistButton();
-
-        if (typeof trackProductView === 'function') {
-            await trackProductView(product.id);
-        }
 
         renderReviews(product.id);
         await renderRelatedProducts(product);
@@ -910,7 +954,7 @@
        LOAD PRODUCT
        ============================================================ */
     async function loadProduct() {
-        const params = new URLSearchParams(location.search);   // ← always fresh
+        const params = new URLSearchParams(location.search);
         const id = params.get('product') || params.get('id');
 
         const loading  = document.getElementById('loadingState');
@@ -954,7 +998,7 @@
         const icon      = document.getElementById('reviewsToggleIcon');
         if (!toggleBtn || !content || !icon) return;
 
-        toggleBtn.onclick = function () {          // ← .onclick, so it replaces
+        toggleBtn.onclick = function () {
             content.classList.toggle('hidden');
             const expanded = !content.classList.contains('hidden');
             toggleBtn.setAttribute('aria-expanded', expanded);
@@ -1019,20 +1063,6 @@
         await saveCart(cart);
     }
 
-    window.clearCart = async function () {
-        const customerId = window.getCurrentCustomerId?.();
-        const sessionId  = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-        const client = getSupabaseClient();
-        if (client) {
-            try {
-                if (customerId) await client.from('cart').delete().eq('customer_id', customerId);
-                else            await client.from('cart').delete().eq('session_id', sessionId);
-            } catch (err) { console.warn('Failed to clear cart from DB:', err.message); }
-        }
-        await saveCart([]);
-        showToast(t('cart_cleared', 'Cart cleared'));
-        await renderCart();
-    };
 
     window.openCheckout = function () {
         const cart = JSON.parse(localStorage.getItem('st_cart') || '[]');
@@ -1045,18 +1075,15 @@
        CLEANUP + INIT
        ============================================================ */
     function cleanup() {
-        // timers / observers
         if (slideInterval)   { clearInterval(slideInterval); slideInterval = null; }
         if (relatedObserver) { relatedObserver.disconnect(); relatedObserver = null; }
 
-        // restore patched header fn
         if (_headerPatched && window.STHeader?._productOriginalUpdate) {
             window.STHeader.updateAuthUI = window.STHeader._productOriginalUpdate;
             delete window.STHeader._productOriginalUpdate;
         }
         _headerPatched = false;
 
-        // state
         currentProduct = null;
         currentProductId = null;
         currentVariants = {};
@@ -1080,26 +1107,20 @@
     }
 
     async function init() {
-        // 1. Bail if not on the product page
         const els = getEls();
         if (!els.root) return;
 
-        // 2. Tear down previous instance
         cleanup();
-
         console.log('📄 Product page: init');
 
-        // 3. Synchronous work
         loadReviewsFromLocalStorage();
         renderCart();
         initReviewDropdown();
 
-        // 4. Async work — await properly, NO setTimeout
         await loadReviewsFromSupabase();
         await loadProduct();
         await syncHeaderCounts();
 
-        // 5. Patch header auth UI once so login/logout re-syncs counts
         if (window.STHeader && !_headerPatched) {
             window.STHeader._productOriginalUpdate = window.STHeader.updateAuthUI;
             _headerPatched = true;
@@ -1112,9 +1133,6 @@
         console.log('📄 Product page ready');
     }
 
-    /* ============================================================
-       GLOBAL EXPORTS  (rebound every init so closures are fresh)
-       ============================================================ */
     function bindGlobals() {
         window.addToCart      = handleAddToCart;
         window.toggleWishlist = handleToggleWishlist;
@@ -1122,9 +1140,6 @@
         window.showToast      = showToast;
     }
 
-    /* ============================================================
-       BOOTSTRAP
-       ============================================================ */
     function start() {
         bindGlobals();
         init();
@@ -1144,5 +1159,5 @@
     window.addEventListener('st:pjax-before', cleanup);
     window.addEventListener('beforeunload',  cleanup);
 
-    console.log('✅ Product page script loaded');
+    console.log('✅ Product page script loaded (SECURE & OPTIMIZED)');
 })();

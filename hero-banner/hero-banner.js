@@ -18,40 +18,21 @@ async function fetchFeaturedProducts() {
     }
 
     try {
-        const { data: featuredData, error: featuredError } = await client
-            .from('featured_products')
-            .select('product_id')
-            .order('created_at', { ascending: true });
+        // ✅ SECURE: Use dedicated RPC instead of .from()
+        const { data, error } = await client.rpc('get_featured_products');
 
-        if (featuredError) {
-            console.error('❌ Error fetching featured products:', featuredError.message);
+        if (error) {
+            console.error('❌ Error fetching featured products:', error.message);
             return [];
         }
 
-        if (!featuredData || featuredData.length === 0) {
+        if (!data || data.length === 0) {
             console.warn('⚠️ No featured products found');
             return [];
         }
 
-        const productIds = featuredData.map(item => item.product_id);
-        console.log('📦 Featured product IDs:', productIds);
-
-        const { data: productsData, error: productsError } = await client
-            .from('products')
-            .select('*')
-            .in('id', productIds);
-
-        if (productsError) {
-            console.error('❌ Error fetching product details:', productsError.message);
-            return [];
-        }
-
-        const orderedProducts = productIds
-            .map(id => productsData.find(p => p.id === id))
-            .filter(p => p !== undefined);
-
-        console.log(`✅ Loaded ${orderedProducts.length} featured products`);
-        return orderedProducts;
+        console.log(`✅ Loaded ${data.length} featured products via RPC`);
+        return data;
 
     } catch (err) {
         console.error('❌ Error fetching featured products:', err.message);

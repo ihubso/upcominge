@@ -85,54 +85,50 @@
     }
 
     /* ============================================================
-       FETCHERS
+       FETCHERS (SECURED)
        ============================================================ */
     async function fetchHeroImages(count = 5) {
         const client = window.getSupabaseClient?.();
         if (!client) return [];
         try {
-            const { data, error } = await client
-                .from('products').select('image').not('image', 'is', null).limit(20);
+    
+            const { data, error } = await client.rpc('get_all_products');
+            
             if (error) throw error;
-            return shuffleArray(data || []).slice(0, count).map(p => p.image).filter(Boolean);
+            
+            
+            const withImages = (data || []).filter(p => p.image);
+            return shuffleArray(withImages).slice(0, count).map(p => p.image);
         } catch (err) {
             console.error('❌ Error fetching hero images:', err.message);
             return [];
         }
     }
 
-    async function fetchDeals() {
-        const client = window.getSupabaseClient?.();
-        if (!client) return [];
-        try {
-            const { data: dealsData, error } = await client
-                .from('deals').select('product_id, discount');
-            if (error) throw error;
-            if (!dealsData?.length) return [];
-
-            const ids = dealsData.map(d => d.product_id).filter(Boolean);
-            if (!ids.length) return [];
-
-            const { data: productsData, error: perr } = await client
-                .from('products').select('*').in('id', ids);
-            if (perr) throw perr;
-
-            return dealsData.map(deal => {
-                const product = productsData?.find(p => p.id === deal.product_id);
-                if (!product) return null;
-                return {
-                    ...product,
-                    dealDiscount: deal.discount,
-                    isDeal: true,
-                    originalPrice: product.price,
-                    discountedPrice: product.price * (1 - deal.discount / 100)
-                };
-            }).filter(Boolean);
-        } catch (err) {
-            console.error('❌ Error fetching deals:', err.message);
-            return [];
-        }
+async function fetchDeals() {
+    const client = window.getSupabaseClient?.();
+    if (!client) return [];
+    try {
+        // ✅ SECURE: Use dedicated RPC for deals
+        const { data, error } = await client.rpc('get_active_deals');
+        
+        if (error) throw error;
+        
+        // Map the RPC result to the format expected by the UI
+        return (data || []).map(item => ({
+            ...item,
+            dealDiscount: item.deal_discount,
+            isDeal: true,
+            originalPrice: item.original_price,
+            discountedPrice: item.discounted_price,
+            rating: item.rating || 0,
+            reviewCount: item.review_count || 0
+        }));
+    } catch (err) {
+        console.error('❌ Error fetching deals:', err.message);
+        return [];
     }
+}
 
     /* ============================================================
        HERO SLIDER
@@ -462,5 +458,5 @@
     window.addEventListener('st:pjax-before', cleanup);
     window.addEventListener('beforeunload',  cleanup);
 
-    console.log('✅ Deals page script loaded');
+    console.log('✅ Deals page script loaded (SECURE RPC VERSION)');
 })();

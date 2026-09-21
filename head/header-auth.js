@@ -114,7 +114,6 @@ window.clearUserInfoFromUrl = clearUserInfoFromUrl;
 window.getUserInfoFromUrl = getUserInfoFromUrl;
 
 async function getCurrentUser() {
-    // First check if we have a user in AppState
     if (!AppState.isLoggedIn || !AppState.user?.id) {
         console.warn('⚠️ getCurrentUser: No user logged in');
         return null;
@@ -129,41 +128,24 @@ async function getCurrentUser() {
     const customerId = AppState.user.id;
 
     try {
-        // Fetch full user data from database
-        const { data, error } = await client
-            .from('customer_accounts')
-            .select(`
-                id,
-                email,
-                name,
-                phone,
-                address,
-                last_login,
-                created_at,
-                updated_at,
-                status,
-                bio
-            `)
-            .eq('id', customerId)
-            .maybeSingle();
+        // ✅ SECURE: Fetch via RPC instead of .from()
+        const { data, error } = await client.rpc('get_customer_by_id', { p_id: customerId });
 
         if (error) {
             console.error('❌ getCurrentUser: Error fetching user data:', error.message);
             return null;
         }
 
-        if (!data) {
+        // RPC returns an array, get the first item (equivalent to .maybeSingle())
+        const userData = data && data.length > 0 ? data[0] : null;
+
+        if (!userData) {
             console.warn('⚠️ getCurrentUser: User not found in database');
             return null;
         }
 
-        // Merge with existing AppState user data (preserve any additional fields)
-        const fullUser = {
-            ...AppState.user,
-            ...data
-        };
-
-        // Update AppState with fresh data
+        // Merge with existing AppState user data
+        const fullUser = { ...AppState.user, ...userData };
         AppState.user = fullUser;
 
         // Update stored session with fresh data
@@ -171,7 +153,7 @@ async function getCurrentUser() {
         if (storedData) {
             try {
                 const parsed = JSON.parse(storedData);
-                const updated = { ...parsed, ...data };
+                const updated = { ...parsed, ...userData };
                 const storage = localStorage.getItem('st_customer') ? 'localStorage' : 'sessionStorage';
                 if (storage === 'localStorage') {
                     localStorage.setItem('st_customer', JSON.stringify(updated));
@@ -183,7 +165,7 @@ async function getCurrentUser() {
             }
         }
 
-        console.log('✅ getCurrentUser: User data fetched successfully');
+        console.log('✅ getCurrentUser: User data fetched securely via RPC');
         return fullUser;
 
     } catch (err) {
@@ -192,67 +174,51 @@ async function getCurrentUser() {
     }
 }
 
-
-
 async function signUpCustomer(email, password, name, phone = '', address = '', country = '') {
     const client = getSupabaseClient();
     if (!client) throw new Error('Supabase client not available');
     
-    // Validate inputs
     if (!email) throw new Error('Email is required');
     if (!password) throw new Error('Password is required');
     if (!name) throw new Error('Name is required');
     
-    // Check if email already exists
+    // ✅ SECURE: Check email existence via RPC
     try {
-        const { data: existing, error: checkError } = await client
-            .from('customer_accounts')
-            .select('id, email')
-            .eq('email', email)
-            .maybeSingle();
+        const { data: existing, error: checkError } = await client.rpc('check_email_exists', { p_email: email });
         
         if (checkError) throw new Error(checkError.message);
-        if (existing) throw new Error('Email already registered. Please login.');
+        if (existing && existing.length > 0) throw new Error('Email already registered. Please login.');
     } catch (err) {
         if (err.message.includes('already registered')) throw err;
         console.warn('⚠️ Email check warning:', err.message);
     }
     
-    // Generate UUID for id
     const id = crypto.randomUUID ? crypto.randomUUID() : 
         'cust_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     
     try {
-        const { data, error } = await client
-            .rpc('create_customer_account', {
-                p_id: id,
-                p_name: name,
-                p_email: email,
-                p_phone: phone || '',
-                p_address: address || '',
-                p_country: country || '',
-                p_password: password,
-                p_st_terms_accepted: 'true' ,
-                p_st_terms_accepted_date: new Date().toISOString()
-            });
+        const { data, error } = await client.rpc('create_customer_account', {
+            p_id: id,
+            p_name: name,
+            p_email: email,
+            p_phone: phone || '',
+            p_address: address || '',
+            p_country: country || '',
+            p_password: password,
+            p_st_terms_accepted: 'true',
+            p_st_terms_accepted_date: new Date().toISOString()
+        });
         
         if (error) {
             console.error('❌ Signup error:', error);
             throw new Error(error.message);
         }
         
-        console.log('✅ Account created successfully for:', email);
-                        localStorage.setItem('st_terms_accepted', 'true');
-                localStorage.setItem('st_terms_accepted_date', new Date().toISOString());
+        console.log('✅ Account created securely via RPC for:', email);
+        localStorage.setItem('st_terms_accepted', 'true');
+        localStorage.setItem('st_terms_accepted_date', new Date().toISOString());
         
-        return { 
-            id: id, 
-            email, 
-            name, 
-            phone: phone || '', 
-            address: address || '',
-            country: country || ''
-        };
+        return { id, email, name, phone: phone || '', address: address || '', country: country || '' };
     } catch (err) {
         console.error('❌ RPC error:', err);
         throw new Error('Failed to create account. Please try again.');
@@ -263,40 +229,39 @@ async function loginCustomer(email, password) {
     const client = getSupabaseClient();
     if (!client) throw new Error('Supabase client not available');
     
-    // Get customer by email
-    const { data: customer, error } = await client
-        .from('customer_accounts')
-         .select('id, name, email, phone, address, country, bio, password_hash') 
-        .eq('email', email)
-        .maybeSingle();
+    // ✅ SECURE: Get customer via RPC (password_hash is intentionally excluded from this RPC)
+    const { data: customerData, error } = await client.rpc('get_customer_by_email', { p_email: email });
     
     if (error) throw new Error(error.message);
+    
+    const customer = customerData && customerData.length > 0 ? customerData[0] : null;
     if (!customer) throw new Error('Invalid email or password');
     
-    // Verify password using database function
-    const { data: verified, error: verifyError } = await client
-        .rpc('verify_customer_password', {
-            p_email: email,
-            p_password: password
-        });
+    // Verify password using your existing database function
+    const { data: verified, error: verifyError } = await client.rpc('verify_customer_password', {
+        p_email: email,
+        p_password: password
+    });
     
     if (verifyError) throw new Error(verifyError.message);
-    if (!verified) throw new Error('Invalid email or password');
     
-    // Update last_login
-    await client
-        .from('customer_accounts')
-        .update({ last_login: new Date().toISOString() })
-        .eq('id', customer.id);
+    // Handle both boolean return or object return (e.g., { is_valid: true })
+    const isVerified = typeof verified === 'boolean' ? verified : (verified && (verified.is_valid || verified === true));
+    if (!isVerified) throw new Error('Invalid email or password');
     
-    // Return customer data (without password_hash)
+    // ✅ SECURE: Update last_login via RPC
+    const { error: updateError } = await client.rpc('update_customer_last_login', { p_id: customer.id });
+    if (updateError) {
+        console.warn('⚠️ Failed to update last_login:', updateError.message);
+        // We don't throw here so login can still succeed
+    }
+    
     return {
         id: customer.id,
         name: customer.name,
         email: customer.email,
         phone: customer.phone,
         address: customer.address,
-        country: customer.country || ''  // ✅ Added country
+        country: customer.country || ''
     };
-
 }

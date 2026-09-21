@@ -129,16 +129,16 @@
     }
 
     /* ============================================================
-       FETCH
+       FETCH (SECURED WITH RPC)
        ============================================================ */
     async function fetchAllProducts() {
         if (allProductsCache.length > 0) return allProductsCache;
         const client = window.getSupabaseClient?.();
         if (!client) return [];
         try {
-            const { data, error } = await client
-                .from('products').select('*')
-                .order('created_at', { ascending: false });
+        
+            const { data, error } = await client.rpc('get_all_products');
+            
             if (error) throw error;
             allProductsCache = data || [];
             return allProductsCache;
@@ -151,49 +151,16 @@
     /* ============================================================
        CART
        ============================================================ */
-    async function getCart() {
-        try { return JSON.parse(localStorage.getItem('st_cart') || '[]'); }
-        catch { return []; }
-    }
-
-    async function saveCart(cart) {
-        const customerId = window.getCurrentCustomerId?.();
-        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-        const client = window.getSupabaseClient?.();
-
-        if (client) {
-            try {
-                const col = customerId ? 'customer_id' : 'session_id';
-                const id  = customerId || sessionId;
-                await client.from('cart').delete().eq(col, id);
-                if (cart.length > 0) {
-                    const rows = cart.map(item => ({
-                        [col]: id,
-                        product_id: item.product_id || item.id || '',
-                        name: item.name || 'Unknown Product',
-                        price: item.price || 0,
-                        qty: item.qty || 1,
-                        image: item.image || 'https://placehold.co/400x400'
-                    })).filter(r => r.product_id);
-                    if (rows.length) await client.from('cart').insert(rows);
-                }
-            } catch (err) { console.warn('Cart sync error:', err.message); }
-        }
-
-        localStorage.setItem('st_cart', JSON.stringify(cart));
-        if (window.STHeader) {
-            window.STHeader.AppState.cart = cart;
-            window.STHeader.updateCounts?.();
-        }
-        await renderCart();
-    }
 
     async function addToCart(productId, qty = 1) {
         const products = await fetchAllProducts();
         const product  = products.find(p => p.id === productId);
         if (!product) { showToast('❌ Product not found'); return; }
+             const juId = window.getCurrentCustomerId?.();
+        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+        const customerId  = juId || sessionId;
 
-        const cart = await getCart();
+        const cart = await fetchCartFromDB(customerId);
         const existing = cart.find(i => i.product_id === productId || i.id === productId);
         if (existing) {
             existing.qty = (existing.qty || 0) + qty;
@@ -209,58 +176,14 @@
                 brand: product.brand || ''
             });
         }
-        await saveCart(cart);
+        await saveCartToDB(customerId, cart);
         showToast(`✅ ${product.name} added to cart!`);
-    }
-
-    async function renderCart() {
-        const cart = await getCart();
-        const container = document.getElementById('cartItems');
-        if (!container) return;
-
-        const totalEl = document.getElementById('cartTotal');
-        if (!cart.length) {
-            container.innerHTML = '<div class="text-center py-8 text-gray-500" data-translate="cart_empty">Cart empty</div>';
-            if (totalEl) totalEl.innerText = '0.00';
-            return;
+                localStorage.setItem('st_cart', JSON.stringify(cart));
+        if (window.STHeader) {
+            window.STHeader.AppState.cart = cart;
+            window.STHeader.updateCounts?.();
         }
-
-        let total = 0;
-        container.innerHTML = cart.map((item, index) => {
-            const price = item.price || 0;
-            const qty = item.qty || 0;
-            total += price * qty;
-            return `
-                <div class="cart-item flex justify-between items-center mb-4 border-b pb-2">
-                    <div>
-                        <strong>${escapeHtml(item.name)}</strong><br>
-                        <small>FCFA ${price.toFixed(2)}</small>
-                    </div>
-                    <div>
-                        <button class="cart-qty-dec px-2 bg-gray-200 rounded" data-index="${index}">-</button>
-                        <span class="mx-2">${qty}</span>
-                        <button class="cart-qty-inc px-2 bg-gray-200 rounded" data-index="${index}">+</button>
-                    </div>
-                </div>`;
-        }).join('');
-        if (totalEl) totalEl.innerText = total.toFixed(2);
-
-        container.querySelectorAll('.cart-qty-dec').forEach(btn =>
-            btn.addEventListener('click', () => updateQtyByIndex(parseInt(btn.dataset.index), -1)));
-        container.querySelectorAll('.cart-qty-inc').forEach(btn =>
-            btn.addEventListener('click', () => updateQtyByIndex(parseInt(btn.dataset.index), 1)));
     }
-
-    async function updateQtyByIndex(index, delta) {
-        const cart = await getCart();
-        if (index < 0 || index >= cart.length) return;
-        const item = cart[index];
-        const newQ = (item.qty || 0) + delta;
-        if (newQ <= 0) cart.splice(index, 1);
-        else item.qty = newQ;
-        await saveCart(cart);
-    }
-
     /* ============================================================
        PRODUCT CARD
        ============================================================ */
@@ -606,9 +529,12 @@
     }
 
     async function syncHeaderCart() {
+        const juId = window.getCurrentCustomerId?.();
+        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+        const customerId  = juId || sessionId;
         if (!window.STHeader) return;
         try {
-            const cart = await getCart();
+            const cart = await fetchCartFromDB(customerId);
             window.STHeader.AppState.cart = cart;
             window.STHeader.updateCounts?.();
         } catch (err) { console.warn('syncHeaderCart:', err); }
@@ -625,7 +551,6 @@
 
         loadReviews();
         await loadBrandProducts(true);
-        await renderCart();
         await syncHeaderCart();
 
         console.log('📄 Brand page ready');
@@ -636,7 +561,7 @@
        ============================================================ */
     function bindGlobals() {
         window.addToCart         = addToCart;
-        window.renderCart        = renderCart;
+    
         window.showToast         = showToast;
         window.fetchAllProducts  = fetchAllProducts;
         window.loadbrandProducts = loadBrandProducts;
@@ -645,7 +570,7 @@
         window.clearCart         = async () => {
             await saveCart([]);
             showToast('Cart cleared');
-            await renderCart();
+           
         };
     }
 
@@ -663,5 +588,5 @@
     window.addEventListener('st:pjax-before', cleanup);
     window.addEventListener('beforeunload',  cleanup);
 
-    console.log('✅ Brand page script loaded');
+    console.log('✅ Brand page script loaded (SECURE RPC VERSION)');
 })();

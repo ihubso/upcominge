@@ -1,139 +1,105 @@
 
 async function fetchCartFromDB(customerId) {
-    if (!customerId) {
-        console.warn('⚠️ fetchCartFromDB: No customer_id provided');
-        return [];
-    }
-    
+    if (!customerId) return console.warn("⚠️ fetchCartFromDB: No customer_id provided"), [];
     const client = getSupabaseClient();
     if (!client) return [];
-    
     try {
-        const { data, error } = await client
-            .from('cart')
-            .select('*')
-            .eq('customer_id', customerId);
-        
+        // ✅ SECURE: Fetch cart via RPC
+        const { data, error } = await client.rpc("get_user_cart", {
+            p_customer_id: customerId,
+            p_session_id: null
+        });
         if (error) throw error;
         
         return (data || []).map(item => ({
+            id: item.id,
             product_id: item.product_id,
-            id: item.product_id,
-            name: item.name || 'Unknown Product',
+            name: item.name || "Unknown Product",
             price: item.price || 0,
             qty: item.qty || 1,
-            image: item.image || 'https://placehold.co/600x400',
+            image: item.image || "https://placehold.co/600x400",
             variants: item.variants || {},
             isDeal: item.is_deal || false,
             originalPrice: item.original_price || null,
-            discount: item.discount || null
+            discount: item.discount || null,
+            brand: item.brand || ""
         }));
     } catch (err) {
-        console.error('❌ Error fetching cart:', err.message);
-        return [];
+        return console.error("❌ Error fetching cart:", err.message), [];
     }
 }
 
-    async function saveCartToDB(identifier, cart, hasCustomerId = false) {
-        const client = getSupabaseClient();
-        if (!client) return;
-        
+async function saveCartToDB(customerId, cart) {
+    if (!customerId) return void console.warn("⚠️ saveCartToDB: No customer_id provided - skipping DB sync");
+    const client = getSupabaseClient();
+    if (client) {
         try {
-            // Delete ONLY the rows for this specific identifier
-            if (hasCustomerId) {
-                await client.from('cart').delete().eq('customer_id', identifier);
-            } else {
-                await client.from('cart').delete().eq('session_id', identifier);
-            }
+            const cartItemsPayload = cart.map(item => ({
+                product_id: item.product_id || item.id || "",
+                name: item.name || "Unknown Product",
+                price: item.price || 0,
+                qty: item.qty || 1,
+                image: item.image || "https://placehold.co/600x400",
+                variants: item.variants || {},
+                is_deal: item.isDeal || false,
+                original_price: item.originalPrice || null,
+                discount: item.discount || null,
+                brand: item.brand || ""
+            }));
             
-            if (cart.length === 0) {
-                console.log('✅ Cart cleared from DB (empty cart)');
-                return;
-            }
-            
-            // Insert new cart items
-            const rows = cart.map(item => {
-                const row = {
-                    product_id: item.product_id || item.id || '',
-                    name: item.name || 'Unknown Product',
-                    price: item.price || 0,
-                    qty: item.qty || 1,
-                    image: item.image || 'https://placehold.co/600x400',
-                    variants: item.variants || {},
-                    is_deal: item.isDeal || false,
-                    original_price: item.originalPrice || null,
-                    discount: item.discount || null,
-                    brand: item.brand || ''
-                };
-                
-                if (hasCustomerId) {
-                    row.customer_id = identifier;
-                    row.session_id = null;
-                } else {
-                    row.session_id = identifier;
-                    row.customer_id = null;
-                }
-                
-                return row;
+            // ✅ SECURE: Sync cart via RPC
+            await client.rpc("sync_user_cart", {
+                p_customer_id: customerId,
+                p_session_id: null,
+                p_cart_items: cartItemsPayload
             });
-            
-            const validRows = rows.filter(row => row.product_id);
-            if (validRows.length > 0) {
-                const { error } = await client.from('cart').insert(validRows);
-                if (error) {
-                    console.error('❌ Error saving cart:', error.message);
-                } else {
-                    console.log(`✅ Cart saved to DB: ${validRows.length} items (${hasCustomerId ? 'customer_id' : 'session_id'})`);
-                }
-            }
         } catch (err) {
-            console.error('❌ Error saving cart:', err.message);
+            console.error("❌ Error saving cart:", err.message);
         }
     }
+}
 
 
+// ✅ SECURE: Fetch wishlist via RPC
 async function fetchWishlistFromDB(customerId) {
     if (!customerId) {
-        console.warn('⚠️ fetchWishlistFromDB: No customer_id provided');
+        console.warn("⚠️ fetchWishlistFromDB: No customer_id provided");
         return [];
     }
-    
     const client = getSupabaseClient();
     if (!client) return [];
     
     try {
-        const { data, error } = await client
-            .from('wishlist')
-            .select('product_id')
-            .eq('customer_id', customerId);
+        const { data, error } = await client.rpc("get_user_wishlist", {
+            p_customer_id: customerId,
+            p_session_id: null
+        });
         
         if (error) throw error;
         return (data || []).map(row => row.product_id);
     } catch (err) {
-        console.error('❌ Error fetching wishlist:', err.message);
+        console.error("❌ Error fetching wishlist:", err.message);
         return [];
     }
 }
 
-async function saveWishlistToDB(customerId, wishlist) {
+// ✅ SECURE: Save wishlist via RPC
+async function saveWishlistToDB(customerId, wishlistArray) {
     if (!customerId) {
-        console.warn('⚠️ saveWishlistToDB: No customer_id provided - skipping DB sync');
+        console.warn("⚠️ saveWishlistToDB: No customer_id provided - skipping DB sync");
         return;
     }
-    
     const client = getSupabaseClient();
-    if (!client) return;
-    
-    try {
-        await client.from('wishlist').delete().eq('customer_id', customerId);
-        
-        if (wishlist.length > 0) {
-            const rows = wishlist.map(pid => ({ customer_id: customerId, product_id: pid }));
-            const { error } = await client.from('wishlist').insert(rows);
-            if (error) console.error('❌ Error saving wishlist:', error.message);
+    if (client) {
+        try {
+            await client.rpc("sync_user_wishlist", {
+                p_customer_id: customerId,
+                p_session_id: null,
+                p_product_ids: wishlistArray
+            });
+        } catch (err) {
+            console.error("❌ Error saving wishlist:", err.message);
         }
-    } catch (err) {
-        console.error('❌ Error saving wishlist:', err.message);
     }
 }
 
@@ -233,10 +199,8 @@ async function fetchCategoriesAndBrands() {
     }
 
     try {
-        const { data, error } = await client
-            .from('products')
-            .select('category, brand, image, id, name')
-            .order('created_at', { ascending: false });
+    
+        const { data, error } = await client.rpc('get_all_products');
 
         if (error) throw error;
 
@@ -244,7 +208,7 @@ async function fetchCategoriesAndBrands() {
         const categoryMap = new Map();
         const brandMap = new Map();
         
-        data.forEach(product => {
+        (data || []).forEach(product => {
             // Categories
             if (product.category && !categoryMap.has(product.category)) {
                 categoryMap.set(product.category, {
@@ -281,7 +245,7 @@ async function fetchCategoriesAndBrands() {
             .sort((a, b) => b.count - a.count)
             .slice(0, 12); // Limit to 12 brands
 
-        console.log(`✅ Loaded ${categories.length} categories and ${brands.length} brands`);
+        console.log(`✅ Loaded ${categories.length} categories and ${brands.length} brands via RPC`);
         return { categories, brands };
 
     } catch (err) {

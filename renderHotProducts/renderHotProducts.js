@@ -25,23 +25,24 @@
     /* ============================================================
        FETCHERS
        ============================================================ */
-    async function fetchHotProducts() {
-        const client = getClient();
-        if (!client) return [];
-        try {
-            const { data, error } = await client
-                .from('products')
-                .select('*')
-                .eq('isHot', true)
-                .order('created_at', { ascending: false });
-            if (error) { console.error('❌ Error fetching hot products:', error.message); return []; }
-            return data || [];
-        } catch (err) {
-            console.error('❌ Error fetching hot products:', err.message);
-            return [];
+async function fetchHotProducts() {
+    const client = getClient();
+    if (!client) return [];
+    try {
+     
+        const { data, error } = await client.rpc('get_hot_products');
+        
+        if (error) { 
+            console.error('❌ Error fetching hot products:', error.message); 
+            return []; 
         }
+        
+        return data || [];
+    } catch (err) {
+        console.error('❌ Error fetching hot products:', err.message);
+        return [];
     }
-
+}
     async function fetchReviewsFromDB() {
         const client = getClient();
         if (!client) return {};

@@ -216,6 +216,9 @@
     /* ============================================================
        PLACE ORDER
        ============================================================ */
+    /* ============================================================
+       PLACE ORDER (SECURED)
+       ============================================================ */
     async function placeOrder(e) {
         if (e) e.preventDefault();
         if (isSubmitting) return;
@@ -264,6 +267,7 @@
         }
         const customerId = user?.id || window.getCurrentCustomerId?.() || null;
 
+        // ✅ FRONTEND CHECK: Require login
         if (!customerId) {
             showToast('⚠️ ' + t('please_login', 'Please login to place an order'), 'warning');
             window.STHeader?.openLoginModal?.();
@@ -281,20 +285,8 @@
             variants: item.variants || {},
         }));
 
-        const orderData = {
-            id:             orderId,
-            customer_name:  name,
-            phone:          formattedPhone || phone,
-            address:        addr,
-            email:          email || 'no-email@provided.com',
-            items:          orderItems,
-            total:          parseFloat(orderTotal) || 0,
-            status:         'pending',
-            payment_method: pay,
-            notes:          els.orderNotes?.value.trim() || '',
-            customer_id:    customerId,
-            created_at:     new Date().toISOString(),
-        };
+        // Fallback email if validation somehow passed with a bad email
+        const safeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : 'customer@example.com';
 
         isSubmitting = true;
         els.placeOrderBtn.disabled = true;
@@ -304,13 +296,22 @@
             const client = getSupabase();
             if (!client) throw new Error('Supabase client not available');
 
-            // Insert with retry-on-email-error
-            let insertResult = await client.from('orders').insert([orderData]).select();
-            if (insertResult.error?.message?.includes('email')) {
-                orderData.email = 'customer@example.com';
-                insertResult = await client.from('orders').insert([orderData]).select();
-            }
-            if (insertResult.error) throw insertResult.error;
+            // ✅ SECURE: Use RPC to create order. The DB will validate the customer_id.
+            const { data, error } = await client.rpc('create_order', {
+                p_id:             orderId,
+                p_customer_id:    customerId,
+                p_customer_name:  name,
+                p_phone:          formattedPhone || phone,
+                p_address:        addr,
+                p_email:          safeEmail,
+                p_items:          orderItems,
+                p_total:          parseFloat(orderTotal) || 0,
+                p_status:         'pending',
+                p_payment_method: pay,
+                p_notes:          els.orderNotes?.value.trim() || ''
+            });
+
+            if (error) throw error;
 
             // Fire-and-forget admin push (don't block UI)
             (async () => {
@@ -320,8 +321,8 @@
                     const count = orderItems.reduce((s, it) => s + (it.qty || 1), 0);
                     const first = orderItems[0]?.name || 'item';
                     const body  = count === 1
-                        ? `${name} ordered ${first} — FCFA ${orderData.total.toFixed(2)}`
-                        : `${name} ordered ${count} items — FCFA ${orderData.total.toFixed(2)}`;
+                        ? `${name} ordered ${first} — FCFA ${orderTotal.toFixed(2)}`
+                        : `${name} ordered ${count} items — FCFA ${orderTotal.toFixed(2)}`;
                     await fetch(`${url}/functions/v1/send-push`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
@@ -343,17 +344,27 @@
                 window.STHeader.updateCounts?.();
             }
 
-            // Clear DB cart
+            // ✅ SECURE: Clear DB cart using the secure RPC we created earlier
             (async () => {
                 try {
-                    await client.from('cart').delete().eq('customer_id', customerId);
+                    const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+                    await client.rpc('sync_user_cart', {
+                        p_customer_id: customerId,
+                        p_session_id: null, // We know they are logged in
+                        p_cart_items: []
+                    });
                 } catch (e) { console.warn('DB cart clear failed:', e.message); }
             })();
 
             // Archive to localStorage (best-effort)
             try {
                 const local = JSON.parse(localStorage.getItem('shop_orders_v1') || '[]');
-                local.unshift(orderData);
+                local.unshift({
+                    id: orderId, customer_id: customerId, customer_name: name, phone: formattedPhone,
+                    address: addr, email: safeEmail, items: orderItems, total: orderTotal,
+                    status: 'pending', payment_method: pay, notes: els.orderNotes?.value.trim() || '',
+                    created_at: new Date().toISOString()
+                });
                 localStorage.setItem('shop_orders_v1', JSON.stringify(local));
             } catch {}
 
@@ -369,7 +380,7 @@
             const orderMessage =
                 `🛒 *${t('order', 'Order')} #${orderId} from ${shopName}*%0A%0A` +
                 `👤 *${t('customer', 'Customer')}:* ${name}%0A` +
-                `📧 *${t('email', 'Email')}:* ${email}%0A` +
+                `📧 *${t('email', 'Email')}:* ${safeEmail}%0A` +
                 `📱 *${t('phone', 'Phone')}:* ${formattedPhone || phone}%0A` +
                 `📍 *${t('address', 'Address')}:* ${addr}%0A` +
                 `💳 *${t('payment', 'Payment')}:* ${els.paymentMethod?.options[els.paymentMethod.selectedIndex]?.text || 'N/A'}%0A` +
@@ -391,7 +402,7 @@
             // Notification fanout (in-app + service worker)
             try {
                 const title = `✅ ${t('order', 'Order')} ${orderId} ${t('placed', 'Placed')}`;
-                const text  = `${t('thank_you', 'Thank you')} ${name}! ${t('your_order', 'Your order')} ${orderId} ${t('totaling', 'totaling')} FCFA ${orderData.total} ${t('has_been_received', 'has been received.')}`;
+                const text  = `${t('thank_you', 'Thank you')} ${name}! ${t('your_order', 'Your order')} ${orderId} ${t('totaling', 'totaling')} FCFA ${orderTotal} ${t('has_been_received', 'has been received.')}`;
                 const link  = `/orders/?order=${encodeURIComponent(orderId)}`;
                 if (window.notificationSystem?.add) window.notificationSystem.add(title, text, 'order', link, null);
                 navigator.serviceWorker?.controller?.postMessage({
@@ -402,7 +413,13 @@
 
         } catch (err) {
             console.error('❌ Error placing order:', err);
-            showToast('❌ ' + (err.message || t('order_failed', 'Failed to place order. Please try again.')), 'error');
+            // If the DB rejects it due to invalid customer_id, show a specific message
+            if (err.message && err.message.includes('Invalid customer_id')) {
+                showToast('⚠️ ' + t('please_login', 'Please login to place an order'), 'warning');
+                window.STHeader?.openLoginModal?.();
+            } else {
+                showToast('❌ ' + (err.message || t('order_failed', 'Failed to place order. Please try again.')), 'error');
+            }
         } finally {
             isSubmitting = false;
             if (els.placeOrderBtn) {

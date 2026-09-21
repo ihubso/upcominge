@@ -9,13 +9,12 @@
     let orders              = [];
     let isEditingEnabled    = false;
 
-    let _supabaseClient     = null;     // singleton fallback client
-    let _authPollId         = null;     // polling interval
+    let _supabaseClient     = null;
+    let _authPollId         = null;
     let _hasRenderedWithUser = false;
-    let _renderedOnce       = false;
 
     /* ============================================================
-       ELEMENT LOOKUP — fresh each init
+       ELEMENT LOOKUP
        ============================================================ */
     function getEls() {
         return {
@@ -72,10 +71,9 @@
         // Prefer the header's client.
         const header = window.STHeader?.getSupabaseClient?.();
         if (header) return header;
-        if (window.supabaseClient) return window.supabaseClient;
-
-        // Build once and cache. Creating a new client per call leaks WebSockets.
+        
         if (_supabaseClient) return _supabaseClient;
+        
         try {
             if (typeof supabase !== 'undefined' && supabase.createClient) {
                 _supabaseClient = supabase.createClient(
@@ -98,55 +96,52 @@
         const toast = document.createElement('div');
         toast.className = `st-toast ${type}`;
         toast.textContent = message;
+        // Add basic styles if not present in CSS
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.padding = '12px 24px';
+        toast.style.borderRadius = '8px';
+        toast.style.color = 'white';
+        toast.style.fontWeight = '600';
+        toast.style.zIndex = '99999';
+        toast.style.background = type === 'error' ? '#EF4444' : (type === 'warning' ? '#F59E0B' : '#10B981');
+        
         document.body.appendChild(toast);
         setTimeout(() => {
             toast.style.opacity = '0';
-            toast.style.transform = 'translateX(-50%) translateY(-20px)';
             toast.style.transition = 'all .3s ease';
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
 
     /* ============================================================
-       GET USER
+       GET USER (SECURE)
        ============================================================ */
     async function getUserData() {
+        // 1. Check Header AppState
         if (window.STHeader?.AppState?.isLoggedIn && window.STHeader?.AppState?.user?.id) {
             return window.STHeader.AppState.user;
         }
 
-        if (typeof getCurrentUser === 'function' && window.STHeader?.AppState?.isLoggedIn) {
-            try { const u = await getCurrentUser(); if (u?.id) return u; } catch (_) {}
+        // 2. Try Secure RPC Refresh if logged in but data is partial
+        if (window.STHeader?.AppState?.isLoggedIn && typeof getCurrentUser === 'function') {
+            try { 
+                const u = await getCurrentUser(); 
+                if (u?.id) return u; 
+            } catch (_) {}
         }
 
+        // 3. Check Local Storage
         const stored = localStorage.getItem('st_customer') || sessionStorage.getItem('st_customer');
         if (stored) {
-            try { const u = JSON.parse(stored); if (u?.id) return u; } catch (_) {}
+            try { 
+                const u = JSON.parse(stored); 
+                if (u?.id) return u; 
+            } catch (_) {}
         }
 
-        // URL hydration fallback (in case storage is empty but URL has id)
-        const p = new URLSearchParams(location.search);
-        const id = p.get('user_id');
-        if (id) {
-            const client = getSupabase();
-            if (client) {
-                try {
-                    const { data } = await client
-                        .from('customer_accounts')
-                        .select('id, name, email, phone, address, bio')
-                        .eq('id', id).maybeSingle();
-                    if (data?.id) {
-                        localStorage.setItem('st_customer', JSON.stringify(data));
-                        return data;
-                    }
-                } catch (_) {}
-            }
-            return {
-                id,
-                email: p.get('user_email') ? decodeURIComponent(p.get('user_email')) : '',
-                name:  p.get('user_name')  ? decodeURIComponent(p.get('user_name'))  : ''
-            };
-        }
         return null;
     }
 
@@ -200,58 +195,105 @@
         if (typeof translateUI === 'function') translateUI();
     }
 
-    async function loadOrders() {
-        const els = getEls();
-        if (!els.ordersContainer || !els.ordersLoading) return;
+async function loadOrders() {
+    const els = getEls();
+    if (!els.ordersContainer || !els.ordersLoading) return;
 
-        els.ordersContainer.innerHTML = '';
-        els.ordersLoading.style.display = 'flex';
+    els.ordersContainer.innerHTML = '';
+    els.ordersLoading.style.display = 'flex';
 
-        try {
-            const user = await getUserData();
-            if (!user?.id) {
-                els.ordersLoading.style.display = 'none';
-                els.ordersContainer.innerHTML = `
-                    <div class="st-order-empty">
-                        <div class="st-empty-icon"><i class="fas fa-lock"></i></div>
-                        <p style="font-weight:600;color:#0F172A;" data-translate="please_login">Please Login</p>
-                        <p style="font-size:14px;" data-translate="login_to_view_orders">Login to view your orders.</p>
-                    </div>`;
-                return;
-            }
-
-            const client = getSupabase();
-            if (client) {
-                const { data, error } = await client
-                    .from('orders').select('*')
-                    .eq('customer_id', user.id)
-                    .order('created_at', { ascending: false });
-                if (!error && data?.length) {
-                    orders = data;
-                    renderOrders(orders);
-                    return;
-                }
-            }
-
-            const local = JSON.parse(localStorage.getItem('shop_orders_v1') || '[]')
-                .filter(o => o.customer_id === user.id || o.email === user.email);
-            orders = local;
-            renderOrders(orders);
-        } catch (err) {
-            console.error('❌ Error loading orders:', err);
+    try {
+        const user = await getUserData();
+        if (!user?.id) {
             els.ordersLoading.style.display = 'none';
             els.ordersContainer.innerHTML = `
                 <div class="st-order-empty">
-                    <div class="st-empty-icon"><i class="fas fa-exclamation-circle"></i></div>
-                    <p style="font-weight:600;color:#0F172A;" data-translate="failed_to_load">Failed to load orders</p>
-                    <p style="font-size:14px;" data-translate="try_again_later">Please try again later.</p>
-                    <button onclick="window.accountSettings.loadOrders()" style="margin-top:16px;padding:10px 24px;background:#6C3CE1;color:white;border:none;border-radius:10px;cursor:pointer;font-weight:600;">
-                        <i class="fas fa-sync"></i> ${t('retry', 'Retry')}
-                    </button>
+                    <div class="st-empty-icon"><i class="fas fa-lock"></i></div>
+                    <p style="font-weight:600;color:#0F172A;" data-translate="please_login">Please Login</p>
+                    <p style="font-size:14px;" data-translate="login_to_view_orders">Login to view your orders.</p>
                 </div>`;
+            if (typeof translateUI === 'function') translateUI();
+            return;
         }
-    }
 
+        const client = getSupabase();
+        let orders = [];
+
+        if (client) {
+            try {
+                const { data, error } = await client.rpc('get_customer_orders', { 
+                    p_customer_id: user.id 
+                });
+                
+                if (!error && data?.length) {
+                    orders = data;
+                }
+            } catch (e) { 
+                console.warn('⚠️ Supabase RPC fetch error:', e); 
+            }
+        }
+
+        // Fallback to local storage if DB fails or is empty
+        if (!orders.length) {
+            const localOrders = JSON.parse(localStorage.getItem('shop_orders_v1') || '[]');
+            orders = localOrders.filter(o =>
+                o.customer_id === user.id ||
+                o.email === user.email ||
+                o.customer_name === user.name
+            );
+        }
+
+        els.ordersLoading.style.display = 'none';
+
+        if (!orders.length) {
+            // Clear any pending deep-link if no orders exist
+            if (typeof _pendingOpenId !== 'undefined') _pendingOpenId = null;
+            
+            els.ordersContainer.innerHTML = `
+                <div class="st-order-empty">
+                    <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
+                    <p style="font-weight:600;color:#0F172A;" data-translate="no_orders_title">No Orders Yet</p>
+                    <p style="font-size:14px;" data-translate="no_orders_sub">Start shopping to see your orders here.</p>
+                    <a href="/product/" style="display:inline-block;margin-top:16px;padding:10px 24px;background:#6C3CE1;color:white;border-radius:10px;text-decoration:none;font-weight:600;" data-translate="browse_products">
+                        Browse Products
+                    </a>
+                </div>`;
+            if (typeof translateUI === 'function') translateUI();
+            return;
+        }
+
+        // Update global/module state
+        if (typeof allOrders !== 'undefined') allOrders = orders;
+        else window.allOrders = orders;
+
+        // If you have a filter function, call it here. Otherwise, render directly.
+        if (typeof filterOrders === 'function' && typeof currentStatus !== 'undefined') {
+            filterOrders(currentStatus);
+        } else {
+            renderOrders(orders);
+        }
+
+        // Handle ?order= param (deep-link) — one-shot
+        if (typeof _pendingOpenId !== 'undefined' && typeof handlePendingOrderRoute === 'function') {
+            const pending = _pendingOpenId || (typeof getOrderIdFromUrl === 'function' ? getOrderIdFromUrl() : null);
+            _pendingOpenId = null;
+            if (pending) await handlePendingOrderRoute(pending);
+        }
+
+    } catch (err) {
+        console.error('❌ Error loading orders:', err);
+        els.ordersLoading.style.display = 'none';
+        els.ordersContainer.innerHTML = `
+            <div class="st-order-empty">
+                <div class="st-empty-icon"><i class="fas fa-exclamation-circle"></i></div>
+                <p style="font-weight:600;color:#0F172A;" data-translate="failed_to_load">Failed to load orders</p>
+                <p style="font-size:14px;" data-translate="try_again_later">Please try again later.</p>
+                <button onclick="window.accountSettings?.loadOrders()" style="margin-top:16px;padding:10px 24px;background:#6C3CE1;color:white;border:none;border-radius:10px;cursor:pointer;font-weight:600;">
+                    <i class="fas fa-sync"></i> ${t('retry', 'Retry')}
+                </button>
+            </div>`;
+    }
+}
     /* ============================================================
        PROFILE UI
        ============================================================ */
@@ -301,7 +343,6 @@
             }
 
             setEditingEnabled(false);
-            _renderedOnce = true;
         } catch (err) {
             console.error('❌ Error in updateProfileUI:', err);
         }
@@ -346,7 +387,7 @@
     }
 
     /* ============================================================
-       SAVE PROFILE
+       SAVE PROFILE (SECURE RPC)
        ============================================================ */
     async function saveProfile(e) {
         if (e) e.preventDefault();
@@ -373,28 +414,29 @@
             const user = await getUserData();
             if (!user?.id) return showToast('❌ No user logged in', 'error');
 
-            const { error } = await client
-                .from('customer_accounts')
-                .update({ name, phone, address, bio, updated_at: new Date().toISOString() })
-                .eq('id', user.id);
+            // ✅ SECURE: Use RPC instead of .from().update()
+            const { error } = await client.rpc('update_customer_profile', {
+                p_id: user.id,
+                p_name: name,
+                p_phone: phone,
+                p_address: address,
+                p_bio: bio
+            });
+
             if (error) throw error;
 
+            // Update Local State
             if (window.STHeader?.AppState?.user) {
                 Object.assign(window.STHeader.AppState.user, { name, phone, address, bio });
             }
 
+            // Update Local Storage
             try {
                 const ls = localStorage.getItem('st_customer');
                 if (ls) {
                     const c = JSON.parse(ls);
                     Object.assign(c, { name, phone, address, bio });
                     localStorage.setItem('st_customer', JSON.stringify(c));
-                }
-                const ss = sessionStorage.getItem('st_customer');
-                if (ss) {
-                    const c = JSON.parse(ss);
-                    Object.assign(c, { name, phone, address, bio });
-                    sessionStorage.setItem('st_customer', JSON.stringify(c));
                 }
             } catch (_) {}
 
@@ -409,30 +451,14 @@
     }
 
     async function refreshUserFromSupabase() {
-        try {
-            const client = getSupabase();
-            const user = await getUserData();
-            if (!client || !user?.id) return;
-
-            const { data, error } = await client
-                .from('customer_accounts').select('*')
-                .eq('id', user.id).maybeSingle();
-            if (error) return console.warn('⚠️ Could not refresh user data:', error);
-
-            if (data) {
-                currentUser = {
-                    id: data.id,
-                    name: data.name || user.name,
-                    email: data.email || user.email,
-                    phone: data.phone || '',
-                    address: data.address || '',
-                    bio: data.bio || ''
-                };
+        // This now uses the secure getCurrentUser RPC defined in header-auth.js
+        if (typeof getCurrentUser === 'function') {
+            const freshUser = await getCurrentUser();
+            if (freshUser) {
+                currentUser = freshUser;
                 await updateProfileUI();
                 showToast('🔄 Profile refreshed from database');
             }
-        } catch (err) {
-            console.warn('⚠️ Error refreshing user:', err);
         }
     }
 
@@ -461,6 +487,8 @@
         try {
             const client = getSupabase();
             if (client) {
+                // Note: This updates the Supabase Auth password, not the customer_accounts table
+                // If you are using custom auth, you might need a different RPC here.
                 const { error } = await client.auth.updateUser({ password: newPw });
                 if (error) throw error;
             }
@@ -473,14 +501,19 @@
     }
 
     /* ============================================================
-       DELETE ACCOUNT
+       DELETE ACCOUNT (SECURE RPC)
        ============================================================ */
     async function deleteAccount() {
         try {
             const client = getSupabase();
             const user = await getUserData();
+            
             if (client && user?.id) {
-                await client.from('customer_accounts').delete().eq('id', user.id);
+                // ✅ SECURE: Use RPC instead of .from().delete()
+                const { error } = await client.rpc('delete_customer_account', { p_id: user.id });
+                if (error) throw error;
+                
+                // Sign out from Supabase Auth if used
                 await client.auth.signOut();
             }
 
@@ -570,7 +603,7 @@
     }
 
     /* ============================================================
-       BIND INTERACTIONS — assignment (idempotent)
+       BIND INTERACTIONS
        ============================================================ */
     function bindInteractions() {
         const els = getEls();
@@ -628,7 +661,7 @@
             }
         }
 
-        // Delete modal — these nodes live outside <main>, but .onclick is still idempotent
+        // Delete modal
         if (els.deleteAccountBtn) els.deleteAccountBtn.onclick = openDeleteModal;
         if (els.deleteModalClose) els.deleteModalClose.onclick = closeDeleteModal;
         if (els.deleteCancel)     els.deleteCancel.onclick     = closeDeleteModal;
@@ -645,7 +678,7 @@
     }
 
     /* ============================================================
-       STORAGE LISTENER (added once per init, removed on cleanup)
+       STORAGE LISTENER
        ============================================================ */
     let _storageHandler = null;
     function attachStorageListener() {
@@ -670,14 +703,12 @@
     let _authReadyHandler = null;
 
     function startAuthFlow() {
-        // Initial attempt
         (async () => {
             const user = await getUserData();
             _hasRenderedWithUser = !!user?.id;
             await updateProfileUI();
         })();
 
-        // Wait for the header's one-shot signal
         _authReadyHandler = async (e) => {
             const d = e?.detail || {};
             if (d.isLoggedIn && d.user?.id) {
@@ -689,7 +720,6 @@
         };
         window.addEventListener('st:auth-ready', _authReadyHandler);
 
-        // Polling fallback — bounded
         _authPollId = setInterval(async () => {
             if (_hasRenderedWithUser || !document.getElementById('stAccountPage')) {
                 clearInterval(_authPollId);
@@ -705,7 +735,6 @@
             }
         }, 100);
 
-        // Hard-stop after 5 s
         setTimeout(() => {
             if (_authPollId) { clearInterval(_authPollId); _authPollId = null; }
         }, 5000);
@@ -722,25 +751,22 @@
         }
         detachStorageListener();
 
-        // Close modal if it was open
         const modal = document.getElementById('stDeleteModal');
         if (modal?.classList.contains('active')) {
             modal.classList.remove('active');
             document.body.style.overflow = '';
         }
 
-        // Reset module state (keep _supabaseClient — it's a shared singleton)
         currentUser = null;
         isLoggedIn  = false;
         orders      = [];
         isEditingEnabled     = false;
         _hasRenderedWithUser = false;
-        _renderedOnce        = false;
     }
 
     async function init() {
         const els = getEls();
-        if (!els.profileForm) return;    // not on the account page
+        if (!els.profileForm) return;
         cleanup();
 
         console.log('📄 Account Settings: init');
@@ -784,5 +810,5 @@
     window.addEventListener('st:pjax-before', cleanup);
     window.addEventListener('beforeunload',  cleanup);
 
-    console.log('✅ Account Settings script loaded');
+    console.log('✅ Account Settings script loaded (SECURE RPC VERSION)');
 })();

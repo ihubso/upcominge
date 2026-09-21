@@ -171,8 +171,7 @@
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
-                        <button class="st-remove-btn" onclick="window.removeItem(${index})">
-                              <i  aria-label="${t('remove_item', 'Remove')}" data-translate="remove"></i>
+                        <button class="st-remove-btn" onclick="window.removeItem(${index})" aria-label="${t('remove_item', 'Remove')}">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
@@ -208,7 +207,7 @@
     }
 
     /* ============================================================
-       SAVE CART  (localStorage authoritative, DB best-effort)
+       SAVE CART (localStorage authoritative, DB best-effort via RPC)
        ============================================================ */
     async function saveCart() {
         // Deduplicate by product_id
@@ -229,8 +228,7 @@
 
         // localStorage (authoritative — checkout page reads from here)
         localStorage.setItem('st_cartcheckout', JSON.stringify(cartItems));
-        sessionStorage.setItem('st_cartcheckout', JSON.stringify(cartItems));   // ← typo fixed
-        // Legacy key used by other pages' getCart(); keep in sync
+        sessionStorage.setItem('st_cartcheckout', JSON.stringify(cartItems));
         localStorage.setItem('st_cart', JSON.stringify(cartItems));
 
         if (window.STHeader?.AppState) {
@@ -238,41 +236,33 @@
             window.STHeader.updateCounts?.();
         }
 
-        // Supabase best-effort
+        // ✅ SECURE: Sync to Supabase using RPC
         const customerId = window.getCurrentCustomerId?.() || null;
         const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+        const isLoggedIn = window.STHeader?.AppState?.isLoggedIn || false;
 
-        if (cartItems.length === 0) {
-            if (customerId) await deleteCartFromDB(customerId, true);
-            else            await deleteCartFromDB(sessionId, false);
+        if (isLoggedIn && customerId) {
+            await syncCartToDB(customerId, true, cartItems);
         } else {
-            if (customerId) await window.saveCartToDB?.(customerId, cartItems, true);
-            else            await window.saveCartToDB?.(sessionId, cartItems, false);
+            await syncCartToDB(sessionId, false, cartItems);
         }
     }
 
     /* ============================================================
-       SUPABASE I/O
+       SUPABASE I/O (SECURED VIA RPC)
        ============================================================ */
-    async function deleteCartFromDB(identifier, hasCustomerId = false) {
-        const client = getSupabase();
-        if (!client) return;
-        try {
-            const col = hasCustomerId ? 'customer_id' : 'session_id';
-            const { error } = await client.from('cart').delete().eq(col, identifier);
-            if (error) console.error('❌ Error deleting cart from DB:', error.message);
-        } catch (err) {
-            console.error('❌ Error deleting cart from DB:', err.message);
-        }
-    }
-
+    
+    // ✅ SECURE: Fetch cart using RPC
     async function fetchCartFromDB(identifier, hasCustomerId = false) {
         const client = getSupabase();
         if (!client) return [];
         try {
-            const col = hasCustomerId ? 'customer_id' : 'session_id';
-            const { data, error } = await client.from('cart').select('*').eq(col, identifier);
+            const { data, error } = await client.rpc('get_user_cart', {
+                p_customer_id: hasCustomerId ? identifier : null,
+                p_session_id: !hasCustomerId ? identifier : null
+            });
             if (error) throw error;
+            
             return (data || []).map(item => ({
                 product_id:    item.product_id,
                 id:            item.product_id,
@@ -289,6 +279,34 @@
         } catch (err) {
             console.error('❌ Error fetching cart:', err.message);
             return [];
+        }
+    }
+
+    // ✅ SECURE: Sync (replace) cart using RPC
+    async function syncCartToDB(identifier, hasCustomerId = false, items = []) {
+        const client = getSupabase();
+        if (!client) return;
+        try {
+            const cartItemsPayload = items.map(item => ({
+                product_id:     item.product_id || item.id || '',
+                name:           item.name || 'Unknown Product',
+                price:          Number(item.price) || 0,
+                qty:            Number(item.qty) || 1,
+                image:          item.image || 'https://placehold.co/600x400',
+                variants:       item.variants || {},
+                is_deal:        item.isDeal || item.is_deal || false,
+                original_price: item.originalPrice || item.original_price || null,
+                discount:       item.discount || null,
+                brand:          item.brand || ''
+            }));
+
+            await client.rpc('sync_user_cart', {
+                p_customer_id: hasCustomerId ? identifier : null,
+                p_session_id: !hasCustomerId ? identifier : null,
+                p_cart_items: cartItemsPayload
+            });
+        } catch (err) {
+            console.error('❌ Error syncing cart to DB:', err.message);
         }
     }
 
@@ -384,9 +402,10 @@
             dbCart = await fetchCartFromDB(sessionId, false);
             if (dbCart.length) {
                 cartItems = dbCart;
+                // If logged in now, migrate session cart to customer cart securely
                 if (isLoggedIn && customerId) {
-                    await window.saveCartToDB?.(customerId, cartItems, true);
-                    await window.saveCartToDB?.(sessionId, [], false);
+                    await syncCartToDB(customerId, true, cartItems);
+                    await syncCartToDB(sessionId, false, []); // clear session cart
                 }
                 renderCart();
                 return;
@@ -398,7 +417,7 @@
                 if (local.length) {
                     cartItems = local;
                     if (isLoggedIn && customerId) {
-                        await window.saveCartToDB?.(customerId, cartItems, true);
+                        await syncCartToDB(customerId, true, cartItems);
                     }
                     renderCart();
                     return;
@@ -474,5 +493,5 @@
     window.addEventListener('st:pjax-before', cleanup);
     window.addEventListener('beforeunload',  cleanup);
 
-    console.log('✅ Cart page script loaded');
+    console.log('✅ Cart page script loaded (FULLY SECURED VIA RPC)');
 })();

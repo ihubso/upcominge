@@ -1,9 +1,8 @@
 /**
  * ============================================================
- * CATEGORY SHOWCASE - Smartphones & Tablets Style
+ * CATEGORY SHOWCASE - SECURED (RPC ONLY)
  * Displays products from any category with modern layout
- * Includes countdown timer and product grid
- * NOW ONLY USES Supabase CONFIG - NO URL PARAMETERS
+ * NOW ONLY USES SUPABASE RPCs - NO DIRECT TABLE ACCESS
  * ============================================================
  */
 
@@ -38,10 +37,8 @@
     let cachedCategories = [];
     let cachedBrands = [];
    
-
-
     // ============================================================
-    // 2.5 FETCH DISTINCT CATEGORIES AND BRANDS
+    // 2.5 FETCH DISTINCT CATEGORIES AND BRANDS (SECURED)
     // ============================================================
 
     async function fetchDistinctCategories() {
@@ -51,15 +48,12 @@
         if (!client) return [];
 
         try {
-            const { data, error } = await client
-                .from('products')
-                .select('category')
-                .not('category', 'is', null)
-                .not('category', 'eq', '');
+            const { data, error } = await client.rpc('get_all_products');
 
             if (error) throw error;
 
-            const categories = [...new Set(data.map(item => item.category))].sort();
+            // Extract unique categories from the full list
+            const categories = [...new Set(data.map(item => item.category).filter(c => c))].sort();
             cachedCategories = categories;
             return categories;
         } catch (err) {
@@ -75,15 +69,12 @@
         if (!client) return [];
 
         try {
-            const { data, error } = await client
-                .from('products')
-                .select('brand')
-                .not('brand', 'is', null)
-                .not('brand', 'eq', '');
+            // ✅ SECURE: Use RPC to get all products, then extract brands locally
+            const { data, error } = await client.rpc('get_all_products');
 
             if (error) throw error;
 
-            const brands = [...new Set(data.map(item => item.brand))].sort();
+            const brands = [...new Set(data.map(item => item.brand).filter(b => b))].sort();
             cachedBrands = brands;
             return brands;
         } catch (err) {
@@ -107,6 +98,7 @@
         }
 
         try {
+            // Note: Ensure 'category_showcase_config' has RLS policies allowing public read
             const { data, error } = await client
                 .from('category_showcase_config')
                 .select('*')
@@ -170,7 +162,7 @@
     }
 
     // ============================================================
-    // 4. FETCH PRODUCTS BASED ON CONFIG
+    // 4. FETCH PRODUCTS BASED ON CONFIG (SECURED)
     // ============================================================
 
     async function fetchProductsByCategoryOrBrand(filterType, filterValue, maxProducts = 8) {
@@ -178,34 +170,34 @@
         if (!client) return [];
 
         try {
-            let query = client
-                .from('products')
-                .select('*');
-
-            // Filter based on config
+            let data = [];
+            
             if (filterType === 'category' && filterValue) {
-                query = query.eq('category', filterValue);
-                console.log(`🔍 Filtering by category: "${filterValue}"`);
+                console.log(`🔍 Filtering by category: "${filterValue}" via RPC`);
+                const { data: rpcData, error } = await client.rpc('get_products_by_category', { p_category: filterValue });
+                if (error) throw error;
+                data = rpcData || [];
             } else if (filterType === 'brand' && filterValue) {
-                query = query.eq('brand', filterValue);
-                console.log(`🔍 Filtering by brand: "${filterValue}"`);
+                console.log(`🔍 Filtering by brand: "${filterValue}" (Local Filter)`);
+                const { data: allData, error } = await client.rpc('get_all_products');
+                if (error) throw error;
+                data = (allData || []).filter(p => p.brand === filterValue);
             } else if (filterType === 'deals') {
-                query = query.eq('isDeal', true);
-                console.log(`🔍 Filtering by deals`);
-            } else if (filterType === 'all' || filterType === '') {
-                query = query.order('created_at', { ascending: false });
-                console.log(`🔍 Showing all latest products`);
+                console.log(`🔍 Filtering by deals (Local Filter)`);
+                const { data: allData, error } = await client.rpc('get_all_products');
+                if (error) throw error;
+                data = (allData || []).filter(p => p.isDeal === true);
             } else {
-                query = query.order('created_at', { ascending: false });
+                console.log(`🔍 Showing all latest products via RPC`);
+                const { data: allData, error } = await client.rpc('get_all_products');
+                if (error) throw error;
+                data = allData || [];
             }
 
-            const { data, error } = await query
-                .order('created_at', { ascending: false })
-                .limit(maxProducts);
+            // Limit results locally if needed (since get_all_products returns all)
+            const limitedData = data.slice(0, maxProducts);
 
-            if (error) throw error;
-
-            const products = (data || []).map(p => {
+            const products = limitedData.map(p => {
                 if (typeof p.variants === 'string') {
                     try { p.variants = JSON.parse(p.variants); } catch (e) { p.variants = []; }
                 }
@@ -225,7 +217,7 @@
     }
 
     // ============================================================
-    // 5. FETCH RANDOM PRODUCT IMAGES FOR HERO
+    // 5. FETCH RANDOM PRODUCT IMAGES FOR HERO (SECURED)
     // ============================================================
 
     async function fetchRandomProductImages(count = 5) {
@@ -233,15 +225,14 @@
         if (!client) return [];
 
         try {
-            const { data, error } = await client
-                .from('products')
-                .select('image, id')
-                .not('image', 'is', null)
-                .limit(20);
+            // ✅ SECURE: Use RPC to get images
+            const { data, error } = await client.rpc('get_all_products');
 
             if (error) throw error;
 
-            const shuffled = shuffleArray(data || []);
+            // Filter for items with images
+            const withImages = (data || []).filter(p => p.image);
+            const shuffled = shuffleArray(withImages);
             const selected = shuffled.slice(0, count);
             return selected.map(p => resolveProductImageUrl(p.image));
         } catch (err) {
@@ -1158,6 +1149,6 @@
         initCategoryShowcase('categoryShowcase', {});
     });
 
-    console.log('✅ Category Showcase Component Loaded - Supabase Config ONLY');
+    console.log('✅ Category Showcase Component Loaded - Supabase Config ONLY (SECURED)');
     console.log('📌 URL parameters are IGNORED - only category_showcase_config (id=1) is used');
 })();

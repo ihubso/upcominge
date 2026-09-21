@@ -10,7 +10,7 @@
     'use strict';
 
     // ============================================================
-    // 1. dealCONFIGURATION
+    // 1. CONFIGURATION
     // ============================================================
 
     const dealCONFIG = {
@@ -21,56 +21,32 @@
     // ============================================================
     // 2. SUPABASE CLIENT HELPER
     // ============================================================
-
+    // Assuming getSupabaseClient() is available globally from header-core.js
 
     // ============================================================
-    // 3. FETCH DEALS
+    // 3. FETCH DEALS (SECURED)
     // ============================================================
 
     async function fetchDeals() {
-        const client = getSupabaseClient();
+        const client = window.getSupabaseClient?.();
         if (!client) return [];
 
         try {
-            const { data: dealsData, error: dealsError } = await client
-                .from('deals')
-                .select('product_id, discount');
+            const { data, error } = await client.rpc('get_active_deals');
 
-            if (dealsError) throw dealsError;
-            if (!dealsData || dealsData.length === 0) {
-                console.log('ℹ️ No deals found');
-                return [];
-            }
+            if (error) throw error;
+            
+            // Map the RPC result to the format expected by the slider
+            const dealsWithProducts = (data || []).map(item => ({
+                ...item,
+                dealDiscount: item.deal_discount,
+                isDeal: true,
+                originalPrice: item.original_price,
+                discountedPrice: item.discounted_price,
+                price: item.price // Keep original price field for fallback
+            }));
 
-            const productIds = dealsData.map(d => d.product_id).filter(id => id);
-
-            if (productIds.length === 0) {
-                console.log('ℹ️ No valid product IDs in deals');
-                return [];
-            }
-
-            const { data: productsData, error: productsError } = await client
-                .from('products')
-                .select('*')
-                .in('id', productIds);
-
-            if (productsError) throw productsError;
-
-            const dealsWithProducts = dealsData
-                .map(deal => {
-                    const product = productsData?.find(p => p.id === deal.product_id);
-                    if (!product) return null;
-                    return {
-                        ...product,
-                        dealDiscount: deal.discount,
-                        isDeal: true,
-                        originalPrice: product.price,
-                        discountedPrice: product.price * (1 - deal.discount / 100)
-                    };
-                })
-                .filter(item => item !== null);
-
-            console.log(`✅ Loaded ${dealsWithProducts.length} deals`);
+            console.log(`✅ Loaded ${dealsWithProducts.length} deals via RPC`);
             return dealsWithProducts;
 
         } catch (err) {
@@ -233,8 +209,6 @@
             });
         }
     }
-
-
 
     // ============================================================
     // 7. TOAST NOTIFICATION
@@ -623,8 +597,6 @@
         console.log(`✅ Deals initialized: ${deals.length} deals - Slider Mode`);
     }
 
-
-
     // ============================================================
     // 11. AUTO-INITIALIZE ON DOM READY
     // ============================================================
@@ -636,5 +608,5 @@
         }
     });
 
-    console.log('✅ Deals Slider Component Loaded');
+    console.log('✅ Deals Slider Component Loaded (SECURE RPC VERSION)');
 })();

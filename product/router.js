@@ -14,7 +14,7 @@
     let cart = [];
     let heroInterval = null;
     let currentSlide = 0;
-    let pageObserver = null;        // ← was missing
+    let pageObserver = null;
 
     // ============================================================
     //  HELPERS
@@ -96,17 +96,20 @@
     }
 
     // ============================================================
-    //  HERO SLIDESHOW
+    //  HERO SLIDESHOW (SECURED)
     // ============================================================
 
     async function fetchHeroImages(count = 6) {
         const client = getClient();
         if (!client) return [];
         try {
-            const { data, error } = await client
-                .from('products').select('image').not('image', 'is', null).limit(20);
+            const { data, error } = await client.rpc('get_all_products');
+            
             if (error) throw error;
-            return shuffleArray(data || []).slice(0, count).map(p => p.image).filter(Boolean);
+            
+            // Filter for items with images and shuffle
+            const withImages = (data || []).filter(p => p.image);
+            return shuffleArray(withImages).slice(0, count).map(p => p.image);
         } catch (err) {
             console.error('❌ Error fetching hero images:', err.message);
             return [];
@@ -173,16 +176,17 @@
     }
 
     // ============================================================
-    //  FETCH + BUILD
+    //  FETCH + BUILD (SECURED)
     // ============================================================
 
     async function fetchAllProducts() {
         const client = getClient();
         if (!client) return [];
         try {
-            const { data, error } = await client
-                .from('products').select('*').order('created_at', { ascending: false });
+            const { data, error } = await client.rpc('get_all_products');
+            
             if (error) throw error;
+            
             return (data || []).map(p => {
                 if (typeof p.variants === 'string') { try { p.variants = JSON.parse(p.variants); } catch { p.variants = []; } }
                 if (typeof p.images   === 'string') { try { p.images   = JSON.parse(p.images);   } catch { p.images = [p.image]; } }

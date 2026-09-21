@@ -154,79 +154,105 @@
     /* ============================================================
        LOAD ORDERS
        ============================================================ */
-    async function loadOrders() {
-        const els = getEls();
-        if (!els.ordersContainer) return;
+async function loadOrders() {
+    const els = getEls();
+    if (!els.ordersContainer || !els.ordersLoading) return;
 
-        els.ordersContainer.innerHTML = '';
-        els.ordersLoading.style.display = 'flex';
+    els.ordersContainer.innerHTML = '';
+    els.ordersLoading.style.display = 'flex';
 
-        try {
-            const user = await getUserData();
-
-            if (!user?.id) {
-                els.ordersLoading.style.display = 'none';
-                showEmptyState(
-                    t('please_login_title', 'Please Login'),
-                    t('login_to_view_orders', 'Login to view your orders.'),
-                    'login'
-                );
-                return;
-            }
-
-            let orders = [];
-            const client = window.getSupabaseClient?.();
-
-            if (client) {
-                try {
-                    const { data, error } = await client
-                        .from('orders').select('*')
-                        .eq('customer_id', user.id)
-                        .order('created_at', { ascending: false });
-                    if (!error && data?.length) orders = data;
-                } catch (e) { console.warn('⚠️ Supabase fetch error:', e); }
-            }
-
-            if (!orders.length) {
-                const localOrders = JSON.parse(localStorage.getItem('shop_orders_v1') || '[]');
-                orders = localOrders.filter(o =>
-                    o.customer_id === user.id ||
-                    o.email === user.email ||
-                    o.customer_name === user.name
-                );
-            }
-
-            allOrders = orders;
+    try {
+        const user = await getUserData();
+        if (!user?.id) {
             els.ordersLoading.style.display = 'none';
+            els.ordersContainer.innerHTML = `
+                <div class="st-order-empty">
+                    <div class="st-empty-icon"><i class="fas fa-lock"></i></div>
+                    <p style="font-weight:600;color:#0F172A;" data-translate="please_login">Please Login</p>
+                    <p style="font-size:14px;" data-translate="login_to_view_orders">Login to view your orders.</p>
+                </div>`;
+            if (typeof translateUI === 'function') translateUI();
+            return;
+        }
 
-            if (!orders.length) {
-                _pendingOpenId = null;
-                showEmptyState(
-                    t('no_orders_title', 'No Orders Yet'),
-                    t('no_orders_sub', 'Start shopping to see your orders here.'),
-                    'shop'
-                );
-                return;
+        const client = getSupabase();
+        let orders = [];
+
+        if (client) {
+            try {
+                const { data, error } = await client.rpc('get_customer_orders', { 
+                    p_customer_id: user.id 
+                });
+                
+                if (!error && data?.length) {
+                    orders = data;
+                }
+            } catch (e) { 
+                console.warn('⚠️ Supabase RPC fetch error:', e); 
             }
+        }
 
-            updateCounts(orders);
-            filterOrders(currentStatus);
-
-            // Handle ?order= param (deep-link) — one-shot
-            const pending = _pendingOpenId || getOrderIdFromUrl();
-            _pendingOpenId = null;
-            if (pending) await handlePendingOrderRoute(pending);
-
-        } catch (err) {
-            console.error('❌ Error loading orders:', err);
-            els.ordersLoading.style.display = 'none';
-            showEmptyState(
-                t('failed_to_load_title', 'Failed to Load Orders'),
-                t('failed_to_load_sub', 'Please try again later.'),
-                'retry'
+        // Fallback to local storage if DB fails or is empty
+        if (!orders.length) {
+            const localOrders = JSON.parse(localStorage.getItem('shop_orders_v1') || '[]');
+            orders = localOrders.filter(o =>
+                o.customer_id === user.id ||
+                o.email === user.email ||
+                o.customer_name === user.name
             );
         }
+
+        els.ordersLoading.style.display = 'none';
+
+        if (!orders.length) {
+            // Clear any pending deep-link if no orders exist
+            if (typeof _pendingOpenId !== 'undefined') _pendingOpenId = null;
+            
+            els.ordersContainer.innerHTML = `
+                <div class="st-order-empty">
+                    <div class="st-empty-icon"><i class="fas fa-shopping-bag"></i></div>
+                    <p style="font-weight:600;color:#0F172A;" data-translate="no_orders_title">No Orders Yet</p>
+                    <p style="font-size:14px;" data-translate="no_orders_sub">Start shopping to see your orders here.</p>
+                    <a href="/product/" style="display:inline-block;margin-top:16px;padding:10px 24px;background:#6C3CE1;color:white;border-radius:10px;text-decoration:none;font-weight:600;" data-translate="browse_products">
+                        Browse Products
+                    </a>
+                </div>`;
+            if (typeof translateUI === 'function') translateUI();
+            return;
+        }
+
+        // Update global/module state
+        if (typeof allOrders !== 'undefined') allOrders = orders;
+        else window.allOrders = orders;
+
+        // If you have a filter function, call it here. Otherwise, render directly.
+        if (typeof filterOrders === 'function' && typeof currentStatus !== 'undefined') {
+            filterOrders(currentStatus);
+        } else {
+            renderOrders(orders);
+        }
+
+        // Handle ?order= param (deep-link) — one-shot
+        if (typeof _pendingOpenId !== 'undefined' && typeof handlePendingOrderRoute === 'function') {
+            const pending = _pendingOpenId || (typeof getOrderIdFromUrl === 'function' ? getOrderIdFromUrl() : null);
+            _pendingOpenId = null;
+            if (pending) await handlePendingOrderRoute(pending);
+        }
+
+    } catch (err) {
+        console.error('❌ Error loading orders:', err);
+        els.ordersLoading.style.display = 'none';
+        els.ordersContainer.innerHTML = `
+            <div class="st-order-empty">
+                <div class="st-empty-icon"><i class="fas fa-exclamation-circle"></i></div>
+                <p style="font-weight:600;color:#0F172A;" data-translate="failed_to_load">Failed to load orders</p>
+                <p style="font-size:14px;" data-translate="try_again_later">Please try again later.</p>
+                <button onclick="window.accountSettings?.loadOrders()" style="margin-top:16px;padding:10px 24px;background:#6C3CE1;color:white;border:none;border-radius:10px;cursor:pointer;font-weight:600;">
+                    <i class="fas fa-sync"></i> ${t('retry', 'Retry')}
+                </button>
+            </div>`;
     }
+}
 
     async function handlePendingOrderRoute(orderId) {
         if (!orderId) return;

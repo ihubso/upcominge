@@ -75,16 +75,16 @@
     }
 
     /* ============================================================
-       FETCH
+       FETCH (SECURED)
        ============================================================ */
     async function fetchAllData() {
         const client = window.getSupabaseClient?.();
         if (!client) return;
 
         try {
-            const { data: products, error } = await client
-                .from('products').select('*')
-                .order('created_at', { ascending: false });
+        
+            const { data: products, error } = await client.rpc('get_all_products');
+            
             if (error) throw error;
 
             allProducts = products || [];
@@ -436,23 +436,24 @@
         console.log('📄 Categories page ready');
     }
     
-const contentRight = document.querySelector('section.content-right');
-const categoryList = document.querySelector('div#categoryList');
+    const contentRight = document.querySelector('section.content-right');
+    const categoryList = document.querySelector('div#categoryList');
 
-if (categoryList && contentRight) {
-  categoryList.addEventListener('click', (event) => {
-    // Check if a category was clicked
-    const isChip = event.target.closest('.category-chip-side');
-    
-    if (isChip) {
-      // Scroll the CONTENT section (right side) to the top
-      contentRight.scrollTo({
-        top: 0,
-        behavior: 'smooth'
+    if (categoryList && contentRight) {
+      categoryList.addEventListener('click', (event) => {
+        // Check if a category was clicked
+        const isChip = event.target.closest('.category-chip-side');
+        
+        if (isChip) {
+          // Scroll the CONTENT section (right side) to the top
+          contentRight.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        }
       });
     }
-  });
-}
+
     /* ============================================================
        GLOBAL EXPORTS
        ============================================================ */
@@ -476,5 +477,5 @@ if (categoryList && contentRight) {
     window.addEventListener('st:pjax-before', cleanup);
     window.addEventListener('beforeunload',  cleanup);
 
-    console.log('✅ Categories page script loaded');
+    console.log('✅ Categories page script loaded (SECURE RPC VERSION)');
 })();

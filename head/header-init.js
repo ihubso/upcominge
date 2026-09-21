@@ -44,40 +44,39 @@ async function populateDropdowns() {
     }
 
     // Products dropdown (show some featured/recent products)
-    const productsGrid = document.getElementById('stDropdownGrid_products');
-    if (productsGrid) {
-        const client = getSupabaseClient();
-        if (client) {
-            try {
-                const { data, error } = await client
-                    .from('products')
-                    .select('id, name, image, price')
-                    .order('created_at', { ascending: false })
-                    .limit(8);
-
-                if (!error && data && data.length > 0) {
-                    productsGrid.innerHTML = data.map(product => `
-                        <a onclick="window.navigateWithUserInfo('/item/?product=${product.id}'); return false;"  class="st-dropdown-item">
-                        
-                            <div class="st-item-icon">
-                                <img src="${product.image || 'https://placehold.co/100x100/6C3CE1/FFFFFF?text=Product'}" 
-                                     alt="${product.name}" 
-                                     onerror="this.parentElement.innerHTML='<span class=\\'st-icon-fallback\\'><i class=\\'fas fa-box\\'></i></span>'">
-                            </div>
-                            <div class="st-item-info">
-                                <span class="st-item-name" data-translate="${product.name}">${product.name}</span>
-                                <span class="st-item-count" data-translate="product_price">FCFA${(product.price || 0).toFixed(2)}</span>
-                            </div>
-                        </a>
-                    `).join('');
-                } else {
-                    productsGrid.innerHTML = '<div class="st-dropdown-empty" data-translate="no_products">No products available</div>';
-                }
-            } catch (err) {
-                productsGrid.innerHTML = '<div class="st-dropdown-empty" data-translate="load_failed">Failed to load products</div>';
+    // Inside populateDropdowns in header-init.js
+const productsGrid = document.getElementById('stDropdownGrid_products');
+if (productsGrid) {
+    const client = getSupabaseClient();
+    if (client) {
+        try {
+            // ✅ SECURE: Use RPC
+            const { data, error } = await client.rpc('get_all_products');
+            
+            if (!error && data && data.length > 0) {
+                // Take only the first 8 for the dropdown
+                const limitedData = data.slice(0, 8);
+                productsGrid.innerHTML = limitedData.map(product => `
+                    <a onclick="window.navigateWithUserInfo('/item/?product=${product.id}'); return false;" class="st-dropdown-item">
+                        <div class="st-item-icon">
+                            <img src="${product.image || 'https://placehold.co/100x100/6C3CE1/FFFFFF?text=Product'}" 
+                                 alt="${product.name}" 
+                                 onerror="this.parentElement.innerHTML='<span class=\\'st-icon-fallback\\'><i class=\\'fas fa-box\\'></i></span>'">
+                        </div>
+                        <div class="st-item-info">
+                            <span class="st-item-name">${product.name}</span>
+                            <span class="st-item-count">FCFA ${(product.price || 0).toFixed(2)}</span>
+                        </div>
+                    </a>
+                `).join('');
+            } else {
+                productsGrid.innerHTML = '<div class="st-dropdown-empty">No products available</div>';
             }
+        } catch (err) {
+            productsGrid.innerHTML = '<div class="st-dropdown-empty">Failed to load</div>';
         }
     }
+}
 
     console.log('✅ Dropdowns populated with categories and brands');
 }
@@ -758,17 +757,20 @@ async function performSearch(query) {
             return;
         }
 
-        // Search in products
-        const { data, error } = await client
-            .from('products')
-            .select('id, name, price, image, brand, category')
-            .or(`name.ilike.%${trimmedQuery}%,brand.ilike.%${trimmedQuery}%,category.ilike.%${trimmedQuery}%,description.ilike.%${trimmedQuery}%`)
-            .order('created_at', { ascending: false })
-            .limit(8);
+    
+        const { data: allProducts, error } = await client.rpc('get_all_products');
 
         if (error) throw error;
 
-        searchResults = data || [];
+        // ✅ Filter locally to simulate search
+        const filtered = (allProducts || []).filter(p => 
+            p.name?.toLowerCase().includes(trimmedQuery) || 
+            p.brand?.toLowerCase().includes(trimmedQuery) || 
+            p.category?.toLowerCase().includes(trimmedQuery) ||
+            p.description?.toLowerCase().includes(trimmedQuery)
+        ).slice(0, 8); // Limit to 8 results for the dropdown
+
+        searchResults = filtered;
         selectedSearchIndex = -1;
         renderSearchResults(searchResults, trimmedQuery);
 
@@ -777,7 +779,6 @@ async function performSearch(query) {
         showSearchError();
     }
 }
-
 // --- Render Search Results ---
 // --- Render Search Results ---
 function renderSearchResults(results, query) {
@@ -1806,20 +1807,31 @@ window.addEventListener("storage", function(e) {
     }
 });
     
-    // ============================================================
-    // AUTO-LOGIN from stored session
-    // ============================================================
-async function checkAutoLogin(){
+async function checkAutoLogin() {
     // 1. First, try URL params (most reliable for cross-page nav)
     const urlUser = getUserInfoFromUrl();
     if (urlUser?.id) {
         console.log("🔑 Auto-login from URL params:", urlUser.id);
-        // Try to get full user data from DB
-        const fullUser = await getCurrentUserById(urlUser.id);
+        
+        // ✅ SECURE: Use RPC instead of .from()
+        const client = getSupabaseClient();
+        let fullUser = null;
+        
+        if (client) {
+            try {
+                const { data, error } = await client.rpc('get_customer_by_id', { p_id: urlUser.id });
+                if (!error && data && data.length > 0) {
+                    fullUser = data[0];
+                }
+            } catch (e) {
+                console.warn("⚠️ RPC auto-login failed:", e.message);
+            }
+        }
+
         if (fullUser) {
             setAuthenticatedUser(fullUser, { remember: true, persist: true });
             await loadUserData(fullUser.id, false);
-            return;
+            return; // Exit after successful auto-login
         }
     }
     
@@ -1856,17 +1868,16 @@ async function checkAutoLogin(){
         updateAuthUI();
     }
 }
+
+
 async function getCurrentUserById(userId) {
     const client = getSupabaseClient();
     if (!client || !userId) return null;
     try {
-        const { data, error } = await client
-            .from("customer_accounts")
-            .select("id, email, name, phone, address, country, bio")
-            .eq("id", userId)
-            .maybeSingle();
-        if (error || !data) return null;
-        return data;
+        // ✅ SECURE: Use RPC
+        const { data, error } = await client.rpc('get_customer_by_id', { p_id: userId });
+        if (error || !data || data.length === 0) return null;
+        return data[0];
     } catch(e) {
         return null;
     }

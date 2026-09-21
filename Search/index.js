@@ -90,34 +90,39 @@
     }
 
     /* ============================================================
-       FETCH
+       FETCH (SECURED)
        ============================================================ */
     async function fetchProducts(query, page = 1) {
         const client = window.getSupabaseClient?.();
         if (!client) return { products: [], total: 0 };
 
         try {
-            const start = (page - 1) * perPage;
-            const end   = start + perPage - 1;
+            const { data: allData, error } = await client.rpc('get_all_products');
+            
+            if (error) throw error;
 
-            let q = client.from('products').select('*', { count: 'exact' });
+            let products = allData || [];
 
+            // ✅ Filter Locally since RPC returns all
             if (query && query.trim()) {
-                const tq = query.trim();
-                q = q.or(
-                    `name.ilike.%${tq}%,` +
-                    `brand.ilike.%${tq}%,` +
-                    `category.ilike.%${tq}%,` +
-                    `description.ilike.%${tq}%`
+                const tq = query.trim().toLowerCase();
+                products = products.filter(p => 
+                    p.name?.toLowerCase().includes(tq) ||
+                    p.brand?.toLowerCase().includes(tq) ||
+                    p.category?.toLowerCase().includes(tq) ||
+                    p.description?.toLowerCase().includes(tq)
                 );
             }
 
-            const { data, error, count } = await q
-                .order('created_at', { ascending: false })
-                .range(start, end);
+            const total = products.length;
 
-            if (error) throw error;
-            return { products: data || [], total: count || 0 };
+            // ✅ Paginate Locally
+            const start = (page - 1) * perPage;
+            const end = start + perPage;
+            const paginatedProducts = products.slice(start, end);
+
+            return { products: paginatedProducts, total: total };
+
         } catch (err) {
             console.error('❌ Search error:', err);
             return { products: [], total: 0 };
@@ -205,51 +210,50 @@
 
         if (typeof translateUI === 'function') translateUI();
     }
-async function saveSearchAnalyticsToDB(query) {
-  if (!query || !query.trim()) return;
-  const client = window.getSupabaseClient?.();
-  if (!client) return;
 
-  const q = query.trim().toLowerCase();
+    async function saveSearchAnalyticsToDB(query) {
+      if (!query || !query.trim()) return;
+      const client = window.getSupabaseClient?.();
+      if (!client) return;
 
-  try {
-    // Try to find an existing row — use maybeSingle so 0 rows is NOT a 406
-    const { data: existing, error: selectErr } = await client
-      .from('search_analytics')
-      .select('id, count')
-      .eq('query', q)
-      .maybeSingle();          // ← key change
+      const q = query.trim().toLowerCase();
 
-    // If the select itself is broken (RLS / bad column), bail quietly
-    if (selectErr && selectErr.code !== 'PGRST116') {
-      console.warn('analytics select failed:', selectErr.message);
-      return;
+      try {
+        const { data: existing, error: selectErr } = await client
+          .from('search_analytics')
+          .select('id, count')
+          .eq('query', q)
+          .maybeSingle();
+
+        if (selectErr && selectErr.code !== 'PGRST116') {
+          console.warn('analytics select failed:', selectErr.message);
+          return;
+        }
+
+        if (existing) {
+          const { error: updErr } = await client
+            .from('search_analytics')
+            .update({
+              count: (existing.count || 0) + 1,
+              last_searched: new Date().toISOString(),
+            })
+            .eq('id', existing.id);
+          if (updErr) console.warn('analytics update failed:', updErr.message);
+        } else {
+          const { error: insErr } = await client
+            .from('search_analytics')
+            .insert({
+              query: q,
+              count: 1,
+              last_searched: new Date().toISOString(),
+            });
+          if (insErr) console.warn('analytics insert failed:', insErr.message);
+        }
+      } catch (err) {
+        console.warn('analytics error:', err);
+      }
     }
 
-    if (existing) {
-      const { error: updErr } = await client
-        .from('search_analytics')
-        .update({
-          count: (existing.count || 0) + 1,
-          last_searched: new Date().toISOString(),
-        })
-        .eq('id', existing.id);
-      if (updErr) console.warn('analytics update failed:', updErr.message);
-    } else {
-      const { error: insErr } = await client
-        .from('search_analytics')
-        .insert({
-          query: q,
-          count: 1,
-          last_searched: new Date().toISOString(),
-        });
-      if (insErr) console.warn('analytics insert failed:', insErr.message);
-    }
-  } catch (err) {
-    // never let analytics break the search flow
-    console.warn('analytics error:', err);
-  }
-}
     /* ============================================================
        ANALYTICS
        ============================================================ */
@@ -570,5 +574,5 @@ async function saveSearchAnalyticsToDB(query) {
     window.addEventListener('st:pjax-before', cleanup);
     window.addEventListener('beforeunload',  cleanup);
 
-    console.log('✅ Search page script loaded');
+    console.log('✅ Search page script loaded (SECURE RPC VERSION)');
 })();
