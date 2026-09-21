@@ -29,19 +29,3 @@ function getSupabaseClient() {
 
 
 
-    (function() {
-  // Check if we're on GitHub Pages or production
-  const isProduction = window.location.hostname.includes('github.io') || 
-                       !window.location.hostname.includes('localhost');
-  
-  if (isProduction) {
-    // Disable all console methods
-    const noop = function() {};
-    console.log = noop;
-    console.error = noop;
-    console.warn = noop;
-    console.info = noop;
-    console.debug = noop;
-    console.trace = noop;
-  }
-})();
