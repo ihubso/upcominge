@@ -4,8 +4,8 @@
     /* ============================================================
        MODULE STATE
        ============================================================ */
-    let allProducts        = [];   // every product fetched (pre-filter)
-    let filteredProducts   = [];   // current filter + sort view
+    let allProducts        = [];
+    let filteredProducts   = [];
     let currentQuery       = '';
     let currentFilter      = 'all';
     let currentSort        = 'relevance';
@@ -16,6 +16,7 @@
     let wishlist           = [];
 
     let _headerPatched     = false;
+    let _liveSearchTimer   = null;
 
     /* ============================================================
        ELEMENT LOOKUP
@@ -90,41 +91,66 @@
     }
 
     /* ============================================================
-       FETCH (SECURED)
+       URL CLEANUP — strip ?search= from address bar
+       ============================================================ */
+    function cleanURL() {
+        try {
+            if (window.location.search && window.location.pathname.endsWith('/Search/')) {
+                window.history.replaceState({}, '', '/Search/');
+            }
+        } catch (_) { /* noop */ }
+    }
+
+    /* ============================================================
+       SKELETON CARDS — shown while live-searching
+       ============================================================ */
+    function showSearchSkeleton(count = 8) {
+        const els = getEls();
+        if (!els.grid) return;
+        els.grid.innerHTML = Array(count).fill(0).map(() => `
+            <div class="st-skeleton-card">
+                <div class="st-skeleton-image"></div>
+                <div class="st-skeleton-body">
+                    <div class="st-skeleton-line name"></div>
+                    <div class="st-skeleton-line brand"></div>
+                    <div class="st-skeleton-line price"></div>
+                    <div class="st-skeleton-line btn"></div>
+                </div>
+            </div>`).join('');
+    }
+
+    function clearGridState() {
+        const els = getEls();
+        if (els.grid) els.grid.innerHTML = '';
+        if (els.loadMore) els.loadMore.style.display = 'none';
+        if (els.resultCount) els.resultCount.textContent = '';
+        if (els.searchMeta) els.searchMeta.textContent = '';
+    }
+
+    /* ============================================================
+       FETCH — SERVER-SIDE SEARCH + PAGINATION (via RPC)
        ============================================================ */
     async function fetchProducts(query, page = 1) {
         const client = window.getSupabaseClient?.();
         if (!client) return { products: [], total: 0 };
 
         try {
-            const { data: allData, error } = await client.rpc('get_all_products');
-            
+            const offset = (page - 1) * perPage;
+            const { data, error } = await client.rpc('search_products_paginated', {
+                p_query:  (query || '').trim(),
+                p_limit:  perPage,
+                p_offset: offset
+            });
             if (error) throw error;
 
-            let products = allData || [];
+            const rows = data || [];
+            if (!rows.length) return { products: [], total: 0 };
 
-            // ✅ Filter Locally since RPC returns all
-            if (query && query.trim()) {
-                const tq = query.trim().toLowerCase();
-                products = products.filter(p => 
-                    p.name?.toLowerCase().includes(tq) ||
-                    p.brand?.toLowerCase().includes(tq) ||
-                    p.category?.toLowerCase().includes(tq) ||
-                    p.description?.toLowerCase().includes(tq)
-                );
-            }
-
-            const total = products.length;
-
-            // ✅ Paginate Locally
-            const start = (page - 1) * perPage;
-            const end = start + perPage;
-            const paginatedProducts = products.slice(start, end);
-
-            return { products: paginatedProducts, total: total };
-
+            const total = Number(rows[0].total_count || rows.length);
+            const products = rows.map(({ total_count, ...p }) => p);
+            return { products, total };
         } catch (err) {
-            console.error('❌ Search error:', err);
+            console.error('❌ Search RPC error:', err.message);
             return { products: [], total: 0 };
         }
     }
@@ -172,7 +198,7 @@
 
             const image       = product.image || 'https://placehold.co/400x400/6C3CE1/FFFFFF?text=Product';
             const rating      = product.rating || 0;
-            const reviewCount = product.reviewCount || 0;
+            const reviewCount = product.review_count || product.reviewCount || 0;
 
             return `
                 <div class="st-product-card" onclick="window.navigateWithUserInfo('/item/?product=${product.id}')">
@@ -185,9 +211,9 @@
                         <div class="st-product-name">${highlightMatch(product.name || 'Unknown', currentQuery)}</div>
                         ${product.brand ? `<div class="st-product-brand">${highlightMatch(product.brand, currentQuery)}</div>` : ''}
                         <div class="st-product-price">
-                            FCFA ${(product.price || 0).toFixed(2)}
+                            FCFA ${(Number(product.price) || 0).toFixed(2)}
                             ${product.originalPrice && product.originalPrice > product.price
-                                ? `<span class="st-original-price">FCFA ${(product.originalPrice || 0).toFixed(2)}</span>`
+                                ? `<span class="st-original-price">FCFA ${(Number(product.originalPrice) || 0).toFixed(2)}</span>`
                                 : ''}
                         </div>
                         ${rating > 0 ? `
@@ -211,6 +237,9 @@
         if (typeof translateUI === 'function') translateUI();
     }
 
+    /* ============================================================
+       ANALYTICS
+       ============================================================ */
     async function saveSearchAnalyticsToDB(query) {
       if (!query || !query.trim()) return;
       const client = window.getSupabaseClient?.();
@@ -254,9 +283,6 @@
       }
     }
 
-    /* ============================================================
-       ANALYTICS
-       ============================================================ */
     async function recordSearchQuery(query) {
         if (!query?.trim() || !window.saveSearchAnalyticsToDB) return;
         try { await window.saveSearchAnalyticsToDB(query.trim()); }
@@ -269,8 +295,8 @@
     function sortProducts(products, sortBy) {
         const sorted = [...products];
         switch (sortBy) {
-            case 'price_asc':  sorted.sort((a, b) => (a.price || 0) - (b.price || 0)); break;
-            case 'price_desc': sorted.sort((a, b) => (b.price || 0) - (a.price || 0)); break;
+            case 'price_asc':  sorted.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0)); break;
+            case 'price_desc': sorted.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0)); break;
             case 'newest':     sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); break;
             case 'rating':     sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0)); break;
             case 'relevance':
@@ -287,14 +313,11 @@
     }
 
     function refreshView() {
-        // 1. filter
         const filtered = applyFilter(allProducts);
-        // 2. sort
         const sorted = sortProducts(filtered, currentSort);
-        // 3. store + render
         filteredProducts = sorted;
         renderProducts(sorted, false);
-        // 4. update count
+
         const els = getEls();
         if (els.resultCount) {
             const n = sorted.length;
@@ -303,9 +326,10 @@
     }
 
     /* ============================================================
-       SEARCH
+       SEARCH — the master routine
+       silent=true → don't record analytics (used for live typing)
        ============================================================ */
-    async function performSearch(query, page = 1, append = false) {
+    async function performSearch(query, page = 1, append = false, silent = false) {
         if (isLoading) return;
         isLoading = true;
 
@@ -313,7 +337,9 @@
         if (!els.grid) { isLoading = false; return; }
 
         if (!append) {
-            if (els.loading) els.loading.style.display = 'flex';
+            // Skeleton is already shown by the live-search handler.
+            // Hide the legacy spinner so it doesn't fight for space.
+            if (els.loading) els.loading.style.display = 'none';
             if (els.loadMore) els.loadMore.style.display = 'none';
         }
 
@@ -322,36 +348,43 @@
             const products = result.products || [];
             const total    = result.total || 0;
 
-            if (!append && query?.trim()) {
+            // Only record analytics when NOT silent (user pressed Enter / clicked Search)
+            if (!append && query?.trim() && !silent) {
                 recordSearchQuery(query).catch(() => {});
             }
 
-            const filtered = applyFilter(products);
-            const sorted   = sortProducts(filtered, currentSort);
-
-            if (append) {
-                allProducts = [...allProducts, ...sorted];
-                renderProducts(sorted, true);
-            } else {
-                allProducts = sorted;
-                renderProducts(sorted, false);
+            // Reflect the current query in the header
+            if (els.queryDisplay) {
+                els.queryDisplay.textContent = query || t('all_products', 'All Products');
             }
 
-            // counts
+            let finalProducts = products;
+            if (currentSort && currentSort !== 'relevance' && currentSort !== 'newest') {
+                finalProducts = sortProducts(products, currentSort);
+            }
+
+            if (append) {
+                allProducts = [...allProducts, ...finalProducts];
+                renderProducts(finalProducts, true);
+            } else {
+                allProducts = finalProducts;
+                renderProducts(finalProducts, false);
+            }
+
             if (els.resultCount) {
-                const n = append ? allProducts.length : sorted.length;
+                const n = append ? allProducts.length : total;
                 els.resultCount.textContent = `${n} ${t('product', 'product')}${n !== 1 ? 's' : ''}`;
             }
             if (els.searchMeta) {
-                const n = append ? allProducts.length : sorted.length;
-                els.searchMeta.textContent =
-                    `${t('found_results', 'Found')} ${n} ${t('results_for', 'results for')} "${query}"`;
+                const n = append ? allProducts.length : total;
+                els.searchMeta.textContent = query
+                    ? `${t('found_results', 'Found')} ${n} ${t('results_for', 'results for')} "${query}"`
+                    : '';
             }
 
-            // load-more
             hasMore = (page * perPage) < total;
             if (els.loadMore && els.loadMoreBtn) {
-                if (hasMore && sorted.length > 0) {
+                if (hasMore && finalProducts.length > 0) {
                     els.loadMore.style.display = 'block';
                     els.loadMoreBtn.innerHTML = `<i class="fas fa-chevron-down"></i> ${t('load_more', 'Load More')}`;
                     els.loadMoreBtn.disabled = false;
@@ -361,6 +394,9 @@
             }
 
             currentPage = page;
+
+            // ✅ Strip the query param from the address bar after search
+            cleanURL();
         } catch (err) {
             console.error('❌ Search error:', err);
             showToast(t('search_failed', 'Failed to search products'), 'error');
@@ -396,7 +432,6 @@
                 window.STHeader.updateCounts?.();
             }
 
-            // update heart icon in-place without re-rendering the grid
             document.querySelectorAll('.st-product-card').forEach(card => {
                 const btn = card.querySelector('.st-btn-wishlist');
                 if (!btn) return;
@@ -418,36 +453,80 @@
     }
 
     /* ============================================================
-       BIND INTERACTIONS — assignment (idempotent)
+       BIND INTERACTIONS
        ============================================================ */
     function bindInteractions() {
         const els = getEls();
 
-        if (els.searchBtn) {
-            els.searchBtn.onclick = function () {
-                const q = els.searchInput?.value.trim();
-                if (q) window.navigateWithUserInfo(`/Search/?search=${encodeURIComponent(q)}`);
-                else   window.navigateWithUserInfo('/Search/');
-            };
-        }
-
+        /* ------- Live search on typing ------- */
         if (els.searchInput) {
+            els.searchInput.oninput = function () {
+                const q = this.value.trim();
+
+                // ✅ Clean the URL as soon as the user types
+                cleanURL();
+
+                clearTimeout(_liveSearchTimer);
+
+                // Empty input → reset the grid
+                if (!q) {
+                    currentQuery = '';
+                    allProducts = [];
+                    clearGridState();
+                    if (els.queryDisplay) {
+                        els.queryDisplay.textContent = t('all_products', 'All Products');
+                    }
+                    return;
+                }
+
+                // Show skeleton immediately (feels instant)
+                showSearchSkeleton(8);
+                if (els.loadMore) els.loadMore.style.display = 'none';
+
+                // Debounce the actual fetch
+                _liveSearchTimer = setTimeout(() => {
+                    currentQuery = q;
+                    performSearch(q, 1, false, /* silent = */ true);
+                }, 350);
+            };
+
+            /* ------- Enter key — search in place, no navigation ------- */
             els.searchInput.onkeypress = function (e) {
                 if (e.key !== 'Enter') return;
+                e.preventDefault();
+                clearTimeout(_liveSearchTimer);
                 const q = this.value.trim();
-                if (q) window.navigateWithUserInfo(`/Search/?search=${encodeURIComponent(q)}`);
-                else   window.navigateWithUserInfo('/Search/');
+                if (!q) return;
+                currentQuery = q;
+                showSearchSkeleton(8);
+                performSearch(q, 1, false, /* silent = */ false);
             };
         }
 
+        /* ------- Search button — search in place, no reload ------- */
+        if (els.searchBtn) {
+            els.searchBtn.onclick = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                clearTimeout(_liveSearchTimer);
+                const q = els.searchInput?.value.trim();
+                if (!q) return;
+                currentQuery = q;
+                showSearchSkeleton(8);
+                performSearch(q, 1, false, /* silent = */ false);
+            };
+        }
+
+        /* ------- Sort dropdown ------- */
         if (els.sortSelect) {
-            els.sortSelect.value = currentSort;              // reflect state
+            els.sortSelect.value = currentSort;
             els.sortSelect.onchange = function () {
                 currentSort = this.value;
                 refreshView();
             };
         }
 
+        /* ------- Filter chips ------- */
         els.filterChips.forEach(chip => {
             chip.classList.toggle('active', chip.dataset.filter === currentFilter);
             chip.onclick = function () {
@@ -458,6 +537,7 @@
             };
         });
 
+        /* ------- Load more ------- */
         if (els.loadMoreBtn) {
             els.loadMoreBtn.onclick = function () {
                 if (isLoading || !hasMore) return;
@@ -497,6 +577,7 @@
        ============================================================ */
     function cleanup() {
         unpatchHeader();
+        if (_liveSearchTimer) { clearTimeout(_liveSearchTimer); _liveSearchTimer = null; }
         allProducts = [];
         filteredProducts = [];
         currentQuery = '';
@@ -509,39 +590,36 @@
 
     async function init() {
         const els = getEls();
-        if (!els.page) return;         // not on the search page
+        if (!els.page) return;
         cleanup();
 
         console.log('📄 Search page: init');
 
-        // 1. Read query fresh from URL
-        currentQuery = getQueryFromUrl();
+        // Support deep-links: /Search/?search=usb — but strip it right after
+        const initialQuery = getQueryFromUrl();
+        currentQuery = initialQuery;
 
-        // 2. Reflect query in the header bits
         if (els.queryDisplay) {
-            els.queryDisplay.textContent = currentQuery || t('all_products', 'All Products');
+            els.queryDisplay.textContent = initialQuery || t('all_products', 'All Products');
         }
-        if (els.searchMeta) {
-            els.searchMeta.textContent = currentQuery
-                ? ''
-                : t('showing_all', 'Showing all products');
-        }
-        if (els.searchInput) els.searchInput.value = currentQuery;
+        if (els.searchInput) els.searchInput.value = initialQuery;
 
-        // 3. Default filter chip is "all"
         currentFilter = 'all';
         currentSort = 'relevance';
 
-        // 4. Wishlist snapshot
         loadWishlist();
-
-        // 5. Bind interactions (idempotent)
         bindInteractions();
 
-        // 6. Fetch
-        await performSearch(currentQuery);
+        if (initialQuery) {
+            showSearchSkeleton(8);
+            await performSearch(initialQuery, 1, false, /* silent = */ false);
+        } else {
+            clearGridState();
+        }
 
-        // 7. Patch header for auth-driven re-renders
+        // ✅ Strip the URL param on load (deep-link cleanup)
+        cleanURL();
+
         patchHeader();
 
         console.log(`🔍 Query: "${currentQuery}"`);
@@ -574,5 +652,5 @@
     window.addEventListener('st:pjax-before', cleanup);
     window.addEventListener('beforeunload',  cleanup);
 
-    console.log('✅ Search page script loaded (SECURE RPC VERSION)');
+    console.log('✅ Search page script loaded (LIVE SEARCH + IN-PLACE BUTTON)');
 })();

@@ -40,6 +40,7 @@ function navigateWithUserInfo(path) {
     }
 }
 window.navigateWithUserInfo = navigateWithUserInfo;
+
 if (!window.__stPjaxLoaded) {
 document.addEventListener("click", function(event) {
     const link = event.target.closest("a");

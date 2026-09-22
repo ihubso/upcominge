@@ -252,7 +252,7 @@
         const client = getSupabaseClient();
         if (!client) return null;
         try {
-            // ✅ SECURE: Single RPC call gets details, deal info, and increments views
+            // ✅ SECURE: Single RPC call gets details, deal info, views, AND review stats
             const { data, error } = await client.rpc('get_product_details_and_increment_views', { 
                 p_product_id: productId 
             });
@@ -283,6 +283,10 @@
                 product.isDeal = false;
                 product.discount = 0;
             }
+            
+            // ✅ Map rating and review count directly from the RPC response
+            product.rating = product.rating || 0;
+            product.reviewCount = product.review_count || 0;
             
             return product;
         } catch (err) { 
@@ -592,8 +596,9 @@
     }
 
     async function handleToggleWishlist(productId) {
+        const customerId = window.getCurrentCustomerId?.();
         try {
-            let wish = await getWishlist();
+            let wish = await fetchWishlistFromDB(customerId);
             if (wish.includes(productId)) {
                 wish = wish.filter(id => id !== productId);
                 isWished = false;
@@ -603,7 +608,7 @@
                 isWished = true;
                 showToast('❤️ ' + t('added_to_wishlist', 'Added to wishlist!'));
             }
-            await saveWishlist(wish);
+            await saveWishlistToDB(customerId, wish);
             updateWishlistButton();
         } catch (e) {
             console.error('Wishlist error:', e);
@@ -892,8 +897,8 @@
             els.stockDisplay.textContent = product.stock > 0 ? `${product.stock} ${t('available', 'available')}` : t('out_of_stock', 'Out of stock');
             els.stockDisplay.className = `text-xs ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`;
         } else els.stockDisplay.textContent = '';
-
-        const wishlist = await getWishlist();
+    const customerId = window.getCurrentCustomerId?.();
+        const wishlist = await fetchWishlistFromDB(customerId);
         isWished = wishlist.includes(product.id);
         updateWishlistButton();
 
@@ -1097,9 +1102,10 @@
     }
 
     async function syncHeaderCounts() {
+         const customerId = window.getCurrentCustomerId?.();
         if (!window.STHeader) return;
         try {
-            const [cart, wishlist] = await Promise.all([getCart(), getWishlist()]);
+            const [cart, wishlist] = await Promise.all([getCart(), fetchWishlistFromDB(customerId)]);
             window.STHeader.AppState.cart = cart;
             window.STHeader.AppState.wishlist = wishlist;
             window.STHeader.updateCounts?.();

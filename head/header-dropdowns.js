@@ -8,10 +8,10 @@ const HEADER_CONFIG = {
         { label: 'Contact', icon: 'fa-envelope', href: '/contactus', 'data-translate': 'nav_contact' }
     ],
     pages: {
-        cart: '/cart',
-        wishlist: '/wishlist',
-        orders: '/orders',
-        settings: '/account-settings',
+        cart: '/cart/',
+        wishlist: '/wishlist/',
+        orders: '/orders/',
+        settings: '/account-settings/',
         products: '/product/',
         category: '/category/',
         brand: '/brand/'

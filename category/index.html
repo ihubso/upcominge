@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/CSS/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -385,7 +386,23 @@
             overflow: hidden;
             border: 1px solid #f0f0f0;
         }
+#productsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+@media (min-width: 768px) {
+    #productsGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+    #productsGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
 
+/* Group headers span all columns */
+#productsGrid > .col-span-2,
+#productsGrid > [class*="col-span-"] {
+    grid-column: 1 / -1;
+}
         .skeleton-card .skeleton-image {
             width: 100%;
             aspect-ratio: 1/1;
@@ -482,6 +499,227 @@
                 height: 50px;
             }
         }
+        /* Hero category icon — styled Font Awesome */
+.category-hero .category-icon {
+    font-size: 3rem;
+    width: 100px;
+    height: 100px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.category-hero:hover .category-icon {
+    transform: scale(1.05);
+}
+
+/* Icon inside category group headers */
+#productsGrid h2 i {
+    display: inline-block;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .category-hero .category-icon {
+        font-size: 2rem;
+        width: 72px;
+        height: 72px;
+    }
+}
+
+@media (max-width: 480px) {
+    .category-hero .category-icon {
+        font-size: 1.75rem;
+        width: 60px;
+        height: 60px;
+    }
+}
+/* ============================================
+   CATEGORY SELECTOR BAR
+   ============================================ */
+.st-cat-bar {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 16px 24px 0;
+    position: relative;
+}
+
+.st-cat-bar-inner {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    padding: 4px 4px 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.st-cat-bar-inner::-webkit-scrollbar {
+    display: none;
+}
+
+.st-cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #fff;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 999px;
+    color: #475569;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    user-select: none;
+}
+.st-cat-chip:hover {
+    border-color: #6C3CE1;
+    color: #6C3CE1;
+    background: rgba(108, 60, 225, 0.04);
+    transform: translateY(-1px);
+}
+.st-cat-chip.active {
+    background: linear-gradient(135deg, #6C3CE1, #5A2FC4);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(108, 60, 225, 0.35);
+}
+.st-cat-chip.active i {
+    color: #fff;
+}
+.st-cat-chip i {
+    font-size: 14px;
+    color: #6C3CE1;
+    transition: color 0.2s ease;
+}
+.st-cat-chip .st-cat-count {
+    background: rgba(0, 0, 0, 0.06);
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 2px;
+}
+.st-cat-chip.active .st-cat-count {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+}
+
+/* ============================================
+   NAVIGATION ARROWS (desktop only)
+   ============================================ */
+.st-cat-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1.5px solid #E2E8F0;
+    color: #475569;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    z-index: 2;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    padding: 0;
+}
+.st-cat-nav:hover {
+    background: #6C3CE1;
+    border-color: #6C3CE1;
+    color: #fff;
+    transform: translateY(-50%) scale(1.08);
+}
+.st-cat-nav:active {
+    transform: translateY(-50%) scale(0.96);
+}
+.st-cat-nav:disabled,
+.st-cat-nav.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+.st-cat-nav.st-cat-nav-left {
+    left: 8px;
+}
+.st-cat-nav.st-cat-nav-right {
+    right: 8px;
+}
+
+/* Edge fades */
+.st-cat-bar::before,
+.st-cat-bar::after {
+    content: '';
+    position: absolute;
+    top: 16px;
+    bottom: 12px;
+    width: 60px;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.25s ease;
+}
+.st-cat-bar::before {
+    left: 24px;
+    background: linear-gradient(to right, #f8fafc 30%, transparent);
+    opacity: 0;
+}
+.st-cat-bar::after {
+    right: 24px;
+    background: linear-gradient(to left, #f8fafc 30%, transparent);
+    opacity: 1;
+}
+.st-cat-bar.at-start::before { opacity: 0; }
+.st-cat-bar:not(.at-start)::before { opacity: 1; }
+.st-cat-bar.at-end::after { opacity: 0; }
+.st-cat-bar:not(.at-end)::after { opacity: 1; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .st-cat-bar {
+        padding: 12px 16px 0;
+    }
+    .st-cat-chip {
+        padding: 7px 14px;
+        font-size: 13px;
+    }
+    .st-cat-chip i {
+        font-size: 13px;
+    }
+    /* Hide arrows on mobile — swipe is the navigation */
+    .st-cat-nav {
+        display: none !important;
+    }
+    .st-cat-bar::before,
+    .st-cat-bar::after {
+        display: none;
+    }
+}
+
+/* Hide arrows on tablets too (touch input) */
+@media (max-width: 1024px) and (hover: none) {
+    .st-cat-nav {
+        display: none !important;
+    }
+}
     </style>
 </head>
 <body>

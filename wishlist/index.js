@@ -61,7 +61,7 @@
     }
 
     /* ============================================================
-       PRODUCT FETCH (SECURED FALLBACK)
+       PRODUCT FETCH (fallback for individual IDs)
        ============================================================ */
     async function fetchProductDetails(productId) {
         if (productCache[productId]) return productCache[productId];
@@ -69,28 +69,35 @@
         try {
             const client = window.getSupabaseClient?.();
             if (client) {
-                // ✅ SECURE: Fetch all products via RPC and find the matching one
-                const { data, error } = await client.rpc('get_all_products');
-                if (!error && data) {
-                    const product = data.find(p => (p.id === productId || p.product_id === productId));
-                    if (product) {
-                        productCache[productId] = product;
-                        return product;
+                // Use the single-product RPC — efficient, hits PK index
+                const { data, error } = await client.rpc(
+                    'get_product_details_and_increment_views',
+                    { p_product_id: productId }
+                );
+                // NOTE: that RPC increments views. If you don't want a view bump
+                // from the wishlist, use `get_product_by_id` instead if it exists.
+
+                if (!error && data && data.length > 0) {
+                    const p = data[0];
+                    if (typeof p.images === 'string') {
+                        try { p.images = JSON.parse(p.images); } catch { p.images = [p.image]; }
                     }
+                    productCache[productId] = p;
+                    return p;
                 }
             }
         } catch (err) {
             console.warn('⚠️ Failed to fetch product via RPC:', err.message);
         }
 
-        // Ultimate fallback to local storage
+        // Fallback: local storage
         try {
             const allProducts = JSON.parse(localStorage.getItem('st_products') || '[]');
             const product = allProducts.find(p => (p.id === productId || p.product_id === productId));
             if (product) { productCache[productId] = product; return product; }
         } catch (_) {}
 
-        // Safe fallback object to prevent "undefined" rendering
+        // Last-resort placeholder
         return {
             id: productId,
             product_id: productId,
@@ -102,7 +109,7 @@
     }
 
     /* ============================================================
-       LOAD WISHLIST DATA (FOOLPROOF)
+       LOAD WISHLIST DATA
        ============================================================ */
     async function loadWishlistData() {
         try {
@@ -111,7 +118,7 @@
             let wishlistProducts = [];
 
             if (client) {
-                // 1. Try the secure RPC first
+                // ✅ RPC now returns full product data (name, price, image, etc.)
                 const { data, error } = await client.rpc('get_user_wishlist', {
                     p_customer_id: owner.isCustomer ? owner.id : null,
                     p_session_id: !owner.isCustomer ? owner.id : null
@@ -119,21 +126,21 @@
 
                 if (!error && data && data.length > 0) {
                     wishlistProducts = data;
-                    const ids = wishlistProducts.map(p => p.product_id || p.id);
+                    const ids = wishlistProducts.map(p => p.product_id).filter(Boolean);
                     localStorage.setItem('st_wishlist', JSON.stringify(ids));
                 } else {
-                    console.warn('⚠️ RPC wishlist fetch failed, falling back to local IDs', error?.message);
+                    console.warn('⚠️ RPC wishlist empty or failed:', error?.message);
                     wishlistProducts = await fetchLocalWishlistProducts();
                 }
             } else {
                 wishlistProducts = await fetchLocalWishlistProducts();
             }
 
-            // 2. SAFETY CHECK: Ensure wishlistItems is an array of OBJECTS, not strings
+            // Safety: keep only valid objects
             wishlistItems = wishlistProducts.filter(p => p && typeof p === 'object');
-            wishlistIds = wishlistItems.map(p => p.product_id || p.id);
+            wishlistIds = wishlistItems.map(p => p.product_id || p.id).filter(Boolean);
 
-            // 3. Update header counts
+            // Sync header counters
             if (window.STHeader) {
                 window.STHeader.AppState.wishlist = wishlistIds;
                 window.STHeader.updateCounts?.();
@@ -150,11 +157,12 @@
 
     async function fetchLocalWishlistProducts() {
         const localData = JSON.parse(localStorage.getItem('st_wishlist') || '[]');
-        // Handle both old format (array of strings) and new format (array of objects)
-        const localIds = localData.map(item => typeof item === 'string' ? item : (item.product_id || item.id)).filter(Boolean);
-        
+        const localIds = localData
+            .map(item => typeof item === 'string' ? item : (item.product_id || item.id))
+            .filter(Boolean);
+
         if (localIds.length === 0) return [];
-        
+
         const products = await Promise.all(localIds.map(id => fetchProductDetails(id)));
         return products.filter(p => p && typeof p === 'object');
     }
@@ -178,38 +186,38 @@
                         <i class="fas fa-store"></i> Start Exploring
                     </a>
                 </div>`;
-            if (count) count.textContent = '0 items';
+            if (count) count.textContent = translate('items_count');
             if (typeof translateUI === 'function') translateUI();
             return;
         }
 
-        if (count) count.textContent = wishlistIds.length + ' item' + (wishlistIds.length > 1 ? 's' : '');
+        if (count) {
+            count.textContent = wishlistIds.length +  (wishlistIds.length > 1 ? ' ' : '');
+        }
 
         try {
             grid.innerHTML = wishlistItems.map((product, index) => {
-                // SAFETY CHECK: Skip if product is not a valid object
-                if (!product || typeof product !== 'object') {
-                    console.warn('Invalid product data skipped:', product);
-                    return '';
-                }
-                
+                if (!product || typeof product !== 'object') return '';
+
                 const productId = product.product_id || product.id;
-                const name = product.name || 'Product Unavailable';
-                const brand = product.brand || 'Unknown Brand';
-                const price = product.price || 0;
-                const originalPrice = product.originalPrice || product.price || 0;
-                const discount = product.discount || 0;
-                const isDeal = product.isDeal || (discount > 0);
-                const isNew = product.isNew || false;
-                const isHot = product.isHot || false;
-                const rating = product.rating || 0;
-                const reviewCount = product.reviewCount || 0;
-                const image = product.image || 'https://placehold.co/600x400/6C3CE1/FFFFFF?text=No+Image';
+                const name      = product.name   || 'Product Unavailable';
+                const brand     = product.brand  || '';
+                const price     = Number(product.price) || 0;
+
+                // Handle both snake_case (RPC) and camelCase keys
+                const originalPrice = Number(product.originalPrice || product.original_price) || price;
+                const discount      = Number(product.discount) || 0;
+                const isDeal        = product.isDeal  || product.is_deal  || (discount > 0);
+                const isNew         = product.isNew   || product.is_new   || false;
+                const isHot         = product.isHot   || product.is_hot   || false;
+                const rating        = Number(product.rating) || 0;
+                const reviewCount   = Number(product.reviewCount || product.review_count) || 0;
+                const image         = product.image || 'https://placehold.co/600x400/6C3CE1/FFFFFF?text=No+Image';
 
                 let badge = '';
-                if (isDeal) badge = `<span class="st-card-badge st-deal" data-translate="badge_deal">🔥 Deal</span>`;
-                else if (isNew) badge = `<span class="st-card-badge st-new" data-translate="badge_new">✨ New</span>`;
-                else if (isHot) badge = `<span class="st-card-badge st-hot" data-translate="badge_hot">⚡ Hot</span>`;
+                if (isDeal)      badge = `<span class="st-card-badge st-deal" data-translate="badge_deal">🔥 Deal</span>`;
+                else if (isNew)  badge = `<span class="st-card-badge st-new"  data-translate="badge_new">✨ New</span>`;
+                else if (isHot)  badge = `<span class="st-card-badge st-hot"  data-translate="badge_hot">⚡ Hot</span>`;
 
                 const starsHtml = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
 
@@ -229,7 +237,9 @@
                             ${brand ? `<div class="st-card-brand">${brand}</div>` : ''}
                             <div class="st-card-price">
                                 FCFA ${price.toFixed(2)}
-                                ${isDeal && originalPrice > price ? `<span class="st-original-price">FCFA ${originalPrice.toFixed(2)}</span>` : ''}
+                                ${isDeal && originalPrice > price
+                                    ? `<span class="st-original-price">FCFA ${originalPrice.toFixed(2)}</span>`
+                                    : ''}
                             </div>
                             ${rating > 0 ? `
                                 <div class="st-card-rating">
@@ -267,14 +277,13 @@
         const index = wishlistIds.indexOf(productId);
         if (index === -1) return;
 
-        // Optimistic UI update
         wishlistIds.splice(index, 1);
         wishlistItems = wishlistItems.filter(item => (item.product_id || item.id) !== productId);
         localStorage.setItem('st_wishlist', JSON.stringify(wishlistIds));
 
         const owner = getOwner();
         const client = window.getSupabaseClient?.();
-        
+
         if (client) {
             try {
                 await client.rpc('remove_from_wishlist', {
@@ -306,7 +315,7 @@
 
         const owner = getOwner();
         const client = window.getSupabaseClient?.();
-        
+
         if (client) {
             try {
                 await client.rpc('clear_wishlist', {
@@ -370,9 +379,9 @@
        ============================================================ */
     function bindGlobals() {
         window.removeFromWishlist = removeFromWishlist;
-        window.clearWishlist = clearWishlist;
-        window.renderWishlist = renderWishlist;
-        window.showNotification = showNotification;
+        window.clearWishlist      = clearWishlist;
+        window.renderWishlist     = renderWishlist;
+        window.showNotification   = showNotification;
     }
 
     /* ============================================================
@@ -380,7 +389,7 @@
        ============================================================ */
     function start() {
         bindGlobals();
-    renderSkeletonLoader();
+        renderSkeletonLoader();
         init();
     }
 
@@ -392,7 +401,8 @@
 
     window.addEventListener('st:page-loaded', () => { bindGlobals(); init(); });
     window.addEventListener('st:pjax-before', cleanup);
-    window.addEventListener('beforeunload', cleanup);
+    window.addEventListener('beforeunload',  cleanup);
+    renderSkeletonLoader();
 
-    console.log('✅ Wishlist page script loaded (FOOLPROOF SECURED VERSION)');
+    console.log('✅ Wishlist page script loaded (FULL PRODUCT DATA)');
 })();

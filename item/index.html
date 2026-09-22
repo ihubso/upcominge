@@ -13,9 +13,12 @@
    <link rel="stylesheet" href="/CSS/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
         <script src="/head/env/enx.js"></script>
-   <script src="/head/Translate.js"></script>
+   <script src="/head/Translate.js"defer></script>
 <script src="/head/header.min.js" defer></script>
 <script src="/head/st-pjax.js" defer></script>
+
+     <script src="/item/index.js" defer></script>
+    <script src="/item/viewer/zoom.js" defer></script>
 <style>
     body {
         padding-top: 80px;
@@ -1151,34 +1154,34 @@
     <main>
         <!-- Loading State -->
 <!-- Loading State -->
-<div id="loadingState" class="pdp-skeleton-wrap">
-    <div class="pdp-skeleton-grid">
-        <!-- Left: image + thumbnails -->
-        <div class="pdp-skeleton-left">
-            <div class="skeleton pdp-skeleton-image"></div>
-            <div class="pdp-skeleton-thumbs">
-                <div class="skeleton pdp-skeleton-thumb"></div>
-                <div class="skeleton pdp-skeleton-thumb"></div>
-                <div class="skeleton pdp-skeleton-thumb"></div>
-                <div class="skeleton pdp-skeleton-thumb"></div>
-            </div>
-        </div>
+        <div id="loadingState" class="pdp-skeleton-wrap">
+            <div class="pdp-skeleton-grid">
+                <!-- Left: image + thumbnails -->
+                <div class="pdp-skeleton-left">
+                    <div class="skeleton pdp-skeleton-image"></div>
+                    <div class="pdp-skeleton-thumbs">
+                        <div class="skeleton pdp-skeleton-thumb"></div>
+                        <div class="skeleton pdp-skeleton-thumb"></div>
+                        <div class="skeleton pdp-skeleton-thumb"></div>
+                        <div class="skeleton pdp-skeleton-thumb"></div>
+                    </div>
+                </div>
 
-        <!-- Right: title, price, specs -->
-        <div class="pdp-skeleton-right">
-            <div class="skeleton pdp-skeleton-title"></div>
-            <div class="skeleton pdp-skeleton-line w-75"></div>
-            <div class="skeleton pdp-skeleton-price"></div>
-            <div class="skeleton pdp-skeleton-line w-100"></div>
-            <div class="skeleton pdp-skeleton-line w-100"></div>
-            <div class="skeleton pdp-skeleton-line w-50"></div>
-            <div class="pdp-skeleton-actions">
-                <div class="skeleton pdp-skeleton-btn"></div>
-                <div class="skeleton pdp-skeleton-btn"></div>
+                <!-- Right: title, price, specs -->
+                <div class="pdp-skeleton-right">
+                    <div class="skeleton pdp-skeleton-title"></div>
+                    <div class="skeleton pdp-skeleton-line w-75"></div>
+                    <div class="skeleton pdp-skeleton-price"></div>
+                    <div class="skeleton pdp-skeleton-line w-100"></div>
+                    <div class="skeleton pdp-skeleton-line w-100"></div>
+                    <div class="skeleton pdp-skeleton-line w-50"></div>
+                    <div class="pdp-skeleton-actions">
+                        <div class="skeleton pdp-skeleton-btn"></div>
+                        <div class="skeleton pdp-skeleton-btn"></div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
         <!-- Product Not Found -->
         <div id="notFoundState" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
@@ -1431,8 +1434,6 @@
     </div>
 
 
-     <script src="/item/index.js" defer></script>
-    <script src="/item/viewer/zoom.js"></script>
 
 </body>
 </html>

@@ -4,13 +4,21 @@
     /* ============================================================
        MODULE STATE
        ============================================================ */
-    let currentCategory     = '';
-    let allProductsCache    = [];       // renamed so it doesn't collide with 'allProducts'
+    let currentCategory     = 'all';
     let page                = 1;
     const perPage           = 12;
     let isLoading           = false;
     let hasMoreProducts     = true;
-    let groupedItemsCache   = [];
+    let totalProducts       = 0;
+
+    // Fast lookup for addToCart / related filtering
+    const productCache      = new Map();
+
+    // Full per-category counts (for the in-grid header badges)
+    const categoryCountMap  = new Map();
+    // Tracks the last category header we rendered, so we don't
+    // repeat it when a new page continues the same category.
+    let lastRenderedCategory = null;
 
     let relatedProductsPool = [];
     let relatedLoadedCount  = 0;
@@ -22,7 +30,6 @@
     let heroInterval        = null;
 
     let infiniteScrollObserver = null;
-    let _syncTimer             = null;
 
     /* ============================================================
        HELPERS
@@ -41,7 +48,7 @@
 
     function showToast(msg) {
         const el = document.getElementById('toastMsg');
-        if (!el) return;
+        if (!el) { console.log(msg); return; }
         el.textContent = msg;
         el.classList.add('show');
         clearTimeout(el._timeout);
@@ -49,7 +56,7 @@
     }
 
     function renderStars(rating) {
-        const full = Math.floor(rating);
+        const full = Math.max(0, Math.min(5, Math.floor(rating || 0)));
         return '★'.repeat(full) + '☆'.repeat(5 - full);
     }
 
@@ -66,19 +73,55 @@
         if (!revs.length) return 0;
         return revs.reduce((s, r) => s + r.rating, 0) / revs.length;
     }
+
     function getReviewCount(id) {
         return (window._cachedReviews?.[id] || []).length;
     }
 
     function getCategoryIcon(category) {
         const icons = {
-            phone: '📱', tablet: '📋', audio: '🎧', laptop: '💻',
-            accessories: '🔌', watch: '⌚', camera: '📷',
-            gaming: '🎮', tv: '📺', headphones: '🎧',
-            speaker: '🔊', charger: '🔋', case: '🛡️',
-            screen: '🖥️', uncategorized: '📦'
+            smartphone: 'fas fa-mobile-alt', phone: 'fas fa-mobile-alt', tablet: 'fas fa-tablet-alt',
+            laptop: 'fas fa-laptop', desktop: 'fas fa-desktop', computer: 'fas fa-desktop', monitor: 'fas fa-desktop',
+            tv: 'fas fa-tv', camera: 'fas fa-camera', dslr_camera: 'fas fa-camera',
+            action_camera: 'fas fa-video', security_camera: 'fas fa-video', camera_lens: 'fas fa-camera-retro',
+            audio: 'fas fa-headphones', headphones: 'fas fa-headphones', speaker: 'fas fa-volume-up',
+            earbuds: 'fas fa-headphones-alt', microphone: 'fas fa-microphone',
+            amplifier: 'fas fa-volume-up', turntable: 'fas fa-compact-disc',
+            gaming: 'fas fa-gamepad', console: 'fas fa-gamepad', joystick: 'fas fa-gamepad',
+            printer: 'fas fa-print', scanner: 'fas fa-scanner', projector: 'fas fa-video',
+            network: 'fas fa-network-wired', wireless_router: 'fas fa-wifi', network_switch: 'fas fa-network-wired',
+            storage: 'fas fa-hdd', hdd: 'fas fa-hdd', external_hdd: 'fas fa-hdd', ssd: 'fas fa-server',
+            flash_drive: 'fas fa-usb', memory_card: 'fas fa-sd-card', usb_hub: 'fas fa-usb',
+            processor: 'fas fa-microchip', cpu: 'fas fa-microchip', motherboard: 'fas fa-microchip',
+            ram: 'fas fa-memory', graphics_card: 'fas fa-tv', cpu_cooler: 'fas fa-fan',
+            power_supply: 'fas fa-bolt', ups_battery: 'fas fa-car-battery',
+            pc_case: 'fas fa-server', keyboard: 'fas fa-keyboard', mouse: 'fas fa-mouse',
+            charger: 'fas fa-plug', charging_pad: 'fas fa-bolt', power_bank: 'fas fa-battery-full',
+            cable_adapter: 'fas fa-plug', surge_protector: 'fas fa-bolt',
+            air_fryer: 'fas fa-utensils', blender: 'fas fa-blender', coffee_maker: 'fas fa-mug-hot',
+            electric_grill: 'fas fa-fire', electric_kettle: 'fas fa-mug-hot', food_processor: 'fas fa-blender',
+            juicer: 'fas fa-glass-whiskey', microwave: 'fas fa-microwave', toaster: 'fas fa-bread-slice',
+            refrigerator: 'fas fa-snowflake', vacuum: 'fas fa-broom', robot_vacuum: 'fas fa-robot',
+            air_purifier: 'fas fa-wind', humidifier: 'fas fa-tint', fan: 'fas fa-fan',
+            hair_dryer: 'fas fa-wind', electric_shaver: 'fas fa-cut', massage_gun: 'fas fa-hand-sparkles',
+            toothbrush: 'fas fa-tooth', electric_toothbrush: 'fas fa-tooth',
+            lamp: 'fas fa-lightbulb', desk_lamp: 'fas fa-lightbulb',
+            led_strip_light: 'fas fa-lightbulb', smart_bulb: 'fas fa-lightbulb', light: 'fas fa-lightbulb',
+            smart_lock: 'fas fa-lock', baby_monitor: 'fas fa-baby', doorbell: 'fas fa-bell',
+            thermostat: 'fas fa-thermometer-half', digital_thermometer: 'fas fa-thermometer-half',
+            watch: 'fas fa-clock', smartwatch: 'fas fa-clock', fitness_tracker: 'fas fa-heartbeat',
+            accessories: 'fas fa-plug', tripod: 'fas fa-camera-retro', drone: 'fas fa-helicopter',
+            walkie_talkie: 'fas fa-walkie-talkie', dash_cam: 'fas fa-car',
+            car_charger: 'fas fa-car', car_subwoofer: 'fas fa-volume-up', bluetooth_car_kit: 'fas fa-car',
+            barcode_scanner: 'fas fa-barcode', voice_recorder: 'fas fa-microphone',
+            e_reader: 'fas fa-book-reader', streaming_stick: 'fas fa-tv',
+            vr_headset: 'fas fa-vr-cardboard', laminator: 'fas fa-file-alt',
+            pulse_oximeter: 'fas fa-heartbeat', thermometer: 'fas fa-thermometer-half',
+            router: 'fas fa-wifi', modem: 'fas fa-wifi',
+            uncategorized: 'fas fa-box'
         };
-        return icons[String(category || '').toLowerCase()] || '📦';
+        const key = String(category || '').toLowerCase();
+        return icons[key] || 'fas fa-tag';
     }
 
     function getTranslatedCategory(category) {
@@ -109,7 +152,7 @@
 
         if (heroInterval) { clearInterval(heroInterval); heroInterval = null; }
 
-        heroImages = images || [];
+        heroImages = Array.isArray(images) ? images : [];
         heroImageIndex = 0;
 
         if (heroImages.length > 0) {
@@ -137,62 +180,146 @@
     }
 
     /* ============================================================
-       FETCH
+       RPC HELPERS
        ============================================================ */
-    async function fetchAllProducts() {
-        if (allProductsCache.length > 0) return allProductsCache;
+    async function fetchCategoryPage(category = 'all', pageNum = 1) {
         const client = window.getSupabaseClient?.();
-        if (!client) return [];
-        try {
-        
-            const { data, error } = await client.rpc('get_all_products');
-            
-            if (error) throw error;
-            allProductsCache = data || [];
-            return allProductsCache;
-        } catch (err) {
-            console.error('❌ Error fetching products:', err.message);
-            return [];
-        }
+        if (!client) return { products: [], total: 0 };
+
+        const offset = (Math.max(1, pageNum) - 1) * perPage;
+        const { data, error } = await client.rpc('get_category_products', {
+            p_category: category || 'all',
+            p_limit:    perPage,
+            p_offset:   offset
+        });
+
+        if (error) throw error;
+
+        const rows = data || [];
+        if (!rows.length) return { products: [], total: 0 };
+
+        const total = Number(rows[0].total_count || rows.length);
+        const products = rows.map(({ total_count, ...p }) => p);
+
+        products.forEach(p => productCache.set(p.id, p));
+
+        return { products, total };
     }
 
+    async function fetchCategoryCounts() {
+        const client = window.getSupabaseClient?.();
+        if (!client) return [];
+        const { data, error } = await client.rpc('get_categories_with_counts');
+        if (error) throw error;
+        return data || [];
+    }
+
+    async function fetchRelatedProducts(category = 'all', limit = 16) {
+        const client = window.getSupabaseClient?.();
+        if (!client) return [];
+        const { data, error } = await client.rpc('get_related_products', {
+            p_category: category || 'all',
+            p_limit:    limit
+        });
+        if (error) throw error;
+        return data || [];
+    }
+
+    async function fetchProductById(productId) {
+        if (productCache.has(productId)) return productCache.get(productId);
+
+        const client = window.getSupabaseClient?.();
+        if (!client) return null;
+
+        const { data, error } = await client
+            .from('products')
+            .select('*')
+            .eq('id', productId)
+            .maybeSingle();
+
+        if (error || !data) return null;
+        productCache.set(data.id, data);
+        return data;
+    }
+
+    /* ============================================================
+       CART
+       ============================================================ */
+    function getCartOwnerId() {
+        const juId = window.getCurrentCustomerId?.();
+        let sessionId = localStorage.getItem('st_session_id');
+        if (!sessionId) {
+            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+            localStorage.setItem('st_session_id', sessionId);
+        }
+        return juId || sessionId;
+    }
 
     async function addToCart(productId, qty = 1) {
-        const products = await fetchAllProducts();
-        const product  = products.find(p => p.id === productId);
-                            const juId = window.getCurrentCustomerId?.();
-        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-        const customerId  = juId || sessionId;
-        if (!product) { showToast('❌ ' + t('product_not_found', 'Product not found')); return; }
+        try {
+            const product = await fetchProductById(productId);
+            if (!product) {
+                showToast('❌ ' + t('product_not_found', 'Product not found'));
+                return;
+            }
 
-        const cart = await fetchCartFromDB(customerId);
-        const existing = cart.find(i => i.product_id === productId || i.id === productId);
- 
-        if (existing) {
-            existing.qty = (existing.qty || 0) + qty;
-        } else {
-            cart.push({
-                product_id: productId,
-                id: productId,
-                name: product.name,
-                price: product.price || 0,
-                qty,
-                image: product.image || 'https://placehold.co/400x400',
-                variants: {},
-                category: product.category || ''
-            });
-        }
-        await saveCartToDB(customerId, cart);
-        showToast(`✅ ${product.name} ${t('added_to_cart', 'added to cart!')}`);
-              if (window.STHeader) {
-            window.STHeader.AppState.cart = cart;
-            window.STHeader.updateCounts?.();
+            const customerId = getCartOwnerId();
+            const cart = (await window.fetchCartFromDB?.(customerId)) || [];
+            const existing = cart.find(i => i.product_id === productId || i.id === productId);
+
+            if (existing) {
+                existing.qty = (existing.qty || 0) + qty;
+            } else {
+                cart.push({
+                    product_id: productId,
+                    id:         productId,
+                    name:       product.name,
+                    price:      product.price || 0,
+                    qty,
+                    image:      product.image || 'https://placehold.co/400x400',
+                    variants:   {},
+                    category:   product.category || ''
+                });
+            }
+
+            await window.saveCartToDB?.(customerId, cart);
+
+            showToast(`✅ ${product.name} ${t('added_to_cart', 'added to cart!')}`);
+
+            if (window.STHeader) {
+                window.STHeader.AppState.cart = cart;
+                window.STHeader.updateCounts?.();
+            }
+        } catch (err) {
+            console.error('addToCart failed:', err);
+            showToast('❌ ' + t('cart_error', 'Could not add to cart'));
         }
     }
 
     /* ============================================================
-       RENDER PRODUCT CARD
+       RENDER HELPERS
        ============================================================ */
+
+    /* --- In-grid category header (like the screenshot) --------- */
+    function renderCategoryHeader(category, count) {
+        const key     = String(category || 'uncategorized').toLowerCase();
+        const display = getTranslatedCategory(key);
+        const icon    = getCategoryIcon(key);
+        const badge   = Number(count) || 0;
+
+        return `
+            <div class="col-span-2 md:col-span-3 lg:col-span-4 mt-8 mb-4 st-cat-header" data-cat="${escapeHtml(key)}">
+                <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-primary pb-3 flex items-center gap-3">
+                    <span class="text-3xl" style="color:#6C3CE1;">
+                        <i class="${icon}"></i>
+                    </span>
+                    <span data-translate="category_${key}">${escapeHtml(display)}</span>
+                    <span class="text-sm font-normal text-gray-500 ml-2">(${badge})</span>
+                </h2>
+            </div>`;
+    }
+
+    /* --- Single product card ----------------------------------- */
     function renderProductCard(p) {
         const avg = getAverageRating(p.id);
         const cnt = getReviewCount(p.id);
@@ -218,7 +345,7 @@
                         <span>(${cnt})</span>
                     </div>
                     <div class="product-actions">
-                        <span class="product-price">FCFA ${(p.price || 0).toFixed(2)}</span>
+                        <span class="product-price">FCFA ${(Number(p.price) || 0).toFixed(2)}</span>
                         <button class="btn-cart"
                                 onclick="event.stopPropagation(); window.addToCart('${p.id}')"
                                 data-translate="add_to_cart">
@@ -227,6 +354,46 @@
                     </div>
                 </div>
             </div>`;
+    }
+
+    /* --- Build HTML for a batch of products, inserting category
+           headers whenever the category changes. Works across pages. */
+    function buildGroupedHtml(products, category, isReset) {
+        let html = '';
+
+        // ---- Specific category page: one header at the very top ----
+        if (category !== 'all' && category !== '') {
+            if (isReset) {
+                const count = categoryCountMap.get(category) || totalProducts || products.length;
+                html += renderCategoryHeader(category, count);
+            }
+            html += products.map(renderProductCard).join('');
+            return html;
+        }
+
+        // ---- "All" page: insert a header each time category changes ----
+        for (const p of products) {
+            const cat = String(p.category || 'uncategorized').toLowerCase();
+            if (cat !== lastRenderedCategory) {
+                const count = categoryCountMap.get(cat) || 0;
+                html += renderCategoryHeader(cat, count);
+                lastRenderedCategory = cat;
+            }
+            html += renderProductCard(p);
+        }
+        return html;
+    }
+
+    function showLoadingSkeletons() {
+        const grid = document.getElementById('productsGrid');
+        if (!grid || grid.children.length > 0) return;
+        grid.innerHTML = Array(8).fill(0).map(() => `
+            <div class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-text"></div>
+                <div class="skeleton-text short"></div>
+                <div class="skeleton-text price"></div>
+            </div>`).join('');
     }
 
     /* ============================================================
@@ -268,7 +435,106 @@
     }
 
     /* ============================================================
-       LOAD PRODUCTS
+       CATEGORY SELECTOR BAR
+       ============================================================ */
+    async function buildCategoryBar(categoriesData) {
+        document.getElementById('stCategoryBar')?.remove();
+        if (!categoriesData?.length) return;
+
+        const activeCategory = getCategoryFromUrl().toLowerCase();
+        const totalCount = categoriesData.reduce((s, c) => s + Number(c.product_count || 0), 0);
+
+        const chipsHtml = `
+            <a href="/category/?category=all"
+               class="st-cat-chip ${activeCategory === 'all' || !activeCategory ? 'active' : ''}"
+               data-cat="all">
+                <i class="fas fa-th-large"></i>
+                <span data-translate="all_categories">All</span>
+                <span class="st-cat-count">${totalCount}</span>
+            </a>
+            ${categoriesData.map(c => {
+                const key      = String(c.category || '').toLowerCase();
+                const display  = getTranslatedCategory(key);
+                const icon     = getCategoryIcon(key);
+                const isActive = activeCategory === key;
+                const encoded  = encodeURIComponent(key);
+                return `
+                    <a href="/category/?category=${encoded}"
+                       class="st-cat-chip ${isActive ? 'active' : ''}"
+                       data-cat="${encoded}">
+                        <i class="${icon}"></i>
+                        <span>${escapeHtml(display)}</span>
+                        <span class="st-cat-count">${c.product_count}</span>
+                    </a>`;
+            }).join('')}
+        `;
+
+        const grid = document.getElementById('productsGrid');
+        if (!grid) return;
+
+        const bar = document.createElement('div');
+        bar.id = 'stCategoryBar';
+        bar.className = 'st-cat-bar';
+        bar.innerHTML = `
+            <button type="button" class="st-cat-nav st-cat-nav-left hidden" aria-label="Scroll left">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="st-cat-bar-inner" id="stCatBarInner">${chipsHtml}</div>
+            <button type="button" class="st-cat-nav st-cat-nav-right hidden" aria-label="Scroll right">
+                <i class="fas fa-chevron-right"></i>
+            </button>`;
+
+        grid.parentNode.insertBefore(bar, grid);
+
+        const inner    = document.getElementById('stCatBarInner');
+        const btnLeft  = bar.querySelector('.st-cat-nav-left');
+        const btnRight = bar.querySelector('.st-cat-nav-right');
+        if (!inner || !btnLeft || !btnRight) return;
+
+        const SCROLL_AMOUNT = 320;
+        btnLeft.addEventListener('click',  () => inner.scrollBy({ left: -SCROLL_AMOUNT, behavior: 'smooth' }));
+        btnRight.addEventListener('click', () => inner.scrollBy({ left:  SCROLL_AMOUNT, behavior: 'smooth' }));
+
+        const updateArrows = () => {
+            const atStart  = inner.scrollLeft <= 4;
+            const atEnd    = inner.scrollLeft + inner.clientWidth >= inner.scrollWidth - 4;
+            const noScroll = inner.scrollWidth <= inner.clientWidth + 4;
+            bar.classList.toggle('at-start', atStart);
+            bar.classList.toggle('at-end', atEnd);
+            btnLeft.classList.toggle('hidden', noScroll || atStart);
+            btnRight.classList.toggle('hidden', noScroll || atEnd);
+        };
+
+        inner.addEventListener('scroll', updateArrows, { passive: true });
+        window.addEventListener('resize', updateArrows, { passive: true });
+
+        const activeChip = bar.querySelector('.st-cat-chip.active');
+        if (activeChip) {
+            const chipRect  = activeChip.getBoundingClientRect();
+            const innerRect = inner.getBoundingClientRect();
+            if (chipRect.left < innerRect.left || chipRect.right > innerRect.right) {
+                activeChip.scrollIntoView({ inline: 'center', block: 'nearest' });
+            }
+        }
+
+        requestAnimationFrame(updateArrows);
+
+        bar.addEventListener('click', (e) => {
+            const chip = e.target.closest('.st-cat-chip');
+            if (!chip) return;
+            const href = chip.getAttribute('href');
+            if (!href) return;
+            if (typeof window.navigateWithUserInfo === 'function') {
+                e.preventDefault();
+                window.navigateWithUserInfo(href);
+            }
+        });
+
+        if (typeof window.translateUI === 'function') window.translateUI();
+    }
+
+    /* ============================================================
+       LOAD PRODUCTS (server-side pagination + in-grid headers)
        ============================================================ */
     async function loadCategoryProducts(reset = true) {
         if (isLoading) return;
@@ -278,112 +544,106 @@
         const grid = document.getElementById('productsGrid');
         if (!grid) { isLoading = false; return; }
 
+        const category = (getCategoryFromUrl() || 'all').toLowerCase();
+
         if (reset) {
-            page = 1;
-            hasMoreProducts = true;
-            groupedItemsCache = [];
-            grid.innerHTML = '';
+            page                 = 1;
+            hasMoreProducts      = true;
+            totalProducts        = 0;
+            currentCategory      = category;
+            lastRenderedCategory = null;
+            productCache.clear();
+            grid.innerHTML       = '';
             document.getElementById('noProducts')?.classList.add('hidden');
             showLoadingSkeletons();
+
             if (infiniteScrollObserver) { infiniteScrollObserver.disconnect(); infiniteScrollObserver = null; }
             hideInfiniteScrollIndicator();
         }
 
         try {
-            const all = await fetchAllProducts();
-            const category = getCategoryFromUrl();
-            currentCategory = category;
+            const { products, total } = await fetchCategoryPage(category, page);
 
-            // Hero
-            const title    = document.getElementById('categoryTitle');
-            const subtitle = document.getElementById('categorySubtitle');
-            const icon     = document.getElementById('categoryIcon');
-
-            if (category === 'all') {
-                if (title)    title.textContent    = t('all_categories', 'All Categories');
-                if (subtitle) subtitle.textContent = t('explore_collection_full', 'Explore our complete collection');
-                if (icon)     icon.textContent     = '🏷️';
-            } else {
-                const name = getTranslatedCategory(category);
-                if (title)    title.textContent    = name;
-                if (subtitle) subtitle.textContent = t('discover_products', `Discover our ${name} products`);
-                if (icon)     icon.textContent     = getCategoryIcon(category);
-            }
-            document.title = `${category === 'all' ? t('all_categories', 'All Categories') : category} · Sucess Technology`;
-
-            // Filter
-            const lower = category.toLowerCase();
-            const filtered = category === 'all'
-                ? all
-                : all.filter(p => p.category && p.category.toLowerCase() === lower);
-
-            // Hero images
-            const heroImageUrls = filtered.filter(p => p.image).slice(0, 10).map(p => p.image);
-            startHeroRotation(heroImageUrls);
-
-            if (filtered.length === 0) {
-                document.getElementById('noProducts')?.classList.remove('hidden');
-                isLoading = false;
-                hasMoreProducts = false;
-                hideInfiniteScrollIndicator();
-                return;
-            }
-
-            // Build grouped items (only on reset)
+            /* ---------- Reset-only UI work ---------- */
             if (reset) {
-                const grouped = {};
-                filtered.forEach(product => {
-                    const k = product.category || 'Uncategorized';
-                    (grouped[k] = grouped[k] || []).push(product);
-                });
-                groupedItemsCache = [];
-                Object.keys(grouped).sort().forEach(cat => {
-                    groupedItemsCache.push({ type: 'header', category: cat, count: grouped[cat].length });
-                    grouped[cat].forEach(p => groupedItemsCache.push({ type: 'product', product: p }));
-                });
+                totalProducts = total;
+
+                // Category bar + build the count map used by headers
+                try {
+                    const cats = await fetchCategoryCounts();
+
+                    categoryCountMap.clear();
+                    cats.forEach(c => {
+                        const k = String(c.category || '').toLowerCase();
+                        categoryCountMap.set(k, Number(c.product_count || 0));
+                    });
+
+                    await buildCategoryBar(cats);
+                } catch (e) {
+                    console.warn('Category bar failed:', e);
+                }
+
+                // Hero header
+                const title    = document.getElementById('categoryTitle');
+                const subtitle = document.getElementById('categorySubtitle');
+                const icon     = document.getElementById('categoryIcon');
+
+                if (category === 'all') {
+                    if (title) {
+                        title.textContent = t('all_categories', 'All Categories');
+                        title.setAttribute('data-translate', 'all_categories');
+                    }
+                    if (subtitle) {
+                        subtitle.textContent = t('explore_collection_full', 'Explore our complete collection');
+                        subtitle.setAttribute('data-translate', 'explore_collection_full');
+                    }
+                    if (icon) icon.innerHTML = '<i class="fas fa-th-large"></i>';
+                } else {
+                    const name = getTranslatedCategory(category);
+                    if (title) { title.textContent = name; title.removeAttribute('data-translate'); }
+                    if (subtitle) {
+                        subtitle.textContent = t('discover_products', `Discover our ${name} products`);
+                        subtitle.removeAttribute('data-translate');
+                    }
+                    if (icon) icon.innerHTML = `<i class="${getCategoryIcon(category)}"></i>`;
+                }
+
+                // Hero images
+                const heroImageUrls = products.filter(p => p.image).slice(0, 10).map(p => p.image);
+                startHeroRotation(heroImageUrls);
             }
 
-            // Paginate
-            const start = (page - 1) * perPage;
-            const end   = start + perPage;
-            const items = groupedItemsCache.slice(start, end);
-
-            if (!items.length) {
+            /* ---------- Empty state ---------- */
+            if (products.length === 0 && reset) {
+                document.getElementById('noProducts')?.classList.remove('hidden');
                 hasMoreProducts = false;
-                isLoading = false;
                 hideInfiniteScrollIndicator();
                 return;
             }
 
-            // Render
-            let html = '';
-            items.forEach(item => {
-                if (item.type === 'header') {
-                    const display = getTranslatedCategory(item.category);
-                    html += `
-                        <div class="col-span-2 md:col-span-3 lg:col-span-4 mt-8 mb-4">
-                            <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-primary pb-3 flex items-center gap-3">
-                                <span class="text-3xl">${getCategoryIcon(item.category)}</span>
-                                <span data-translate="category_${item.category.toLowerCase()}">${display}</span>
-                                <span class="text-sm font-normal text-gray-500 ml-2">(${item.count})</span>
-                            </h2>
-                        </div>`;
-                } else {
-                    html += renderProductCard(item.product);
-                }
-            });
-
+            /* ---------- Render cards (with category headers) ---------- */
+            const html = buildGroupedHtml(products, category, reset);
             if (reset) grid.innerHTML = html;
             else       grid.insertAdjacentHTML('beforeend', html);
 
-            hasMoreProducts = end < groupedItemsCache.length;
+            /* ---------- Pagination bookkeeping ---------- */
+            hasMoreProducts = (page * perPage) < totalProducts;
             page++;
 
             if (hasMoreProducts) setupInfiniteScroll();
-            else hideInfiniteScrollIndicator();
+            else                 hideInfiniteScrollIndicator();
 
-            await renderRelatedProducts(category, all);
-            if (typeof translateUI === 'function') translateUI();
+            /* ---------- Related products (first page only) ---------- */
+            if (reset) {
+                try {
+                    const related = await fetchRelatedProducts(category, 32);
+                    renderRelatedProductsFromList(related, category);
+                } catch (e) {
+                    console.warn('Related products failed:', e);
+                }
+            }
+
+            if (typeof window.translateUI === 'function') window.translateUI();
 
         } catch (e) {
             console.error('Error loading category products:', e);
@@ -394,24 +654,12 @@
         }
     }
 
-    function showLoadingSkeletons() {
-        const grid = document.getElementById('productsGrid');
-        if (!grid || grid.children.length > 0) return;
-        grid.innerHTML = Array(8).fill(0).map(() => `
-            <div class="skeleton-card">
-                <div class="skeleton-image"></div>
-                <div class="skeleton-text"></div>
-                <div class="skeleton-text short"></div>
-                <div class="skeleton-text price"></div>
-            </div>`).join('');
-    }
-
     /* ============================================================
        RELATED PRODUCTS
        ============================================================ */
     function appendRelatedProducts(items) {
         const grid = document.getElementById('relatedGrid');
-        if (!grid) return;
+        if (!grid || !items?.length) return;
         grid.insertAdjacentHTML('beforeend', items.map(p => `
             <div class="related-card" onclick="window.navigateWithUserInfo('/item/?product=${p.id}')">
                 <img src="${p.image || 'https://placehold.co/200x200'}"
@@ -419,7 +667,7 @@
                      onerror="this.src='https://placehold.co/200x200?text=No+Image'">
                 <h4>${escapeHtml(p.name) || 'Unknown Product'}</h4>
                 <p class="text-gray-400">${escapeHtml(p.category) || ''}</p>
-                <div class="price">FCFA ${(p.price || 0).toFixed(2)}</div>
+                <div class="price">FCFA ${(Number(p.price) || 0).toFixed(2)}</div>
             </div>`).join(''));
     }
 
@@ -450,33 +698,18 @@
         relatedObserver.observe(sentinel);
     }
 
-    async function renderRelatedProducts(category, all) {
+    function renderRelatedProductsFromList(relatedList, category) {
         const grid = document.getElementById('relatedGrid');
         if (!grid) return;
 
-        let same = [], other = [];
-        if (category === 'all') {
-            same = [...all];
-        } else {
-            const low = category.toLowerCase();
-            same  = all.filter(p => p.category && p.category.toLowerCase() === low);
-            other = all.filter(p => p.category && p.category.toLowerCase() !== low);
-        }
+        const onPageIds = new Set(productCache.keys());
+        const pool = (relatedList || []).filter(p => p && p.id && !onPageIds.has(p.id));
 
-        shuffleArray(same);
-        shuffleArray(other);
+        shuffleArray(pool);
 
-        // Take up to RELATED_BATCH_SIZE, filling from `other` if `same` is short
-        const initial = same.slice(0, RELATED_BATCH_SIZE);
-        const need    = RELATED_BATCH_SIZE - initial.length;
-        if (need > 0) initial.push(...other.slice(0, need));
-
-        // Build the pool: everything else, shuffled
-        const usedIds = new Set(initial.map(p => p.id));
-        relatedProductsPool = [...same, ...other].filter(p => !usedIds.has(p.id));
-        shuffleArray(relatedProductsPool);
-
-        relatedLoadedCount = initial.length;
+        const initial = pool.splice(0, RELATED_BATCH_SIZE);
+        relatedProductsPool = pool;
+        relatedLoadedCount  = initial.length;
 
         grid.innerHTML = '';
         appendRelatedProducts(initial);
@@ -499,37 +732,38 @@
         stopHeroRotation();
         if (infiniteScrollObserver) { infiniteScrollObserver.disconnect(); infiniteScrollObserver = null; }
         if (relatedObserver)        { relatedObserver.disconnect();        relatedObserver = null; }
-        if (_syncTimer)             { clearTimeout(_syncTimer);            _syncTimer = null; }
+        document.getElementById('stCategoryBar')?.remove();
 
-        currentCategory    = '';
-        allProductsCache   = [];      // ← cleared so pjax nav to a different category re-fetches
-        page               = 1;
-        isLoading          = false;
-        hasMoreProducts    = true;
-        groupedItemsCache  = [];
+        currentCategory      = 'all';
+        page                 = 1;
+        isLoading            = false;
+        hasMoreProducts      = true;
+        totalProducts        = 0;
+        lastRenderedCategory = null;
+        productCache.clear();
+        categoryCountMap.clear();
         relatedProductsPool = [];
-        relatedLoadedCount = 0;
-        heroImages         = [];
-        heroImageIndex     = 0;
+        relatedLoadedCount  = 0;
+        heroImages          = [];
+        heroImageIndex      = 0;
     }
 
     async function syncHeaderCart() {
-        const juId = window.getCurrentCustomerId?.();
-        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-        const customerId  = juId || sessionId;
         if (!window.STHeader) return;
         try {
-            const cart = await  fetchCartFromDB(customerId);
+            const customerId = getCartOwnerId();
+            const cart = (await window.fetchCartFromDB?.(customerId)) || [];
             window.STHeader.AppState.cart = cart;
             window.STHeader.updateCounts?.();
-        } catch (err) { console.warn('syncHeaderCart:', err); }
+        } catch (err) {
+            console.warn('syncHeaderCart:', err);
+        }
     }
 
     async function init() {
-        // Bail if we're not on the category page
-        const page = document.getElementById('productsGrid')
-                  && document.getElementById('categoryHero');
-        if (!page) return;
+        const grid = document.getElementById('productsGrid');
+        const hero = document.getElementById('categoryHero');
+        if (!grid || !hero) return;
 
         cleanup();
 
@@ -546,30 +780,44 @@
        GLOBAL EXPORTS
        ============================================================ */
     function bindGlobals() {
-        window.addToCart          = addToCart;
-       
-        window.showToast          = showToast;
-        window.fetchAllProducts   = fetchAllProducts;
+        window.addToCart            = addToCart;
+        window.showToast            = showToast;
+        window.fetchCategoryPage    = fetchCategoryPage;
         window.loadCategoryProducts = loadCategoryProducts;
-        window.openModal          = (id) => document.getElementById(id)?.classList.remove('hidden');
-        window.closeModal         = (id) => document.getElementById(id)?.classList.add('hidden');
-        window.clearCart          = async () => {
-            await addToCar([]);
-            showToast(t('cart_cleared', 'Cart cleared'));
-         
+
+        window.openModal  = (id) => document.getElementById(id)?.classList.remove('hidden');
+        window.closeModal = (id) => document.getElementById(id)?.classList.add('hidden');
+
+        window.clearCart = async () => {
+            try {
+                const customerId = getCartOwnerId();
+                await window.saveCartToDB?.(customerId, []);
+                if (window.STHeader) {
+                    window.STHeader.AppState.cart = [];
+                    window.STHeader.updateCounts?.();
+                }
+                showToast(t('cart_cleared', 'Cart cleared'));
+            } catch (e) {
+                console.warn('clearCart failed:', e);
+            }
         };
     }
 
     /* ============================================================
        BOOTSTRAP
        ============================================================ */
-    function start() { bindGlobals(); init(); }
+    function start() {
+        bindGlobals();
+        init();
+    }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', start, { once: true });
+        document.addEventListener('DOMContentLoaded', start, { once: true } ,showLoadingSkeletons());
     } else {
         start();
+        showLoadingSkeletons();
     }
+
     window.addEventListener('st:page-loaded', () => { bindGlobals(); init(); });
     window.addEventListener('st:pjax-before', cleanup);
     window.addEventListener('beforeunload',  cleanup);

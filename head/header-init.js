@@ -331,11 +331,11 @@ async function initHeader() {
     elements.mobileSearchInput.addEventListener('keypress', handleSearch);
     
     // ----- Cart & Wishlist -----
-    elements.cartBtn.addEventListener('click', () => window.navigateWithUserInfo('/Cart'));
-    elements.mobileCartBtn.addEventListener('click', () => window.navigateWithUserInfo('/Cart'));
-    elements.wishlistBtn.addEventListener('click', () => window.navigateWithUserInfo('/wishlist'));
-    elements.mobileWishlistBtn.addEventListener('click', () => window.navigateWithUserInfo('/wishlist'));
-    elements.foryoumobileWishlistBtn.addEventListener('click', () => window.navigateWithUserInfo('/ForYou'));
+    elements.cartBtn.addEventListener('click', () => window.navigateWithUserInfo('/Cart/'));
+    elements.mobileCartBtn.addEventListener('click', () => window.navigateWithUserInfo('/Cart/'));
+    elements.wishlistBtn.addEventListener('click', () => window.navigateWithUserInfo('/wishlist/'));
+    elements.mobileWishlistBtn.addEventListener('click', () => window.navigateWithUserInfo('/wishlist/'));
+    elements.foryoumobileWishlistBtn.addEventListener('click', () => window.navigateWithUserInfo('/ForYou/'));
     
     // ----- Auth Modal -----
     function openAuthModal() {
@@ -725,29 +725,27 @@ async function performSearch(query) {
         return;
     }
 
-    const trimmedQuery = query.trim().toLowerCase();
-    
-    // Show loading state
+    const trimmedQuery = query.trim();
+
+    // Show loading state — desktop
     const container = document.getElementById('stSearchResults');
     if (container) {
         container.innerHTML = `
             <div class="st-search-loading">
                 <div class="st-spinner-small"></div>
                 <span data-translate="searching">Searching...</span>
-            </div>
-        `;
+            </div>`;
         container.style.display = 'block';
     }
 
-    // Update mobile results
+    // Show loading state — mobile
     const mobileContainer = document.getElementById('stSearchResultsMobile');
     if (mobileContainer) {
         mobileContainer.innerHTML = `
             <div style="padding:20px;text-align:center;color:#94A3B8;display:flex;align-items:center;justify-content:center;gap:12px;">
-                <div style="width:20px;height:20px;border:3px solid #E2E8F0;border-top-color:#6C3CE1;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+                <div style="width:20px;height:20px;border:3px solid #ffffff;border-top-color:#6C3CE1;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
                 <span data-translate="searching">Searching...</span>
-            </div>
-        `;
+            </div>`;
     }
 
     try {
@@ -757,20 +755,19 @@ async function performSearch(query) {
             return;
         }
 
-    
-        const { data: allProducts, error } = await client.rpc('get_all_products');
+        // ✅ SERVER-SIDE: query the DB, not the client
+        const { data, error } = await client.rpc('search_products_paginated', {
+            p_query:  trimmedQuery,
+            p_limit:  8,        // 8 results for the dropdown
+            p_offset: 0
+        });
 
         if (error) throw error;
 
-        // ✅ Filter locally to simulate search
-        const filtered = (allProducts || []).filter(p => 
-            p.name?.toLowerCase().includes(trimmedQuery) || 
-            p.brand?.toLowerCase().includes(trimmedQuery) || 
-            p.category?.toLowerCase().includes(trimmedQuery) ||
-            p.description?.toLowerCase().includes(trimmedQuery)
-        ).slice(0, 8); // Limit to 8 results for the dropdown
+        // Strip total_count (not needed in the dropdown)
+        const results = (data || []).map(({ total_count, ...p }) => p);
 
-        searchResults = filtered;
+        searchResults = results;
         selectedSearchIndex = -1;
         renderSearchResults(searchResults, trimmedQuery);
 
@@ -802,7 +799,7 @@ function renderSearchResults(results, query) {
         container.style.display = 'block';
     } else {
         container.innerHTML = results.map((item, index) => `
-            <a onclick="window.navigateWithUserInfo('/item/?product=${item.id}'); return false;"  class="st-search-item" data-index="${index}" onclick="handleSearchClick(event, '${encodedQuery}', '/item/?product=${item.id}');">
+            <a class="st-search-item" onclick="window.navigateWithUserInfo('/item/?product=${item.id}'); return false;"  class="st-search-item" data-index="${index}" onclick="handleSearchClick(event, '${encodedQuery}', '/item/?product=${item.id}');">
                 <img src="${item.image || 'https://placehold.co/40x40/6C3CE1/FFFFFF?text=Product'}" 
                      alt="${item.name.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}" 
                      onerror="this.src='https://placehold.co/40x40/6C3CE1/FFFFFF?text=Product'">
@@ -835,7 +832,7 @@ function renderSearchResults(results, query) {
             `;
         } else {
             mobileContainer.innerHTML = results.map(item => `
-                <aonclick="window.navigateWithUserInfo('/item/?product=${item.id}'); return false;"  class="st-search-item" onclick="handleSearchClick(event, '${encodedQuery}', '/item/?product=${item.id}');">
+                <a class="st-search-item" onclick="window.navigateWithUserInfo('/item/?product=${item.id}'); return false;"  class="st-search-item" onclick="handleSearchClick(event, '${encodedQuery}', '/item/?product=${item.id}');">
                     <img src="${item.image || 'https://placehold.co/50x50/6C3CE1/FFFFFF?text=Product'}" 
                          alt="${item.name.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}" 
                          onerror="this.src='https://placehold.co/50x50/6C3CE1/FFFFFF?text=Product'">
@@ -862,6 +859,7 @@ async function handleSearchClick(event, encodedQuery, url) {
     try {
         // Decode the query for analytics
         const query = decodeURIComponent(encodedQuery);
+         try { closeMobileSearch(); } catch (_) {}
         
         // Send analytics - wait for it to complete
         await recordHeaderSearchQuery(query);
@@ -938,7 +936,20 @@ function openMobileSearch() {
         closeBtn.addEventListener('click', closeMobileSearch);
     }
 }
+// Close mobile search on any page navigation
+window.addEventListener('st:page-loaded', () => {
+    closeMobileSearch();
+});
 
+// Also on pjax before-leave (fires as soon as navigation starts)
+window.addEventListener('st:pjax-before', () => {
+    closeMobileSearch();
+});
+
+// Also on browser back/forward
+window.addEventListener('popstate', () => {
+    closeMobileSearch();
+});
 // --- Close Mobile Search ---
 function closeMobileSearch() {
     const overlay = document.getElementById('stSearchOverlay');
@@ -946,6 +957,8 @@ function closeMobileSearch() {
     if (overlay) overlay.classList.remove('active');
     if (modal) modal.classList.remove('active');
     document.body.style.overflow = '';
+        document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
 }
 
 // --- Navigate Search Results (Keyboard) ---
@@ -1616,7 +1629,7 @@ elements.androidLogout.addEventListener('click', () => {
     elements.myOrdersBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
         if (AppState.isLoggedIn) {
-            window.navigateWithUserInfo('/orders');
+            window.navigateWithUserInfo('/orders/');
         } else {
             openLoginModal();
         }
@@ -1624,7 +1637,7 @@ elements.androidLogout.addEventListener('click', () => {
      elements.andmyOrdersBtn.addEventListener('click', () => {
        closeMobileDrawer();
         if (AppState.isLoggedIn) {
-            window.navigateWithUserInfo('/orders');
+            window.navigateWithUserInfo('/orders/');
         } else {
             openLoginModal();
         }
