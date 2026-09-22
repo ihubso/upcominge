@@ -1143,6 +1143,157 @@
             width: auto;
         }
     }
+    /* ============================================
+   ITEM PAGE LAYOUT CONSTRAINTS
+   Prevents the product image from filling the
+   entire viewport and hiding description/specs.
+   ============================================ */
+
+/* Make both grid columns align to the top */
+#productDetailContainer {
+    align-items: start;
+}
+
+/* Cap the image column's width on desktop */
+@media (min-width: 1024px) {
+    #productDetailContainer {
+        /* Left column: capped at 500px. Right column: whatever remains. */
+        grid-template-columns: minmax(0, 500px) minmax(0, 1fr) !important;
+        gap: 3rem;
+    }
+}
+
+/* Center the image on mobile, left-align on desktop */
+#productDetailContainer > div:first-child {
+    max-width: 500px;
+    width: 100%;
+    margin: 0 auto;
+}
+@media (min-width: 1024px) {
+    #productDetailContainer > div:first-child {
+        margin: 0;
+    }
+}
+
+/* Cap the main image container — stays square, but never huge */
+.main-image-container {
+    aspect-ratio: 1 / 1;
+    max-width: 500px;
+    max-height: 500px;
+    margin: 0 auto;
+    /* keep your existing border-radius, background, etc. — only size is capped */
+}
+@media (min-width: 1024px) {
+    .main-image-container {
+        margin: 0;
+    }
+}
+
+/* Cap the image inside — leaves breathing room */
+.main-image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    padding: 1.5rem;
+}
+
+/* Slightly smaller on small screens */
+@media (max-width: 768px) {
+    .main-image-container {
+        max-width: 400px;
+        max-height: 400px;
+    }
+}
+@media (max-width: 480px) {
+    .main-image-container {
+        max-width: 320px;
+        max-height: 320px;
+    }
+}
+
+/* Give the right column a sensible reading width */
+@media (min-width: 1024px) {
+    #productDetailContainer > div:nth-child(2) {
+        max-width: 640px;
+    }
+}
+/* ============================================
+   ITEM PAGE CONTAINER FIX
+   Centers #productContent and its inner blocks,
+   gives proper horizontal padding. Fixes content
+   hugging the left edge when Tailwind utilities
+   aren't applied (e.g., after pjax navigation).
+   ============================================ */
+
+/* Center the whole item page content block */
+#productContent {
+    width: 100%;
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+    #productContent {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    #productContent {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}
+
+/* Make sure the hero, main content, deals, reviews,
+   related sections each stay inside that padded box */
+#productContent > *,
+#productContent > * > * {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* The deals section has its own max-width/padding — neutralise double-padding */
+.deals-section {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Reviews + related: kill the extra px so they line up with the image column */
+#reviewsSection,
+#relatedSection {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Breadcrumb row — the hero's inner div needs padding on its own
+   since we can't rely on Tailwind's px-4/px-6/px-8 being present. */
+.product-page-hero > div {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    box-sizing: border-box;
+}
+@media (min-width: 640px) {
+    .product-page-hero > div {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+}
+@media (min-width: 1024px) {
+    .product-page-hero > div {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}
 </style>
 </head>
 <body>
@@ -1338,44 +1489,9 @@
                 </div>
             </div>
         </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white py-12 mt-12">
-        <div class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div>
-                <h4 class="font-bold mb-4" data-translate="footer_products">Products</h4>
-                <p class="text-slate-400 text-sm" data-translate="footer_phone">Phone</p>
-                <p class="text-slate-400 text-sm" data-translate="footer_tablet">Tablet</p>
-                <p class="text-slate-400 text-sm" data-translate="footer_audio">Audio</p>
-            </div>
-            <div>
-                <h4 class="font-bold mb-4" data-translate="footer_follow">📱 Follow Us</h4>
-                <div class="flex gap-4 mt-2">
-                    <a id="facebookLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-facebook"></i></a>
-                    <a id="instagramLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-instagram"></i></a>
-                    <a id="tiktokLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-tiktok"></i></a>
-                </div>
-            </div>
-            <div>
-                <h4 class="font-bold mb-4" data-translate="footer_about">About</h4>
-                <p class="text-slate-400 text-sm" data-translate="about_us">About Us</p>
-                <p class="text-slate-400 text-sm" data-translate="press">Press</p>
-                <a href="/contactus" class="text-slate-400 text-sm block hover:text-primary transition-colors" data-translate="locate_us">📍 Locate Us</a>
-            </div>
-            <div>
-                <h4 class="font-bold mb-4" data-translate="footer_contact">📞 Contact</h4>
-                <p id="footerEmail" class="text-slate-400 text-sm"></p>
-                <p id="footerPhone" class="text-slate-400 text-sm"></p>
-                <p id="footerAddress" class="text-slate-400 text-sm"></p>
-            </div>
-        </div>
-        <div class="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400 text-sm">
-            <p data-translate="copyright">&copy; 2024 Sucess Technology. All rights reserved.</p>
-        </div>
-    </footer>
 
-    <!-- Global Header -->
+            <!-- Global Header -->
     <div id="imageZoomModal" class="zoommodal-overlay hidden" onclick="closeImageZoom()">
         <button class="absolute top-4 right-4 text-white text-3xl z-10 hover:text-gray-300 transition-colors duration-200" 
                 onclick="event.stopPropagation(); closeImageZoom()" 
@@ -1432,6 +1548,44 @@
             Drag to pan • Pinch to zoom
         </div>
     </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12 mt-12">
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div>
+                <h4 class="font-bold mb-4" data-translate="footer_products">Products</h4>
+                <p class="text-slate-400 text-sm" data-translate="footer_phone">Phone</p>
+                <p class="text-slate-400 text-sm" data-translate="footer_tablet">Tablet</p>
+                <p class="text-slate-400 text-sm" data-translate="footer_audio">Audio</p>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4" data-translate="footer_follow">📱 Follow Us</h4>
+                <div class="flex gap-4 mt-2">
+                    <a id="facebookLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-facebook"></i></a>
+                    <a id="instagramLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-instagram"></i></a>
+                    <a id="tiktokLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4" data-translate="footer_about">About</h4>
+                <p class="text-slate-400 text-sm" data-translate="about_us">About Us</p>
+                <p class="text-slate-400 text-sm" data-translate="press">Press</p>
+                <a href="/contactus" class="text-slate-400 text-sm block hover:text-primary transition-colors" data-translate="locate_us">📍 Locate Us</a>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4" data-translate="footer_contact">📞 Contact</h4>
+                <p id="footerEmail" class="text-slate-400 text-sm"></p>
+                <p id="footerPhone" class="text-slate-400 text-sm"></p>
+                <p id="footerAddress" class="text-slate-400 text-sm"></p>
+            </div>
+        </div>
+        <div class="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400 text-sm">
+            <p data-translate="copyright">&copy; 2024 Sucess Technology. All rights reserved.</p>
+        </div>
+    </footer>
+
+
 
 
 

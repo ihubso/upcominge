@@ -850,6 +850,82 @@
                 padding: 0;
             }
         }
+        /* ============================================
+   PRINT STYLES — only the order sheet prints
+   ============================================ */
+@media print {
+    /* Hide everything */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* Show only the sheet and its contents */
+    #stDetailOverlay,
+    #stDetailOverlay * {
+        visibility: visible !important;
+    }
+
+    /* Reset the overlay so it lays out as a document, not a modal */
+    #stDetailOverlay {
+        position: static !important;
+        background: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        padding: 0 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: block !important;
+    }
+
+    /* Reset the sheet */
+    #stDetailSheet {
+        position: static !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+    }
+
+    /* Hide interactive chrome that doesn't make sense on paper */
+    .st-sheet-handle,
+    #stDetailClose,
+    .st-sheet-actions,
+    .st-toast,
+    .st-topbar,
+    .st-mobile-bottom-nav,
+    .st-mobile-drawer,
+    .st-mobile-overlay {
+        display: none !important;
+    }
+
+    /* Black & white friendly adjustments */
+    .st-order-id,
+    .st-order-total,
+    .st-section-value,
+    .st-item-name,
+    .st-item-price {
+        color: #000 !important;
+    }
+
+    /* Force the timeline circles to render on paper */
+    .st-step-circle {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        border: 1px solid #000 !important;
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    /* Give the printed page proper margins */
+    @page {
+        margin: 15mm;
+        size: auto;
+    }
+}
     </style>
 </head>
 <body>
@@ -903,9 +979,9 @@
             <!-- Orders Container -->
             <div id="stOrdersContainer"></div>
         </div>
-    </main>
 
-    <!-- ============================================
+
+            <!-- ============================================
          ORDER DETAIL SHEET (Modal/Bottom Sheet)
          ============================================ -->
     <div class="st-detail-overlay" id="stDetailOverlay">
@@ -931,6 +1007,9 @@
             </div>
         </div>
     </div>
+
+    </main>
+
 
     <!-- ============================================
          SCRIPTS

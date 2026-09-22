@@ -551,17 +551,13 @@ function openNotificationModal() {
 }
 
 // --- Close Notification Modal ---
-function closeNotificationModal(isBackNavigation = false) {
-    const modal = document.getElementById('stNotificationModal');
-    const overlay = document.getElementById('stNotificationOverlay');
-    if (modal) modal.classList.remove('open');
-    if (overlay) overlay.classList.remove('active');
-    document.body.style.overflow = '';
-
-    // Remove state from history if closed manually (not via back button)
-    if (!isBackNavigation && history.state?.modal === 'notifications') {
-        history.back();
-    }
+function closeNotificationModal(isBackNavigation=!1){
+    const modal=document.getElementById("stNotificationModal");
+    const overlay=document.getElementById("stNotificationOverlay");
+    if(modal) modal.classList.remove("open");
+    if(overlay) overlay.classList.remove("active");
+    resetBodyScroll();
+    if(!isBackNavigation && history.state?.modal === "notifications") history.back();
 }
 window.addEventListener('popstate', (event) => {
     // If the modal state is gone, close the modal

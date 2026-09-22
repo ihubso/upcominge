@@ -398,33 +398,59 @@ async function loadOrders() {
     /* ============================================================
        ORDER DETAIL — NO HISTORY MANIPULATION
        ============================================================ */
-    async function openOrderDetail(orderId) {
-        const order = allOrders.find(o => o.id === orderId);
-        if (!order) { showToast(t('order_not_found', 'Order not found'), 'error'); return; }
+/* ============================================================
+   ORDER DETAIL — SYNCHRONOUS OVERLAY, NO AWAIT BEFORE SHOW
+   ============================================================ */
+function openOrderDetail(orderId) {
+    // 1. Find the order (synchronous)
+    const order = allOrders.find(o => o.id === orderId);
+    if (!order) {
+        showToast(t('order_not_found', 'Order not found'), 'error');
+        return;
+    }
 
-        const user = await getUserData();
-        if (user && !orderBelongsToUser(order, user)) {
-            showToast(t('order_not_belong', 'This order does not belong to your account.'), 'error');
-            return;
-        }
+    // 2. Grab the overlay. If missing, bail cleanly — do NOT touch body scroll.
+    const overlay = document.getElementById('stDetailOverlay');
+    if (!overlay) {
+        console.error('❌ #stDetailOverlay not found in DOM. Order detail cannot open.');
+        return;
+    }
 
-        selectedOrder = order;
+    // 3. Populate the sheet content FIRST (synchronous)
+    selectedOrder = order;
+    routeOrderId = orderId;
+    try {
         renderOrderDetail(order);
-
-        const els = getEls();
-        els.detailOverlay?.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        routeOrderId = orderId;
+    } catch (err) {
+        console.error('❌ renderOrderDetail failed:', err);
     }
 
-    function closeOrderDetail() {
-        const els = getEls();
-        if (!els.detailOverlay?.classList.contains('active')) return;
-        els.detailOverlay.classList.remove('active');
-        document.body.style.overflow = '';
-        routeOrderId = null;
-    }
+    // 4. Show the overlay (add .active AND force inline styles as a fallback)
+    overlay.classList.add('active');
+    overlay.style.opacity = '1';
+    overlay.style.visibility = 'visible';
 
+    // 5. Lock body scroll only AFTER the overlay is visible
+    document.body.style.overflow = 'hidden';
+
+    // 6. Belt-and-braces: if something removes .active in the next tick, put it back
+    requestAnimationFrame(() => {
+        if (!overlay.classList.contains('active')) {
+            overlay.classList.add('active');
+        }
+    });
+}
+
+function closeOrderDetail() {
+    const overlay = document.getElementById('stDetailOverlay');
+    if (!overlay) return;
+
+    overlay.classList.remove('active');
+    overlay.style.opacity = '';
+    overlay.style.visibility = '';
+
+    document.body.style.overflow = '';
+}
     function renderOrderDetail(order) {
         const els = getEls();
         if (!els.detailBody) return;
@@ -542,6 +568,9 @@ async function loadOrders() {
                 <a href="/product/" class="st-btn-primary" style="flex:1;padding:12px 20px;background:linear-gradient(135deg,#6C3CE1,#5A2FC4);color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;text-align:center;transition:all .3s ease;" data-translate="continue_shopping">
                     <i class="fas fa-shopping-bag"></i> Continue Shopping
                 </a>
+                <button type="button" class="st-btn-print" onclick="window.printOrder('${order.id}')" style="flex:1;padding:12px 20px;background:#0F172A;color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-align:center;transition:all .3s ease;font-family:inherit;" data-translate="print_order">
+                    <i class="fas fa-print"></i> Print Order
+                </button>
                 <a href="${waUrl}" target="_blank" class="st-btn-whatsapp" style="flex:1;padding:12px 20px;background:#25D366;color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;text-align:center;transition:all .3s ease;" data-translate="contact_us">
                     <i class="fab fa-whatsapp"></i> Contact Us
                 </a>
@@ -553,6 +582,26 @@ async function loadOrders() {
     /* ============================================================
        COPY ORDER ID
        ============================================================ */
+
+function printOrder(orderId) {
+    const order = allOrders.find(o => o.id === orderId) || selectedOrder;
+    if (!order) {
+        showToast(t('order_not_found', 'Order not found'), 'error');
+        return;
+    }
+
+    // Ensure the sheet is open so its markup is in the DOM
+    const overlay = document.getElementById('stDetailOverlay');
+    if (!overlay || !overlay.classList.contains('active')) {
+        openOrderDetail(order.id);
+        // Give the browser one frame to render, then print
+        setTimeout(() => window.print(), 300);
+        return;
+    }
+
+    window.print();
+}
+window.printOrder = printOrder;
     function copyOrderId(orderId) {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(orderId)
@@ -658,26 +707,28 @@ async function loadOrders() {
     /* ============================================================
        CLEANUP / INIT
        ============================================================ */
-    function cleanup() {
-        if (_escHandler)  { document.removeEventListener('keydown',    _escHandler);  _escHandler = null; }
-        if (_backHandler) { document.removeEventListener('backbutton', _backHandler); _backHandler = null; }
-        if (_popHandler)  { window.removeEventListener('popstate',     _popHandler);  _popHandler = null; }
-        unpatchHeader();
+  function cleanup() {
+    if (_escHandler)  { document.removeEventListener('keydown',    _escHandler);  _escHandler = null; }
+    if (_backHandler) { document.removeEventListener('backbutton', _backHandler); _backHandler = null; }
+    if (_popHandler)  { window.removeEventListener('popstate',     _popHandler);  _popHandler = null; }
+    unpatchHeader();
 
-        // Close sheet if it was open
-        const overlay = document.getElementById('stDetailOverlay');
-        if (overlay?.classList.contains('active')) {
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        allOrders = [];
-        filteredOrders = [];
-        currentStatus = 'all';
-        selectedOrder = null;
-        routeOrderId = null;
-        _pendingOpenId = null;
+    // Close sheet if it was open — clear BOTH class and inline overrides
+    const overlay = document.getElementById('stDetailOverlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        overlay.style.opacity = '';
+        overlay.style.visibility = '';
     }
+    document.body.style.overflow = '';
+
+    allOrders = [];
+    filteredOrders = [];
+    currentStatus = 'all';
+    selectedOrder = null;
+    routeOrderId = null;
+    _pendingOpenId = null;
+}
 
     function init() {
         const els = getEls();

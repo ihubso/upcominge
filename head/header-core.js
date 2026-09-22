@@ -118,7 +118,62 @@ function getCurrentCustomerId() {
     
     return null;
 }
+/* ============================================================
+   GLOBAL OVERLAY MANAGEMENT
+   All modals/drawers/overlays set body.overflow='hidden' while open.
+   This ensures we always reset it, no matter what.
+   ============================================================ */
+function resetBodyScroll(){
+    try{
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+    }catch(_){}
+}
 
+function closeAllOverlays(){
+    // Close mobile drawer
+    try{
+        const drawer = document.getElementById('stMobileDrawer');
+        const overlay = document.getElementById('stMobileOverlay');
+        if(drawer) drawer.classList.remove('open');
+        if(overlay) overlay.classList.remove('active');
+    }catch(_){}
+
+    // Close auth modal
+    try{
+        const authModal = document.getElementById('stAuthModal');
+        if(authModal) authModal.classList.remove('active');
+    }catch(_){}
+
+    // Close notification modal
+    try{
+        const notifModal = document.getElementById('stNotificationModal');
+        const notifOverlay = document.getElementById('stNotificationOverlay');
+        if(notifModal) notifModal.classList.remove('open');
+        if(notifOverlay) notifOverlay.classList.remove('active');
+    }catch(_){}
+
+    // Close mobile search
+    try{
+        const searchModal = document.getElementById('stSearchModal');
+        const searchOverlay = document.getElementById('stSearchOverlay');
+        if(searchModal) searchModal.classList.remove('active');
+        if(searchOverlay) searchOverlay.classList.remove('active');
+    }catch(_){}
+
+    // Close desktop account dropdown
+    try{
+        const acctDropdown = document.getElementById('stAccountDropdown');
+        if(acctDropdown) acctDropdown.classList.remove('open');
+    }catch(_){}
+
+    // Finally, always reset the scroll lock
+    resetBodyScroll();
+}
+
+// Expose globally so any script can call it
+window.resetBodyScroll = resetBodyScroll;
+window.closeAllOverlays = closeAllOverlays;
 window.getCurrentCustomerId = getCurrentCustomerId;
 window.getSessionId = getSessionId;
 

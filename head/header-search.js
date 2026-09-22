@@ -1891,13 +1891,13 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                                 <button class="st-account-dropdown-item danger" id="stLogoutBtn" style="display:none;" >
                                     <i class="fas fa-sign-out-alt"></i> <span data-translate="logout">Logout</span>
                                 </button>
-                                <button class="st-account-dropdown-item" id="stAboutUsBtn" onclick="window.navigateWithUserInfo('/AboutUs')" >
+                               <button onclick="closeMobileDrawer(); window.navigateWithUserInfo('/AboutUs/')" class="btn btn-primary st-mobile-nav-btn">
                                     <i class="fa fa-info-circle"></i> <span data-translate="about_us">About Us</span>
                                 </button>
-                                <button class="st-account-dropdown-item" id="stTermsBtn" onclick="window.navigateWithUserInfo('/Terms')">
+                               <button onclick="closeMobileDrawer(); window.navigateWithUserInfo('/Terms/')" class="btn btn-primary st-mobile-nav-btn">
                                     <i class="fa fa-file-text"></i> <span data-translate="terms">Terms & Conditions</span>
                                 </button>
-                                <button class="st-account-dropdown-item" id="stContactBtn" onclick="window.navigateWithUserInfo('/contactus')">
+                                <button class="st-account-dropdown-item" id="stContactBtn" onclick="closeMobileDrawer(); window.navigateWithUserInfo('/contactus/')">
                                     <i class="fa fa-map-marker"></i> <span data-translate="locate_us">Locate Us</span>
                                 </button>
                             </div>
@@ -1996,13 +1996,13 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                         </li>
                     `).join('')}
                     <li class="st-mobile-nav-item">
-                        <button onclick="window.navigateWithUserInfo('/AboutUs')" class="btn btn-primary st-mobile-nav-btn">
+                        <button onclick="window.navigateWithUserInfo('/AboutUs/')" class="btn btn-primary st-mobile-nav-btn">
                             <i class="fas fa-info-circle"></i> 
                             <span data-translate="about_us">About Us</span>
                         </button>
                     </li>
                     <li class="st-mobile-nav-item">
-                        <button onclick="window.navigateWithUserInfo('/Terms')" class="btn btn-primary st-mobile-nav-btn">
+                        <button onclick="window.navigateWithUserInfo('/Terms/')" class="btn btn-primary st-mobile-nav-btn">
                             <i class="fas fa-file-contract"></i> 
                             <span data-translate="terms">Terms & Conditions</span>
                         </button>

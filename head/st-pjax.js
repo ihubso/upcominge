@@ -28,22 +28,24 @@
     };
 
     /* ---------- progress bar ---------- */
-    let bar = null;
-    function showProgress() {
-        if (!bar) {
-            bar = document.createElement('div');
-            bar.id = 'stPjaxProgress';
-            bar.style.cssText =
-                'position:fixed;top:0;left:0;height:3px;width:0%;' +
-                'background:linear-gradient(90deg,#6C3CE1,#8B6BE8);' +
-                'z-index:2147483647;pointer-events:none;' +
-                'transition:width .25s ease,opacity .3s ease;';
-            document.body.appendChild(bar);
-        }
-        bar.style.opacity = '1';
-        bar.style.width = '30%';
-        requestAnimationFrame(() => { bar.style.width = '70%'; });
+let bar = null;
+function showProgress() {
+    if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'stPjaxProgress';
+        bar.style.cssText =
+            'position:fixed;top:0;left:0;height:5px;width:12%;' +
+      'background:linear-gradient(90deg,#6C3CE1 0%,#EC4899 50%,#F59E0B 100%);' +
+'box-shadow:0 0 16px rgba(236,72,153,0.8),0 0 32px rgba(108,60,225,0.5);' +
+            'border-radius:0 3px 3px 0;' +
+            'z-index:2147483647;pointer-events:none;' +
+            'transition:width .3s cubic-bezier(0.4,0,0.2,1),opacity .3s ease;';
+        document.body.appendChild(bar);
     }
+    bar.style.opacity = '1';
+    bar.style.width = '50%';
+    requestAnimationFrame(() => { bar.style.width = '100%'; });
+}
     function endProgress() {
         if (!bar) return;
         bar.style.width = '100%';
@@ -83,7 +85,7 @@
                 if (n.href) have.add('href:' + n.href);
                 else if (n.src) have.add('src:' + n.src);
                 else if (n.tagName === 'META') have.add('meta:' + n.name);
-                else if (n.tagName === 'STYLE') have.add('style:' + n.textContent.slice(0, 200));
+                else if (n.tagName === 'STYLE') have.add('style:' + n.textContent.length + ':' + n.textContent);
             });
 
         newDoc.head

@@ -310,15 +310,32 @@ async function initHeader() {
         document.body.style.overflow = 'hidden';
     }
     
-    function closeMobileDrawer() {
-        elements.mobileDrawer.classList.remove('open');
-        elements.mobileOverlay.classList.remove('active');
-        document.body.style.overflow = '';
-    }
+ function closeMobileDrawer(){
+    elements.mobileDrawer.classList.remove("open");
+    elements.mobileOverlay.classList.remove("active");
+    resetBodyScroll();
+}
     
     elements.mobileToggle.addEventListener('click', openMobileDrawer);
     elements.mobileClose.addEventListener('click', closeMobileDrawer);
     elements.mobileOverlay.addEventListener('click', closeMobileDrawer);
+    // Auto-close the drawer when any link/button inside it navigates
+if (elements.mobileDrawer) {
+    elements.mobileDrawer.addEventListener('click', function (e) {
+        const target = e.target.closest('a, button[onclick], [data-nav]');
+        if (!target) return;
+
+        // Let the navigation happen — but close the drawer first
+        const href = target.getAttribute('href');
+        const onclick = target.getAttribute('onclick') || '';
+
+        // Close if this is a link, or has an onclick that navigates
+        if (href || onclick.includes('navigateWithUserInfo') || onclick.includes('window.location')) {
+            // Use setTimeout so the click doesn't get cancelled
+            setTimeout(() => closeMobileDrawer(), 0);
+        }
+    });
+}
     
     // ----- Search -----
     function handleSearch(e) {
@@ -330,12 +347,16 @@ async function initHeader() {
     elements.searchInput.addEventListener('keypress', handleSearch);
     elements.mobileSearchInput.addEventListener('keypress', handleSearch);
     
-    // ----- Cart & Wishlist -----
-    elements.cartBtn.addEventListener('click', () => window.navigateWithUserInfo('/Cart/'));
-    elements.mobileCartBtn.addEventListener('click', () => window.navigateWithUserInfo('/Cart/'));
-    elements.wishlistBtn.addEventListener('click', () => window.navigateWithUserInfo('/wishlist/'));
-    elements.mobileWishlistBtn.addEventListener('click', () => window.navigateWithUserInfo('/wishlist/'));
-    elements.foryoumobileWishlistBtn.addEventListener('click', () => window.navigateWithUserInfo('/ForYou/'));
+function navAndClose(path){
+    closeMobileDrawer();
+    window.navigateWithUserInfo(path);
+}
+
+elements.cartBtn.addEventListener("click",()=>navAndClose("/Cart/"));
+elements.mobileCartBtn.addEventListener("click",()=>navAndClose("/Cart/"));
+elements.wishlistBtn.addEventListener("click",()=>navAndClose("/wishlist/"));
+elements.mobileWishlistBtn.addEventListener("click",()=>navAndClose("/wishlist/"));
+elements.foryoumobileWishlistBtn.addEventListener("click",()=>navAndClose("/ForYou/"));
     
     // ----- Auth Modal -----
     function openAuthModal() {
@@ -343,12 +364,12 @@ async function initHeader() {
         document.body.style.overflow = 'hidden';
     }
     
-    function closeAuthModal() {
-        elements.authModal.classList.remove('active');
-        document.body.style.overflow = '';
-        document.querySelectorAll('.st-form-error').forEach(el => el.classList.remove('visible'));
-        document.querySelectorAll('.st-form-input').forEach(el => el.classList.remove('error'));
-    }
+function closeAuthModal(){
+    elements.authModal.classList.remove("active");
+    resetBodyScroll();
+    document.querySelectorAll(".st-form-error").forEach(el=>el.classList.remove("visible"));
+    document.querySelectorAll(".st-form-input").forEach(el=>el.classList.remove("error"));
+}
     
     elements.authModalClose.addEventListener('click', closeAuthModal);
     elements.authModal.addEventListener('click', (e) => {
@@ -936,29 +957,17 @@ function openMobileSearch() {
         closeBtn.addEventListener('click', closeMobileSearch);
     }
 }
-// Close mobile search on any page navigation
-window.addEventListener('st:page-loaded', () => {
-    closeMobileSearch();
-});
-
-// Also on pjax before-leave (fires as soon as navigation starts)
-window.addEventListener('st:pjax-before', () => {
-    closeMobileSearch();
-});
-
-// Also on browser back/forward
-window.addEventListener('popstate', () => {
-    closeMobileSearch();
-});
+window.addEventListener("st:page-loaded",()=>{closeAllOverlays();});
+window.addEventListener("st:pjax-before",()=>{closeAllOverlays();});
+window.addEventListener("popstate",()=>{closeAllOverlays();});
+window.addEventListener("beforeunload",()=>{resetBodyScroll();});
 // --- Close Mobile Search ---
-function closeMobileSearch() {
-    const overlay = document.getElementById('stSearchOverlay');
-    const modal = document.getElementById('stSearchModal');
-    if (overlay) overlay.classList.remove('active');
-    if (modal) modal.classList.remove('active');
-    document.body.style.overflow = '';
-        document.body.style.overflow = '';
-    document.documentElement.style.overflow = '';
+function closeMobileSearch(){
+    const overlay=document.getElementById("stSearchOverlay");
+    const modal=document.getElementById("stSearchModal");
+    if(overlay) overlay.classList.remove("active");
+    if(modal) modal.classList.remove("active");
+    resetBodyScroll();
 }
 
 // --- Navigate Search Results (Keyboard) ---
