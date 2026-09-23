@@ -119,7 +119,8 @@ function initNotificationSystem() {
 // --- Load Notifications from localStorage ---
 function loadNotifications() {
     try {
-        const saved = JSON.parse(localStorage.getItem('st_notifications') || '[]');
+        let saved = JSON.parse(localStorage.getItem('st_notifications') || '[]');
+        saved = saved.filter(n => !n.link || !n.link.includes('undefined'));
         notifications = saved;
         unreadCount = notifications.filter(n => !n.read).length;
         updateNotificationBadge();
@@ -129,7 +130,6 @@ function loadNotifications() {
         unreadCount = 0;
     }
 }
-
 // --- Save Notifications to localStorage ---
 function saveNotifications() {
     localStorage.setItem('st_notifications', JSON.stringify(notifications));
