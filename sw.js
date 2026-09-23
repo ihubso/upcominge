@@ -7,7 +7,7 @@
 // ============================================
 
 // Version number = Cache name - Changing version creates new cache
-const CACHE_NAME = 'success-technology-v3.1.78592'; // Increment this to create new cache
+const CACHE_NAME = 'success-technology-v3.1.89592'; // Increment this to create new cache
 
 // Assets to cache on install
 const ASSETS_TO_CACHE = [
@@ -171,52 +171,74 @@ self.addEventListener('fetch', function(event) {
 });
 
 // ============================================
-// PUSH EVENT HANDLER - FIXED
+// PUSH EVENT HANDLER - with client broadcast + IndexedDB fallback
 // ============================================
+
+// ---------- IndexedDB mini-helper (SW-safe) ----------
+const SW_DB_NAME = 'st_push_queue';
+const SW_STORE   = 'pending_notifications';
+
+function swOpenDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open(SW_DB_NAME, 1);
+        req.onupgradeneeded = () => {
+            const db = req.result;
+            if (!db.objectStoreNames.contains(SW_STORE)) {
+                db.createObjectStore(SW_STORE, { keyPath: 'id', autoIncrement: true });
+            }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror   = () => reject(req.error);
+    });
+}
+
+async function swQueueForLater(entry) {
+    try {
+        const db = await swOpenDB();
+        await new Promise((resolve, reject) => {
+            const tx = db.transaction(SW_STORE, 'readwrite');
+            tx.objectStore(SW_STORE).add({ ...entry, queuedAt: new Date().toISOString() });
+            tx.oncomplete = resolve;
+            tx.onerror    = () => reject(tx.error);
+        });
+        console.log('[Service Worker] Queued push for later:', entry);
+    } catch (err) {
+        console.warn('[Service Worker] Failed to queue push:', err);
+    }
+}
+
 self.addEventListener('push', function(event) {
     console.log('[Service Worker] Push Received:', event);
-    
+
     let notificationData = {};
-    
+
     try {
-        // Parse push data with fallback
         if (event.data) {
             const parsedData = event.data.json();
             console.log('[Service Worker] Parsed push data:', parsedData);
-            
-            // Get the base URL
+
             const baseUrl = self.location.origin;
-            
-            // Extract orderId and url from various possible locations
-            const orderId = parsedData.orderId || 
-                           parsedData.data?.orderId || 
-                           parsedData.notification?.data?.orderId || 
-                           null;
-            
-            const url = parsedData.url || 
-                       parsedData.data?.url || 
-                       parsedData.notification?.data?.url || 
-                       null;
-            
-            // Construct the full URL
+
+            const orderId = parsedData.orderId ||
+                            parsedData.data?.orderId ||
+                            parsedData.notification?.data?.orderId ||
+                            null;
+
+            const url = parsedData.url ||
+                        parsedData.data?.url ||
+                        parsedData.notification?.data?.url ||
+                        null;
+
             let fullUrl = '/';
-            if (url && url.startsWith('http')) {
-                fullUrl = url; // Already absolute
-            } else if (url) {
-                fullUrl = baseUrl + url; // Relative to absolute
-            } else if (orderId) {
-                fullUrl = baseUrl + '/orders/?order=' + encodeURIComponent(orderId);
-            } else {
-                fullUrl = baseUrl + '/';
-            }
-            
-            console.log('[Service Worker] Constructed URL:', fullUrl);
-            console.log('[Service Worker] Order ID:', orderId);
-            
+            if (url && url.startsWith('http'))      fullUrl = url;
+            else if (url)                            fullUrl = baseUrl + url;
+            else if (orderId)                        fullUrl = baseUrl + '/orders/?order=' + encodeURIComponent(orderId);
+            else                                     fullUrl = baseUrl + '/';
+
             notificationData = {
                 title: parsedData.title || parsedData.notification?.title || DEFAULT_NOTIFICATION.title,
-                body: parsedData.body || parsedData.notification?.body || parsedData.text || DEFAULT_NOTIFICATION.body,
-                icon: parsedData.icon || parsedData.notification?.icon || DEFAULT_NOTIFICATION.icon,
+                body:  parsedData.body  || parsedData.notification?.body  || parsedData.text || DEFAULT_NOTIFICATION.body,
+                icon:  parsedData.icon  || parsedData.notification?.icon  || DEFAULT_NOTIFICATION.icon,
                 badge: parsedData.badge || parsedData.notification?.badge || DEFAULT_NOTIFICATION.badge,
                 data: {
                     url: fullUrl,
@@ -225,8 +247,7 @@ self.addEventListener('push', function(event) {
                 }
             };
         } else {
-            // No data received - use default
-            notificationData = { 
+            notificationData = {
                 ...DEFAULT_NOTIFICATION,
                 data: {
                     ...DEFAULT_NOTIFICATION.data,
@@ -235,24 +256,63 @@ self.addEventListener('push', function(event) {
                 }
             };
         }
-        
-        // Show notification with actions
+
+        // ✅ Broadcast to open clients so they can save to localStorage.
+        //    If no client is available, queue for later in IndexedDB.
+        const broadcastPromise = clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then(clientList => {
+                if (clientList.length === 0) {
+                    // No open tabs — queue in IndexedDB
+                    return swQueueForLater({
+                        title: notificationData.title,
+                        body:  notificationData.body,
+                        icon:  notificationData.icon,
+                        image: notificationData.data?.image || null,
+                        url:   notificationData.data?.fullUrl,
+                        orderId: notificationData.data?.orderId || null,
+                        type: 'order'
+                    });
+                }
+
+                // Fan out the same payload to every tab.
+                // The client script decides how to persist it (localStorage).
+                clientList.forEach(client => {
+                    client.postMessage({
+                        type: 'PUSH_RECEIVED',
+                        payload: {
+                            title: notificationData.title,
+                            body:  notificationData.body,
+                            icon:  notificationData.icon,
+                            image: notificationData.data?.image || null,
+                            url:   notificationData.data?.fullUrl,
+                            orderId: notificationData.data?.orderId || null,
+                            type: 'order',
+                            receivedAt: new Date().toISOString()
+                        }
+                    });
+                });
+                return Promise.resolve();
+            });
+
+        // Show the notification AND broadcast, both inside the same waitUntil
         event.waitUntil(
-            self.registration.showNotification(notificationData.title, {
-                body: notificationData.body,
-                icon: notificationData.icon,
-                badge: notificationData.badge,
-                vibrate: DEFAULT_NOTIFICATION.vibrate,
-                data: notificationData.data,
-                requireInteraction: DEFAULT_NOTIFICATION.requireInteraction,
-                actions: NOTIFICATION_ACTIONS
-            })
+            Promise.all([
+                broadcastPromise,
+                self.registration.showNotification(notificationData.title, {
+                    body: notificationData.body,
+                    icon: notificationData.icon,
+                    badge: notificationData.badge,
+                    vibrate: DEFAULT_NOTIFICATION.vibrate,
+                    data: notificationData.data,
+                    requireInteraction: DEFAULT_NOTIFICATION.requireInteraction,
+                    actions: NOTIFICATION_ACTIONS
+                })
+            ])
         );
-        
+
     } catch (error) {
         console.error('[Service Worker] Error processing push:', error);
-        
-        // Fallback notification
+
         event.waitUntil(
             self.registration.showNotification(
                 DEFAULT_NOTIFICATION.title,
@@ -462,4 +522,38 @@ self.addEventListener('message', function(event) {
                 console.error('[Service Worker] Error showing test notification:', error);
             });
     }
+    if (msg.type === 'DRAIN_PUSH_QUEUE') {
+    (async () => {
+        try {
+            const db = await swOpenDB();
+            const rows = await new Promise((resolve, reject) => {
+                const tx = db.transaction(SW_STORE, 'readonly');
+                const req = tx.objectStore(SW_STORE).getAll();
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror   = () => reject(req.error);
+            });
+
+            // Send them all to the client
+            event.source?.postMessage({
+                type: 'PUSH_QUEUE_DATA',
+                payload: rows
+            });
+
+            // Clear the queue now that they've been delivered
+            if (rows.length > 0) {
+                await new Promise((resolve, reject) => {
+                    const tx = db.transaction(SW_STORE, 'readwrite');
+                    tx.objectStore(SW_STORE).clear();
+                    tx.oncomplete = resolve;
+                    tx.onerror    = () => reject(tx.error);
+                });
+                console.log('[Service Worker] Drained', rows.length, 'queued pushes');
+            }
+        } catch (err) {
+            console.warn('[Service Worker] Failed to drain queue:', err);
+        }
+    })();
+    return;
+}
+
 });

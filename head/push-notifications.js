@@ -306,3 +306,200 @@ const pushManager = new PushNotificationManager();
 window.requestNotificationPermission = function() {
     pushManager.requestNotificationPermission();
 };
+
+function getPushClientStorageKey() {
+    try {
+        // 1. Try customer_session
+        const session = JSON.parse(
+            localStorage.getItem('customer_session') || 'null'
+        );
+
+        let uid =
+            session?.user?.id ||
+            session?.user?.email ||
+            null;
+
+        // 2. Try AppState
+        if (!uid && typeof AppState !== 'undefined') {
+            uid = AppState.user?.id || AppState.user?.email || null;
+        }
+
+        // 3. Try URL user_id
+        if (!uid) {
+            const params = new URLSearchParams(
+                window.location.search
+            );
+
+            uid = params.get('user_id');
+        }
+
+        // 4. Try URL email
+        if (!uid) {
+            const params = new URLSearchParams(
+                window.location.search
+            );
+
+            uid = params.get('user_email');
+        }
+
+        if (uid) {
+            return `st_order_notifications_${uid}`;
+        }
+
+    } catch (error) {
+        console.warn(
+            '⚠️ Could not determine notification user:',
+            error
+        );
+    }
+
+    return 'st_order_notifications_guest';
+}
+
+function saveOrderNotificationToLocal(entry) {
+    console.log('💾 saveOrderNotificationToLocal() called:', entry);
+
+    try {
+        const key = getPushClientStorageKey();
+
+        console.log('🔑 localStorage key:', key);
+
+        const existing = JSON.parse(
+            localStorage.getItem(key) || '[]'
+        );
+
+        console.log('📦 Existing notifications:', existing);
+
+        const notification = {
+            id: 'ordernotif_' +
+                Date.now() +
+                '_' +
+                Math.random().toString(36).slice(2, 6),
+
+            title: entry.title || 'Order Update',
+
+            body: entry.body || '',
+
+            orderId: entry.orderId || null,
+
+            url: entry.url || null,
+
+            image: entry.image || null,
+
+            receivedAt:
+                entry.receivedAt ||
+                entry.queuedAt ||
+                new Date().toISOString(),
+
+            read: false
+        };
+
+        existing.unshift(notification);
+
+        // Keep latest 100
+        const trimmed = existing.slice(0, 100);
+
+        localStorage.setItem(
+            key,
+            JSON.stringify(trimmed)
+        );
+
+        // Verify immediately
+        const verify = localStorage.getItem(key);
+
+        console.log(
+            '💾 Order notification saved to localStorage:',
+            notification
+        );
+
+        console.log(
+            '✅ localStorage verification:',
+            JSON.parse(verify)
+        );
+
+    } catch (err) {
+        console.error(
+            '❌ FAILED TO SAVE ORDER NOTIFICATION:',
+            err
+        );
+    }
+}
+function setupServiceWorkerMessageBridge() {
+    if (!('serviceWorker' in navigator)) {
+        console.warn('❌ Service Worker is not supported');
+        return;
+    }
+
+    console.log('🔌 Setting up Service Worker message bridge...');
+
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        console.log('📨 MESSAGE RECEIVED FROM SERVICE WORKER:', event.data);
+
+        const msg = event.data || {};
+
+        if (msg.type === 'PUSH_RECEIVED' && msg.payload) {
+
+            console.log('🔔 PUSH_RECEIVED payload:', msg.payload);
+
+            // Save to localStorage
+            saveOrderNotificationToLocal(msg.payload);
+
+            console.log(
+                '💾 Order notification saved to localStorage:',
+                msg.payload.orderId
+            );
+
+            // Add to your existing notification bell
+            if (window.notificationSystem?.add) {
+                window.notificationSystem.add(
+                    msg.payload.title || 'Order Update',
+                    msg.payload.body || '',
+                    msg.payload.type || 'order',
+                    msg.payload.url || null,
+                    msg.payload.image || null
+                );
+            }
+
+            return;
+        }
+
+        if (msg.type === 'PUSH_QUEUE_DATA' && Array.isArray(msg.payload)) {
+
+            console.log(
+                '📥 Received queued notifications:',
+                msg.payload.length
+            );
+
+            msg.payload.forEach((entry) => {
+                saveOrderNotificationToLocal(entry);
+            });
+
+            console.log(
+                '💾 Saved queued notifications to localStorage'
+            );
+
+            return;
+        }
+
+        console.log('ℹ️ Unknown Service Worker message:', msg);
+    });
+
+    console.log('✅ Service Worker message bridge ready');
+}
+
+// Ask the SW to send us anything it queued while we were closed
+async function requestQueuedPushesFromSW() {
+    if (!('serviceWorker' in navigator)) return;
+    try {
+        const reg = await navigator.serviceWorker.ready;
+        reg.active?.postMessage({ type: 'DRAIN_PUSH_QUEUE' });
+    } catch (err) {
+        console.warn('⚠️ Could not request push queue:', err);
+    }
+}
+
+// Wire it up on page load
+document.addEventListener('DOMContentLoaded', () => {
+    setupServiceWorkerMessageBridge();
+    requestQueuedPushesFromSW();
+});
