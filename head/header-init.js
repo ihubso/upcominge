@@ -360,10 +360,15 @@ elements.foryoumobileWishlistBtn?.addEventListener("click",()=>navAndClose("/For
 document.getElementById("stMobileBottomWishlistBtn")?.addEventListener("click",()=>navAndClose("/wishlist/")),
     
     // ----- Auth Modal -----
-    function openAuthModal() {
-        elements.authModal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+function openLoginModal(){
+    elements.loginForm.style.display = "block";
+    elements.registerForm.style.display = "none";
+    if (elements.authModal) {
+        elements.authModal.classList.add("active");
+        document.body.style.overflow = "hidden";
     }
+    setTimeout(() => { if (elements.loginEmail) elements.loginEmail.focus(); }, 300);
+}
     
 function closeAuthModal(){
     elements.authModal.classList.remove("active");
@@ -389,6 +394,23 @@ function closeAuthModal(){
     
     elements.switchToRegister.addEventListener('click', showRegisterForm);
     elements.switchToLogin.addEventListener('click', showLoginForm);
+        // ----- Auth Modal -----
+    function openAuthModal() {
+        elements.authModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeAuthModal() {
+        elements.authModal.classList.remove('active');
+        document.body.style.overflow = '';
+        document.querySelectorAll('.st-form-error').forEach(el => el.classList.remove('visible'));
+        document.querySelectorAll('.st-form-input').forEach(el => el.classList.remove('error'));
+    }
+    
+    elements.authModalClose.addEventListener('click', closeAuthModal);
+    elements.authModal.addEventListener('click', (e) => {
+        if (e.target === elements.authModal) closeAuthModal();
+    });
     
     function openLoginModal() {
         showLoginForm();
@@ -396,11 +418,16 @@ function closeAuthModal(){
         setTimeout(() => elements.loginEmail.focus(), 300);
     }
     
-    function openRegisterModal() {
-        showRegisterForm();
-        openAuthModal();
-        setTimeout(() => elements.registerName.focus(), 300);
+function openRegisterModal(){
+     openAuthModal();
+    elements.loginForm.style.display = "none";
+    elements.registerForm.style.display = "block";
+    if (elements.authModal) {
+        elements.authModal.classList.add("active");
+        document.body.style.overflow = "hidden";
     }
+    setTimeout(() => { if (elements.registerName) elements.registerName.focus(); }, 300);
+}
     
     elements.loginBtn.addEventListener('click', openLoginModal);
     elements.registerBtn.addEventListener('click', openRegisterModal);
@@ -1590,39 +1617,70 @@ elements.registerSubmit.addEventListener('click', async () => {
     // ============================================================
     // LOGOUT HANDLER
     // ============================================================
-    async function handleLogout() {
-        const customerId = AppState.user?.id;
-        
-        // Save cart and wishlist to DB before logout
-        if (customerId) {
-            try {
-                await saveCartToDB(customerId, AppState.cart);
-                await saveWishlistToDB(customerId, AppState.wishlist);
-                console.log('💾 Data saved to DB before logout');
-            } catch (err) {
-                console.warn('⚠️ Failed to save data before logout:', err.message);
-            }
+async function handleLogout() {
+    const customerId = AppState.user?.id;
+
+    // Save cart and wishlist to DB before logout
+    if (customerId) {
+        try {
+            await saveCartToDB(customerId, AppState.cart);
+            await saveWishlistToDB(customerId, AppState.wishlist);
+            console.log('💾 Data saved to DB before logout');
+        } catch (err) {
+            console.warn('⚠️ Failed to save data before logout:', err.message);
         }
-        
-        AppState.user = null;
-        AppState.isLoggedIn = false;
-        AppState.cart = [];
-        AppState.wishlist = [];
-        AppState.authAttempts = 0;
-        
-        // Clear all storage
+    }
+
+    // Clear in-memory state
+    AppState.user = null;
+    AppState.isLoggedIn = false;
+    AppState.cart = [];
+    AppState.wishlist = [];
+    AppState.authAttempts = 0;
+
+    // Clear all storage
+    try {
         localStorage.removeItem('st_customer');
         localStorage.removeItem('st_cart');
         localStorage.removeItem('st_wishlist');
+        localStorage.removeItem('st_user_synced');
         sessionStorage.removeItem('st_customer');
         sessionStorage.removeItem('st_cart');
         sessionStorage.removeItem('st_wishlist');
-        
-        updateAuthUI();
-        elements.accountDropdown.classList.remove('open');
-        showNotification('notif_logout_success');
-       window.location.reload();
-    }
+        sessionStorage.removeItem('st_user_synced');
+    } catch (_) {}
+
+    // Refresh UI (buttons, avatar, counts)
+    updateAuthUI();
+    try { elements.accountDropdown?.classList.remove('open'); } catch (_) {}
+    showNotification('notif_logout_success');
+
+    // ============================================================
+    // ✅ CRITICAL: strip user params from URL, THEN navigate home
+    // ============================================================
+    try {
+        // 1. Remove user_* / session / logged_in from current URL
+        const url = new URL(window.location.href);
+        ['user_id', 'user_email', 'user_name', 'user_phone', 'user_address',
+         'session', 'logged_in'].forEach(k => url.searchParams.delete(k));
+
+        const cleanSearch = url.searchParams.toString();
+        const cleanPath   = url.pathname + (cleanSearch ? '?' + cleanSearch : '') + url.hash;
+
+        // 2. Replace current history entry so back button doesn't return to the
+        //    logged-in version of this URL
+        window.history.replaceState({}, '', cleanPath);
+    } catch (_) {}
+
+    // 3. Close any open overlays / reset body scroll (drawer, modals, etc.)
+    try { window.closeAllOverlays?.(); } catch (_) {}
+
+    // 4. Navigate to a clean home URL (do NOT use reload — that would keep
+    //    the current URL and re-trigger auto-login from leftover params)
+    setTimeout(() => {
+        window.location.href = '/product/';
+    }, 300);
+}
     
 // Add logout button event listener elements
 elements.logoutBtn.addEventListener('click', handleLogout); 
@@ -2088,7 +2146,7 @@ async function getCurrentUserById(userId) {
         loginCustomer,
         signUpCustomer,
         fetchCartFromDB,
-    
+        openAuthModal,
         fetchWishlistFromDB,
         saveWishlistToDB,
         validateEmail,

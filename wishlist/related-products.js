@@ -175,7 +175,8 @@
             }
             localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
 
-            const customerId = window.getCurrentCustomerId?.();
+               const owner = window.getOwner();
+        const customerId  = owner
             const sessionId  = localStorage.getItem('st_session_id') || 'session_' + Date.now();
             const client = getClient();
             if (client) {

@@ -118,7 +118,8 @@
        CART (SECURED)
        ============================================================ */
     async function getCart() {
-        const customerId = window.getCurrentCustomerId?.();
+           const owner = window.getOwner();
+        const customerId  = owner
         const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
         const client = getSupabaseClient();
 
@@ -160,7 +161,8 @@
     }
 
     async function saveCart(cart) {
-        const customerId = window.getCurrentCustomerId?.();
+           const owner = window.getOwner();
+        const customerId  = owner
         const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
         const client = getSupabaseClient();
 
@@ -183,7 +185,7 @@
                 // ✅ SECURE: Single RPC call replaces the entire delete + insert loop
                 await client.rpc('sync_user_cart', {
                     p_customer_id: customerId || null,
-                    p_session_id: !customerId ? sessionId : null,
+                    p_session_id:  sessionId ,
                     p_cart_items: cartItemsPayload
                 });
             } catch (err) {
@@ -200,7 +202,8 @@
     }
 
     window.clearCart = async function () {
-        const customerId = window.getCurrentCustomerId?.();
+          const owner = window.getOwner();
+        const customerId  = owner
         const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
         const client = getSupabaseClient();
         
@@ -208,8 +211,8 @@
             try {
                 // ✅ SECURE: Clear cart by passing an empty array to the sync RPC
                 await client.rpc('sync_user_cart', {
-                    p_customer_id: customerId || null,
-                    p_session_id: !customerId ? sessionId : null,
+                    p_customer_id: customerId ,
+                    p_session_id: customerId ,
                     p_cart_items: [] 
                 });
             } catch (err) { 
@@ -616,7 +619,8 @@ async function handleSubmitReview(productId) {
     }
 
     async function handleToggleWishlist(productId) {
-        const customerId = window.getCurrentCustomerId?.();
+          const owner = window.getOwner();
+        const customerId  = owner;
         try {
             let wish = await fetchWishlistFromDB(customerId);
             if (wish.includes(productId)) {
@@ -917,7 +921,8 @@ async function handleSubmitReview(productId) {
             els.stockDisplay.textContent = product.stock > 0 ? `${product.stock} ${t('available', 'available')}` : t('out_of_stock', 'Out of stock');
             els.stockDisplay.className = `text-xs ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`;
         } else els.stockDisplay.textContent = '';
-    const customerId = window.getCurrentCustomerId?.();
+      const owner = window.getOwner();
+        const customerId  = owner
         const wishlist = await fetchWishlistFromDB(customerId);
         isWished = wishlist.includes(product.id);
         updateWishlistButton();
@@ -1122,7 +1127,8 @@ async function handleSubmitReview(productId) {
     }
 
     async function syncHeaderCounts() {
-         const customerId = window.getCurrentCustomerId?.();
+            const owner = window.getOwner();
+        const customerId  = owner
         if (!window.STHeader) return;
         try {
             const [cart, wishlist] = await Promise.all([getCart(), fetchWishlistFromDB(customerId)]);

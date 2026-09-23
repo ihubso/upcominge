@@ -422,7 +422,8 @@
 
             localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
 
-            const customerId = window.getCurrentCustomerId?.();
+               const owner = window.getOwner();
+        const customerId  = owner
             if (customerId && window.saveWishlistToDB) {
                 try { await window.saveWishlistToDB(customerId, wishlist); } catch (_) {}
             }

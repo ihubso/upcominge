@@ -85,39 +85,74 @@ function getSessionId() {
 }
 
 function getCurrentCustomerId() {
-    // First check if user is logged in via STHeader AppState
-    if (window.STHeader?.AppState?.isLoggedIn && window.STHeader?.AppState?.user?.id) {
-        return window.STHeader.AppState.user.id;
-    }
-    
-    // Check localStorage for customer data
+    // 1. Fast path — AppState
+    try {
+        const st = window.STHeader?.AppState;
+        if (st?.isLoggedIn && st?.user?.id) return String(st.user.id);
+    } catch (_) {}
+
+    // 2. URL param — survives pjax before AppState hydrates
+    try {
+        const p = new URLSearchParams(window.location.search);
+        const urlId = p.get('user_id');
+        if (urlId && urlId !== 'null' && urlId !== 'undefined') return String(urlId);
+    } catch (_) {}
+
+    // 3. localStorage
     try {
         const stored = localStorage.getItem('st_customer');
         if (stored) {
-            const customer = JSON.parse(stored);
-            if (customer?.id) {
-                return customer.id;
-            }
+            const c = JSON.parse(stored);
+            if (c?.id && c.id !== 'null') return String(c.id);
         }
-    } catch (err) {
-        // ignore
-    }
-    
-    // Check sessionStorage as fallback
+    } catch (_) {}
+
+    // 4. sessionStorage
     try {
         const stored = sessionStorage.getItem('st_customer');
         if (stored) {
-            const customer = JSON.parse(stored);
-            if (customer?.id) {
-                return customer.id;
-            }
+            const c = JSON.parse(stored);
+            if (c?.id && c.id !== 'null') return String(c.id);
         }
-    } catch (err) {
-        // ignore
-    }
-    
+    } catch (_) {}
+
+    // 5. Guest
     return null;
 }
+/* ============================================================
+   OWNER — returns a String subclass so it works BOTH as:
+     • an object  → owner.id, owner.isCustomer, owner.column
+     • a scalar   → passed straight into .eq(), RPC params, etc.
+   ============================================================ */
+class OwnerId extends String {
+    constructor(id, isCustomer, column) {
+        super(id);
+        // Non-enumerable so they don't pollute JSON.stringify(owner)
+        Object.defineProperty(this, 'isCustomer', { value: !!isCustomer, enumerable: false });
+        Object.defineProperty(this, 'column',     { value: column,      enumerable: false });
+    }
+    // `.id` returns a PRIMITIVE string (not a String object)
+    get id() { return this.valueOf(); }
+}
+
+function getOwner() {
+    const customerId = getCurrentCustomerId();   // string or null
+
+    if (customerId) {
+        return new OwnerId(customerId, true, 'customer_id');
+    }
+
+    let sessionId = null;
+    try { sessionId = localStorage.getItem('st_session_id'); } catch (_) {}
+    if (!sessionId) {
+        sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        try { localStorage.setItem('st_session_id', sessionId); } catch (_) {}
+    }
+    return new OwnerId(sessionId, false, 'session_id');
+}
+window.getOwner = getOwner;
+window.getOwner = getOwner;
+
 /* ============================================================
    GLOBAL OVERLAY MANAGEMENT
    All modals/drawers/overlays set body.overflow='hidden' while open.

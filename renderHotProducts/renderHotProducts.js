@@ -234,11 +234,11 @@ async function toggleWishlist(productId) {
 
         localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
 
-        const customerId = window.getCurrentCustomerId?.();
-        const sessionId  = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+          const owner = window.getOwner();
+        const customerId  = owner
         const client = getClient();
         if (client) {
-            await saveWishlistToDB(customerId || sessionId, wishlist, !!customerId);
+            await saveWishlistToDB(customerId, wishlist, !!customerId);
         }
 
         if (window.STHeader) {

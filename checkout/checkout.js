@@ -302,7 +302,8 @@ function generateUUID() {
                 if (raw) user = JSON.parse(raw);
             } catch {}
         }
-        const customerId = user?.id || window.getCurrentCustomerId?.() || null;
+           const owner = window.getOwner();
+        const customerId  = owner
 
         // ✅ FRONTEND CHECK: Require login
         if (!customerId) {
@@ -386,10 +387,10 @@ function generateUUID() {
             // ✅ SECURE: Clear DB cart using the secure RPC we created earlier
             (async () => {
                 try {
-                    const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+                   
                     await client.rpc('sync_user_cart', {
                         p_customer_id: customerId,
-                        p_session_id: null, // We know they are logged in
+                        p_session_id: customerId, // We know they are logged in
                         p_cart_items: []
                     });
                 } catch (e) { console.warn('DB cart clear failed:', e.message); }

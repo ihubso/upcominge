@@ -245,7 +245,8 @@
                 return;
             }
 
-            const customerId = getCartOwnerId();
+              const owner = window.getOwner();
+        const customerId  = owner
             const cart = (await window.fetchCartFromDB?.(customerId)) || [];
             const existing = cart.find(i => i.product_id === productId || i.id === productId);
 
@@ -733,7 +734,8 @@
     async function syncHeaderCart() {
         if (!window.STHeader) return;
         try {
-            const customerId = getCartOwnerId();
+               const owner = window.getOwner();
+        const customerId  = owner
             const cart = (await window.fetchCartFromDB?.(customerId)) || [];
             window.STHeader.AppState.cart = cart;
             window.STHeader.updateCounts?.();
@@ -772,7 +774,8 @@
 
         window.clearCart = async () => {
             try {
-                const customerId = getCartOwnerId();
+                   const owner = window.getOwner();
+        const customerId  = owner
                 await window.saveCartToDB?.(customerId, []);
                 if (window.STHeader) {
                     window.STHeader.AppState.cart = [];

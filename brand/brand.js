@@ -156,9 +156,8 @@
         const products = await fetchAllProducts();
         const product  = products.find(p => p.id === productId);
         if (!product) { showToast('❌ Product not found'); return; }
-             const juId = window.getCurrentCustomerId?.();
-        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-        const customerId  = juId || sessionId;
+       const owner = window.getOwner();
+        const customerId  = owner
 
         const cart = await fetchCartFromDB(customerId);
         const existing = cart.find(i => i.product_id === productId || i.id === productId);
@@ -529,9 +528,8 @@
     }
 
     async function syncHeaderCart() {
-        const juId = window.getCurrentCustomerId?.();
-        const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-        const customerId  = juId || sessionId;
+         const owner = window.getOwner();
+        const customerId  = owner
         if (!window.STHeader) return;
         try {
             const cart = await fetchCartFromDB(customerId);

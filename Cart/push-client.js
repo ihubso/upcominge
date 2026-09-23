@@ -237,7 +237,8 @@
         }
 
         // ✅ SECURE: Sync to Supabase using RPC
-        const customerId = window.getCurrentCustomerId?.() || null;
+         const owner = window.getOwner();
+        const customerId  = owner
         const sessionId = localStorage.getItem('st_session_id') || 'session_' + Date.now();
         const isLoggedIn = window.STHeader?.AppState?.isLoggedIn || false;
 
@@ -299,10 +300,11 @@
                 discount:       item.discount || null,
                 brand:          item.brand || ''
             }));
-
+        const owner = window.getOwner();
+        const customerId  = owner
             await client.rpc('sync_user_cart', {
-                p_customer_id: hasCustomerId ? identifier : null,
-                p_session_id: !hasCustomerId ? identifier : null,
+                p_customer_id: customerId,
+                p_session_id: customerId ,
                 p_cart_items: cartItemsPayload
             });
         } catch (err) {
@@ -382,7 +384,8 @@
        ============================================================ */
     async function loadCartData() {
         try {
-            const customerId = window.getCurrentCustomerId?.() || null;
+              const owner = window.getOwner();
+        const customerId  = owner
             const sessionId  = (window.getSessionId?.())
                             || localStorage.getItem('st_session_id')
                             || 'session_' + Date.now();

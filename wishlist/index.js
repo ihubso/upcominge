@@ -20,27 +20,7 @@
         };
     }
 
-    /* ============================================================
-       IDENTIFIER
-       ============================================================ */
-    function getOwner() {
-        const customerId = window.STHeader?.AppState?.user?.id || (function () {
-            try {
-                const s = localStorage.getItem('st_customer') || sessionStorage.getItem('st_customer');
-                if (s) { const u = JSON.parse(s); if (u?.id) return u.id; }
-            } catch (_) {}
-            return null;
-        })();
 
-        if (customerId) return { id: customerId, isCustomer: true };
-
-        let sessionId = localStorage.getItem('st_session_id');
-        if (!sessionId) {
-            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-            localStorage.setItem('st_session_id', sessionId);
-        }
-        return { id: sessionId, isCustomer: false };
-    }
 
     /* ============================================================
        SKELETON LOADER

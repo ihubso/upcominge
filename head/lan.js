@@ -41,7 +41,7 @@ function translate(key, params = {}) {
     
     // 3. If still not found, return the original key as a last resort
     if (translation === undefined) {
-        console.warn(`⚠️ Missing translation for key: "${key}"`);
+        
         return key;
     }
     

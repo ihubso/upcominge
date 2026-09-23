@@ -163,8 +163,9 @@ async function fetchAllProducts() {
 async function toggleRandomWishlist(productId) {
     try {
         const client = getClient();
-        const customerId = window.getCurrentCustomerId?.();
-        const sessionId  = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+           const owner = window.getOwner();
+        const customerId  = owner
+     
 
         // Always prefer the AppState wishlist if it exists (kept fresh by header),
         // otherwise fall back to localStorage.
@@ -185,7 +186,7 @@ async function toggleRandomWishlist(productId) {
 
         if (client) {
             // ✅ SECURE: sync via RPC
-            await saveRandomWishlistToDB(customerId || sessionId, wishlist, !!customerId);
+            await saveRandomWishlistToDB(customerId, wishlist, !!customerId);
         }
 
         if (window.STHeader) {
