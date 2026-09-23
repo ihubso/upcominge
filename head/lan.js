@@ -1,11 +1,21 @@
-
-
-
-
-
 // ============================================================
 //  TRANSLATION FUNCTIONS
 // ============================================================
+
+/**
+ * Helper to safely get nested translation values
+ */
+function getNestedValue(obj, keys) {
+    let current = obj;
+    for (let i = 0; i < keys.length; i++) {
+        if (current && current[keys[i]] !== undefined) {
+            current = current[keys[i]];
+        } else {
+            return undefined;
+        }
+    }
+    return current;
+}
 
 /**
  * Translate a key to the current language
@@ -19,21 +29,23 @@ function translate(key, params = {}) {
         return key;
     }
 
-    // Handle nested keys
     const keys = key.split('.');
-    let translationObj = translations[currentLanguage];
     
-    for (let i = 0; i < keys.length; i++) {
-        if (translationObj && translationObj[keys[i]] !== undefined) {
-            translationObj = translationObj[keys[i]];
-        } else {
-            return key;
-        }
+    // 1. Try to get translation in the current language
+    let translation = getNestedValue(translations[currentLanguage], keys);
+    
+    // 2. Fallback to English if not found in current language (and current is not English)
+    if (translation === undefined && currentLanguage !== 'en') {
+        translation = getNestedValue(translations['en'], keys);
     }
     
-    let translation = translationObj;
+    // 3. If still not found, return the original key as a last resort
+    if (translation === undefined) {
+        console.warn(`⚠️ Missing translation for key: "${key}"`);
+        return key;
+    }
     
-    // Replace parameters
+    // Replace parameters (e.g., {name} -> John)
     if (typeof translation === 'string') {
         Object.keys(params).forEach(paramKey => {
             translation = translation.replace(`{${paramKey}}`, params[paramKey]);
@@ -51,7 +63,7 @@ function translate(key, params = {}) {
  * Translate all elements with data-translate attributes
  */
 function translateUI() {
-    // Check if translations are loaded
+    // Check if translations are loaded for the current language
     if (!translations || !translations[currentLanguage]) {
         console.error('Translations not loaded for language:', currentLanguage);
         return;
@@ -140,9 +152,6 @@ function translateUI() {
 
 /**
  * Update a specific element with translation
- * @param {string} elementId - Element ID
- * @param {string} translationKey - Translation key
- * @param {object} dynamicValues - Dynamic parameters
  */
 function updateDynamicTranslation(elementId, translationKey, dynamicValues = {}) {
     const element = document.getElementById(elementId);
@@ -156,9 +165,6 @@ function updateDynamicTranslation(elementId, translationKey, dynamicValues = {})
 
 /**
  * Set a translated value with dynamic content
- * @param {string} elementId - Element ID
- * @param {*} value - Dynamic value to display
- * @param {string} translationKey - Translation key with {value} placeholder
  */
 function setTranslatedValue(elementId, value, translationKey) {
     const element = document.getElementById(elementId);
@@ -175,9 +181,6 @@ function setTranslatedValue(elementId, value, translationKey) {
 
 /**
  * Set a translated rating with dynamic stars
- * @param {string} elementId - Element ID
- * @param {number} rating - Rating value (1-5)
- * @param {string} translationKey - Translation key with {rating} placeholder
  */
 function setTranslatedRating(elementId, rating, translationKey) {
     const element = document.getElementById(elementId);
@@ -192,33 +195,57 @@ function setTranslatedRating(elementId, rating, translationKey) {
     }
 }
 
-// --- Language Detection ---
+// ============================================================
+//  LANGUAGE DETECTION & INITIALIZATION
+// ============================================================
+
+/**
+ * Detects the user's browser language with English fallback
+ */
 function detectUserLanguage() {
-    // Get browser language
+    // Get browser language (e.g., 'en-US', 'fr-FR', 'es')
     const browserLang = navigator.language || navigator.userLanguage || 'en';
     
-    // Check if it's French (fr, fr-FR, fr-CA, etc.)
-    if (browserLang.toLowerCase().startsWith('fr')) {
-        return 'fr';
+    // Extract the base language code (e.g., 'en' from 'en-US')
+    const langCode = browserLang.toLowerCase().split('-')[0];
+    
+    // Define supported languages (ADD YOUR SUPPORTED LANGUAGES HERE)
+    const supportedLanguages = ['en', 'fr', 'es', 'de']; 
+    
+    // If the browser's base language is supported, return it
+    if (supportedLanguages.includes(langCode)) {
+        return langCode;
     }
     
-    // Default to French for testing purposes
-    return 'fr';
+    // Fallback to English if the browser language is not supported
+    return 'en';
 }
 
-
+/**
+ * Initialize the translation system
+ */
 function initTranslation() {
-    // Detect language from browser
-    currentLanguage = detectUserLanguage();
+    // 1. Check if a language is already saved in localStorage
+    const savedLanguage = localStorage.getItem('language');
     
-    // Save to localStorage for persistence
+    // 2. Use saved language if it exists and is valid, otherwise detect
+    if (savedLanguage && translations && translations[savedLanguage]) {
+        currentLanguage = savedLanguage;
+    } else {
+        currentLanguage = detectUserLanguage();
+    }
+    
+    // 3. Final safety fallback: if the determined language somehow isn't in translations, use 'en'
+    if (!translations || !translations[currentLanguage]) {
+        console.warn(`⚠️ Translation for '${currentLanguage}' not found. Falling back to 'en'.`);
+        currentLanguage = 'en';
+    }
+    
+    // 4. Save to localStorage for persistence across page reloads
     localStorage.setItem('language', currentLanguage);
     
     console.log(`🌐 Translation initialized: ${currentLanguage}`);
     
-    // Apply translations to UI
+    // 5. Apply translations to UI
     translateUI();
 }
-
-
-

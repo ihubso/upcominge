@@ -356,7 +356,8 @@ elements.cartBtn.addEventListener("click",()=>navAndClose("/Cart/"));
 elements.mobileCartBtn.addEventListener("click",()=>navAndClose("/Cart/"));
 elements.wishlistBtn.addEventListener("click",()=>navAndClose("/wishlist/"));
 elements.mobileWishlistBtn.addEventListener("click",()=>navAndClose("/wishlist/"));
-elements.foryoumobileWishlistBtn.addEventListener("click",()=>navAndClose("/ForYou/"));
+elements.foryoumobileWishlistBtn?.addEventListener("click",()=>navAndClose("/ForYou/")),
+document.getElementById("stMobileBottomWishlistBtn")?.addEventListener("click",()=>navAndClose("/wishlist/")),
     
     // ----- Auth Modal -----
     function openAuthModal() {
@@ -1779,14 +1780,7 @@ async function loadUserData(customerId, shouldMigrate = false) {
     }
     
     // ----- Update Counts -----
-    function updateCounts() {
-        const totalItems = AppState.cart.reduce((sum, item) => sum + (item.qty || 1), 0);
-        
-        if (elements.cartCount) elements.cartCount.textContent = totalItems;
-        if (elements.wishlistCount) elements.wishlistCount.textContent = AppState.wishlist.length;
-        if (elements.mobileCartCount) elements.mobileCartCount.textContent = totalItems;
-        if (elements.mobileWishlistCount) elements.mobileWishlistCount.textContent = AppState.wishlist.length;
-    }
+function updateCounts(){const totalItems=AppState.cart.reduce((sum,item)=>sum+(item.qty||1),0);elements.cartCount&&(elements.cartCount.textContent=totalItems),elements.wishlistCount&&(elements.wishlistCount.textContent=AppState.wishlist.length),elements.mobileCartCount&&(elements.mobileCartCount.textContent=totalItems),elements.mobileWishlistCount&&(elements.mobileWishlistCount.textContent=AppState.wishlist.length);const bottomWishCount=document.getElementById("stMobileBottomWishlistCount");bottomWishCount&&(bottomWishCount.textContent=AppState.wishlist.length,bottomWishCount.style.display=AppState.wishlist.length>0?"flex":"none")}
 
 function setAuthenticatedUser(user, {remember = false, persist = true} = {}) {
     if (!user?.id) return false;

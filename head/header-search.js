@@ -1799,10 +1799,124 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
     animation: abbreviateBrand 3s forwards ease-in-out;
   }
 
-  .st-brand-highlight {
+    .st-brand-highlight {
     display: inline-block;
     animation: fadeHighlight 3s forwards ease-in-out;
   }
+}
+
+/* ============================================
+   ANDROID-STYLE BOTTOM NAV — 5 tabs with active pill
+   ============================================ */
+.st-mobile-bottom-nav {
+    padding: 6px 0 env(safe-area-inset-bottom, 6px);
+}
+
+.st-mobile-bottom-nav .st-nav-items {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 0 6px;
+    gap: 2px;
+}
+
+.st-mobile-bottom-nav .st-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 6px 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    color: #64748B;
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    text-decoration: none;
+    border-radius: 14px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.st-mobile-bottom-nav .st-nav-item .st-icon-wrap {
+    position: relative;
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 26px;
+    transition: all 0.2s ease;
+}
+
+.st-mobile-bottom-nav .st-nav-item .st-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* ✅ ACTIVE STATE — light blue pill + darker blue text */
+.st-mobile-bottom-nav .st-nav-item.active {
+    color: #2563EB;
+    background: linear-gradient(180deg, rgba(37, 99, 235, 0.13) 0%, rgba(37, 99, 235, 0.05) 100%);
+}
+
+.st-mobile-bottom-nav .st-nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 55%;
+    height: 3px;
+    background: #2563EB;
+    border-radius: 0 0 4px 4px;
+}
+
+.st-mobile-bottom-nav .st-nav-item.active .st-icon-wrap {
+    transform: translateY(-1px);
+}
+
+.st-mobile-bottom-nav .st-nav-item.active i {
+    filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.35));
+}
+
+/* Badge — small red pill, never disturbs layout */
+.st-mobile-bottom-nav .st-nav-item .st-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    background: #EF4444;
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    min-width: 15px;
+    height: 15px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 1.5px solid white;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+    line-height: 1;
+}
+
+/* Hide any leftover avatar-small if it accidentally renders */
+.st-mobile-bottom-nav .st-avatar-small {
+    display: none !important;
 }
         </style>
         
@@ -1891,10 +2005,10 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                                 <button class="st-account-dropdown-item danger" id="stLogoutBtn" style="display:none;" >
                                     <i class="fas fa-sign-out-alt"></i> <span data-translate="logout">Logout</span>
                                 </button>
-                               <button onclick="closeMobileDrawer(); window.navigateWithUserInfo('/AboutUs/')" class="btn btn-primary st-mobile-nav-btn">
+                               <button class="st-account-dropdown-item" onclick="closeMobileDrawer(); window.navigateWithUserInfo('/AboutUs/')" >
                                     <i class="fa fa-info-circle"></i> <span data-translate="about_us">About Us</span>
                                 </button>
-                               <button onclick="closeMobileDrawer(); window.navigateWithUserInfo('/Terms/')" class="btn btn-primary st-mobile-nav-btn">
+                               <button class="st-account-dropdown-item" onclick="closeMobileDrawer(); window.navigateWithUserInfo('/Terms/')" >
                                     <i class="fa fa-file-text"></i> <span data-translate="terms">Terms & Conditions</span>
                                 </button>
                                 <button class="st-account-dropdown-item" id="stContactBtn" onclick="closeMobileDrawer(); window.navigateWithUserInfo('/contactus/')">
@@ -1943,36 +2057,48 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
         <!-- ============================================
              MOBILE BOTTOM NAVIGATION
              ============================================ -->
-        <nav class="st-mobile-bottom-nav" id="stMobileBottomNav">
-            <div class="st-nav-items">
-                <a href="/index.html" class="st-nav-item active" >
-                    <span class="st-icon-wrap"><i class="fas fa-home"></i></span>
-                    <span class="st-label"data-translate="home">Home</span>
-                </a>
+<nav class="st-mobile-bottom-nav" id="stMobileBottomNav">
+    <div class="st-nav-items">
+        <!-- 1. MY STORE -->
+        <a href="/product/" class="st-nav-item" data-nav="store">
+            <span class="st-icon-wrap"><i class="fas fa-store"></i></span>
+            <span class="st-label" data-translate="my_store">My Store</span>
+        </a>
+
+        <!-- 2. PANIER (Cart) -->
+        <button class="st-nav-item" id="stMobileCartBtn" data-nav="cart">
+            <span class="st-icon-wrap">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="st-badge" id="stMobileCartCount">0</span>
+            </span>
+            <span class="st-label" data-translate="cart">Panier</span>
+        </button>
+
+        
+        <button class="st-nav-item" id="stForyouMobileWishlistBtn" data-nav="foryou">
+            <span class="st-icon-wrap">
+               <i class="fas fa-star"></i>
+            </span>
+            <span class="st-label"data-translate="for_you">for you</span>
+        </button>
                 
-                <button class="st-nav-item" id="stForyouMobileWishlistBtn" >
-                    <span class="st-icon-wrap">
-                        <i class="fas fa-heart"></i>
-                    </span>
-                    <span class="st-label"data-translate="for_you">for you</span>
-                </button>
-                
-                <button class="st-nav-item" id="stMobileCartBtn">
-                    <span class="st-icon-wrap">
-                        <i class="fas fa-shopping-bag"></i>
-                        <span class="st-badge" id="stMobileCartCount">0</span>
-                    </span>
-                    <span class="st-label" data-translate="cart">Cart</span>
-                </button>
-                
-                <button class="st-nav-item" id="stMobileAccountBtn">
-                    <span class="st-icon-wrap">
-                        <div class="st-avatar-small" id="stMobileAvatar">G</div>
-                    </span>
-                    
-                </button>
-            </div>
-        </nav>
+
+        <!-- 4. FAVORIS (Wishlist) -->
+        <button class="st-nav-item" id="stMobileBottomWishlistBtn" data-nav="wishlist">
+            <span class="st-icon-wrap">
+                <i class="fas fa-heart"></i>
+                <span class="st-badge" id="stMobileBottomWishlistCount" style="display:none;">0</span>
+            </span>
+            <span class="st-label" data-translate="wishlist">Favoris</span>
+        </button>
+
+        <!-- 5. PROFIL (Account) -->
+        <button class="st-nav-item" id="stMobileAccountBtn" data-nav="profile">
+            <span class="st-icon-wrap"><i class="fas fa-user"></i></span>
+            <span class="st-label" data-translate="profile">Profil</span>
+        </button>
+    </div>
+</nav> 
         
         <!-- ============================================
              MOBILE DRAWER
@@ -1996,13 +2122,13 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                         </li>
                     `).join('')}
                     <li class="st-mobile-nav-item">
-                        <button onclick="window.navigateWithUserInfo('/AboutUs/')" class="btn btn-primary st-mobile-nav-btn">
+                        <button class=" st-mobile-nav-item" onclick="window.navigateWithUserInfo('/AboutUs/')">
                             <i class="fas fa-info-circle"></i> 
                             <span data-translate="about_us">About Us</span>
                         </button>
                     </li>
                     <li class="st-mobile-nav-item">
-                        <button onclick="window.navigateWithUserInfo('/Terms/')" class="btn btn-primary st-mobile-nav-btn">
+                        <buttonclass=" st-mobile-nav-item" onclick="window.navigateWithUserInfo('/Terms/')" >
                             <i class="fas fa-file-contract"></i> 
                             <span data-translate="terms">Terms & Conditions</span>
                         </button>

@@ -46,9 +46,7 @@ async function fetchBusinessInfo() {
     if (!client) { showFallbackData(); return; }
 
     try {
-    
         const { data, error } = await client.rpc('get_contact_business_info');
-
         if (error) throw error;
 
         // RPC returns an array — take the first row
@@ -60,7 +58,7 @@ async function fetchBusinessInfo() {
             return;
         }
 
-        renderContactInfo(row);
+        renderBusinessInfo(row);
     } catch (err) {
         console.error('❌ Error fetching data:', err.message);
         showFallbackData();
@@ -74,8 +72,14 @@ async function fetchBusinessInfo() {
         const els = getEls();
         if (!els.content) return;
 
-        if (els.loading) els.loading.style.display = 'none';
-        els.content.style.display = 'block';
+       if (els.loading) els.loading.style.display = 'none';
+
+    if (!els.content) {
+        console.warn('⚠️ renderBusinessInfo: #aboutContent not found');
+        return;
+    }
+
+    els.content.style.display = 'block';
 
         // Shop name
         const shopName = info.shop_name || 'Sucess Technology';
@@ -269,25 +273,35 @@ async function fetchBusinessInfo() {
        CLEANUP / INIT
        ============================================================ */
     function cleanup() {
-        // Nothing to tear down — no timers, no observers.
-        // Kept for symmetry with other pages.
+       
     }
 
-    async function init() {
-        const els = getEls();
-        // Bail if we're not on the About page. `aboutContent` is a page-unique id.
-        if (!els.content && !els.heroShopName) return;
-        cleanup();
+async function init() {
+    const els = getEls();
+    if (!els.content && !els.heroShopName) return;   // not the About page
+    cleanup();
 
-        console.log('📄 About Us page: init');
+    console.log('📄 About Us page: init');
 
-        bindAnchorScroll();
+    bindAnchorScroll();
+
+    // 🛟 Safety net: if the fetch takes longer than 6 seconds, show fallback
+    const timeoutId = setTimeout(() => {
+        if (els.loading && els.loading.style.display !== 'none') {
+            console.warn('⚠️ fetchBusinessInfo timed out — showing fallback');
+            showFallbackData();
+        }
+    }, 6000);
+
+    try {
         await fetchBusinessInfo();
-
-        if (typeof translateUI === 'function') translateUI();
-
-        console.log('📄 About Us page ready');
+    } finally {
+        clearTimeout(timeoutId);
     }
+
+    if (typeof translateUI === 'function') translateUI();
+    console.log('📄 About Us page ready');
+}
 
     /* ============================================================
        BOOTSTRAP
