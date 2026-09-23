@@ -43,26 +43,29 @@ async function fetchHotProducts() {
         return [];
     }
 }
-    async function fetchReviewsFromDB() {
-        const client = getClient();
-        if (!client) return {};
-        try {
-            const { data, error } = await client.from('reviews').select('*');
-            if (error) { console.error('❌ Error fetching reviews:', error.message); return {}; }
-            const reviews = {};
-            (data || []).forEach(r => {
-                if (!reviews[r.product_id]) reviews[r.product_id] = [];
-                reviews[r.product_id].push({
-                    id: r.id, user: r.user_name, rating: r.rating,
-                    comment: r.comment, date: r.date
-                });
+async function fetchReviewsFromDB() {
+    const client = getClient();
+    if (!client) return {};
+    try {
+        const { data, error } = await client.rpc('get_all_reviews');
+        if (error) { console.error('❌ Error fetching reviews:', error.message); return {}; }
+        const reviews = {};
+        (data || []).forEach(r => {
+            if (!reviews[r.product_id]) reviews[r.product_id] = [];
+            reviews[r.product_id].push({
+                id: r.id,
+                user: r.user_name,
+                rating: r.rating,
+                comment: r.comment,
+                date: r.date
             });
-            return reviews;
-        } catch (err) {
-            console.error('❌ Error fetching reviews:', err.message);
-            return {};
-        }
+        });
+        return reviews;
+    } catch (err) {
+        console.error('❌ Error fetching reviews:', err.message);
+        return {};
     }
+}
 
     /* ============================================================
        REVIEW LOOKUP (uses module-scoped cache)
@@ -217,52 +220,55 @@ async function fetchHotProducts() {
     /* ============================================================
        WISHLIST
        ============================================================ */
-    async function toggleWishlist(productId) {
-        try {
-            let wishlist = JSON.parse(localStorage.getItem('st_wishlist') || '[]');
-            const index = wishlist.indexOf(productId);
+async function toggleWishlist(productId) {
+    try {
+        // Prefer the freshest source (AppState), fall back to localStorage
+        let wishlist = Array.isArray(window.STHeader?.AppState?.wishlist)
+            ? [...window.STHeader.AppState.wishlist]
+            : JSON.parse(localStorage.getItem('st_wishlist') || '[]');
 
-            if (index !== -1) { wishlist.splice(index, 1); showToast('❤️ Removed from wishlist', 'info'); }
-            else              { wishlist.push(productId);   showToast('❤️ Added to wishlist',   'success'); }
+        const index = wishlist.indexOf(productId);
 
-            localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
+        if (index !== -1) { wishlist.splice(index, 1); showToast('❤️ Removed from wishlist', 'info'); }
+        else              { wishlist.push(productId);   showToast('❤️ Added to wishlist',   'success'); }
 
-            const customerId = window.getCurrentCustomerId?.();
-            const sessionId  = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-            const client = getClient();
-            if (client) {
-                await saveWishlistToDB(customerId || sessionId, wishlist, !!customerId);
-            }
+        localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
 
-            if (window.STHeader) {
-                window.STHeader.AppState.wishlist = wishlist;
-                window.STHeader.updateCounts?.();
-            }
-
-            // Toggle the active class in-place
-            document.querySelectorAll(`.hot-product-card[data-product-id="${productId}"] .hot-product-wishlist`)
-                .forEach(btn => btn.classList.toggle('active'));
-        } catch (err) {
-            console.error('❌ Error toggling wishlist:', err);
-            showToast('❌ Failed to update wishlist', 'error');
-        }
-    }
-
-    async function saveWishlistToDB(identifier, wishlist, hasCustomerId = false) {
+        const customerId = window.getCurrentCustomerId?.();
+        const sessionId  = localStorage.getItem('st_session_id') || 'session_' + Date.now();
         const client = getClient();
-        if (!client) return;
-        const col = hasCustomerId ? 'customer_id' : 'session_id';
-        try {
-            await client.from('wishlist').delete().eq(col, identifier);
-            if (wishlist.length > 0) {
-                const rows = wishlist.map(pid => ({ [col]: identifier, product_id: pid }));
-                const { error } = await client.from('wishlist').insert(rows);
-                if (error) console.error('❌ Error saving wishlist:', error.message);
-            }
-        } catch (err) {
-            console.error('❌ Error:', err.message);
+        if (client) {
+            await saveWishlistToDB(customerId || sessionId, wishlist, !!customerId);
         }
+
+        if (window.STHeader) {
+            window.STHeader.AppState.wishlist = wishlist;
+            window.STHeader.updateCounts?.();
+        }
+
+        // Toggle the active class in-place
+        document.querySelectorAll(`.hot-product-card[data-product-id="${productId}"] .hot-product-wishlist`)
+            .forEach(btn => btn.classList.toggle('active'));
+    } catch (err) {
+        console.error('❌ Error toggling wishlist:', err);
+        showToast('❌ Failed to update wishlist', 'error');
     }
+}
+
+async function saveWishlistToDB(identifier, wishlist, hasCustomerId = false) {
+    const client = getClient();
+    if (!client) return;
+    try {
+        // ✅ SECURE: One RPC replaces the delete + insert loop
+        await client.rpc('sync_user_wishlist', {
+            p_customer_id: hasCustomerId ? identifier : null,
+            p_session_id: !hasCustomerId ? identifier : null,
+            p_product_ids: wishlist
+        });
+    } catch (err) {
+        console.error('❌ Error saving wishlist:', err.message);
+    }
+}
 
     /* ============================================================
        TOAST

@@ -18,7 +18,7 @@ async function fetchFeaturedProducts() {
     }
 
     try {
-        // ✅ SECURE: Use dedicated RPC instead of .from()
+    
         const { data, error } = await client.rpc('get_featured_products');
 
         if (error) {

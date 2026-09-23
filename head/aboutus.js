@@ -41,28 +41,31 @@
     /* ============================================================
        FETCH
        ============================================================ */
-    async function fetchBusinessInfo() {
-        const client = getSupabaseClient();
-        if (!client) { showFallbackData(); return; }
+async function fetchBusinessInfo() {
+    const client = window.getSupabaseClient?.();
+    if (!client) { showFallbackData(); return; }
 
-        try {
-            const [bizRes, contactRes] = await Promise.all([
-                client.from('business_info').select('*').eq('id', 1).single(),
-                client.from('contact_info')
-                    .select('id, latitude, longitude, hours, description, shop_photo, created_at')
-                    .eq('id', 1).single(),
-            ]);
+    try {
+    
+        const { data, error } = await client.rpc('get_contact_business_info');
 
-            if (bizRes.error) throw bizRes.error;
-            if (contactRes.error) console.warn('⚠️ contact_info:', contactRes.error.message);
+        if (error) throw error;
 
-            const combined = { ...(bizRes.data || {}), ...(contactRes.data || {}) };
-            renderBusinessInfo(combined);
-        } catch (err) {
-            console.error('❌ Error fetching data:', err.message);
+        // RPC returns an array — take the first row
+        const row = Array.isArray(data) ? data[0] : data;
+
+        if (!row) {
+            console.warn('⚠️ No business/contact info found, using fallback');
             showFallbackData();
+            return;
         }
+
+        renderContactInfo(row);
+    } catch (err) {
+        console.error('❌ Error fetching data:', err.message);
+        showFallbackData();
     }
+}
 
     /* ============================================================
        RENDER

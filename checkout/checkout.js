@@ -90,22 +90,39 @@
     /* ============================================================
        BUSINESS INFO
        ============================================================ */
-    async function getBusinessInfo() {
-        if (businessInfo) return businessInfo;
-        const client = getSupabaseClient();
-        if (!client) return getFallbackBusinessInfo();
+async function getBusinessInfo() {
+    if (cachedBusinessInfo) return cachedBusinessInfo;
 
-        try {
-            const { data, error } = await client
-                .from('business_info').select('*').limit(1).maybeSingle();
-            if (error) throw error;
-            businessInfo = data || getFallbackBusinessInfo();
-            return businessInfo;
-        } catch (err) {
-            console.warn('⚠️ business_info fetch failed:', err.message);
+    try {
+        const client = getSupabaseClient();
+        if (!client) {
+            console.warn('⚠️ Supabase client not available, using fallback');
             return getFallbackBusinessInfo();
         }
+
+      
+        const { data, error } = await client.rpc('get_business_info');
+
+        if (error) {
+            console.error('❌ Error fetching business info:', error);
+            return getFallbackBusinessInfo();
+        }
+
+        // RPC returns an array — take the first row
+        const row = Array.isArray(data) ? data[0] : data;
+
+        if (row) {
+            cachedBusinessInfo = row;
+            console.log('✅ Business info loaded:', cachedBusinessInfo.shop_name);
+            return cachedBusinessInfo;
+        }
+
+        return getFallbackBusinessInfo();
+    } catch (err) {
+        console.error('❌ Error fetching business info:', err);
+        return getFallbackBusinessInfo();
     }
+}
 
     function getFallbackBusinessInfo() {
         return {

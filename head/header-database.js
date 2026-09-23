@@ -103,37 +103,7 @@ async function saveWishlistToDB(customerId, wishlistArray) {
     }
 }
 
-async function fetchSearchAnalyticsFromDB() {
-    const client = getSupabaseClient();
-    if (!client) {
-        console.warn('⚠️ Supabase not available for search analytics');
-        return {};
-    }
 
-    try {
-        const { data, error } = await client
-            .from('search_analytics')
-            .select('*');
-
-        if (error) {
-            console.error('❌ Error fetching search analytics:', error.message);
-            return {};
-        }
-
-        const analytics = {};
-        (data || []).forEach(row => {
-            analytics[row.query] = {
-                query: row.query,
-                count: row.count,
-                lastSearched: row.last_searched
-            };
-        });
-        return analytics;
-    } catch (err) {
-        console.error('❌ Error fetching search analytics:', err.message);
-        return {};
-    }
-}
 
 async function saveSearchAnalyticsToDB(query) {
     if (!query || !query.trim()) return;

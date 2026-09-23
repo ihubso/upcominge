@@ -87,7 +87,7 @@ let cachedBusinessInfo = null;
 
 async function getBusinessInfo() {
     if (cachedBusinessInfo) return cachedBusinessInfo;
-    
+
     try {
         const client = getSupabaseClient();
         if (!client) {
@@ -95,19 +95,19 @@ async function getBusinessInfo() {
             return getFallbackBusinessInfo();
         }
 
-        const { data, error } = await client
-            .from('business_info')
-            .select('*')
-            .limit(1)
-            .maybeSingle();
+   
+        const { data, error } = await client.rpc('get_business_info');
 
         if (error) {
             console.error('❌ Error fetching business info:', error);
             return getFallbackBusinessInfo();
         }
 
-        if (data) {
-            cachedBusinessInfo = data;
+        // RPC returns an array — take the first row
+        const row = Array.isArray(data) ? data[0] : data;
+
+        if (row) {
+            cachedBusinessInfo = row;
             console.log('✅ Business info loaded:', cachedBusinessInfo.shop_name);
             return cachedBusinessInfo;
         }
@@ -1835,7 +1835,7 @@ async function checkAutoLogin() {
     if (urlUser?.id) {
         console.log("🔑 Auto-login from URL params:", urlUser.id);
         
-        // ✅ SECURE: Use RPC instead of .from()
+        
         const client = getSupabaseClient();
         let fullUser = null;
         

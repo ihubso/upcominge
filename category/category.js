@@ -10,14 +10,8 @@
     let isLoading           = false;
     let hasMoreProducts     = true;
     let totalProducts       = 0;
-
-    // Fast lookup for addToCart / related filtering
     const productCache      = new Map();
-
-    // Full per-category counts (for the in-grid header badges)
     const categoryCountMap  = new Map();
-    // Tracks the last category header we rendered, so we don't
-    // repeat it when a new page continues the same category.
     let lastRenderedCategory = null;
 
     let relatedProductsPool = [];
@@ -31,9 +25,6 @@
 
     let infiniteScrollObserver = null;
 
-    /* ============================================================
-       HELPERS
-       ============================================================ */
     function t(key, fallback) {
         if (window.Translations?.translate) {
             const r = window.Translations.translate(key);
@@ -230,21 +221,12 @@
 
         const client = window.getSupabaseClient?.();
         if (!client) return null;
-
-        const { data, error } = await client
-            .from('products')
-            .select('*')
-            .eq('id', productId)
-            .maybeSingle();
-
+    const { data, error } = await client
+      .rpc('get_product_by_id', { p_id: product });
         if (error || !data) return null;
         productCache.set(data.id, data);
         return data;
     }
-
-    /* ============================================================
-       CART
-       ============================================================ */
     function getCartOwnerId() {
         const juId = window.getCurrentCustomerId?.();
         let sessionId = localStorage.getItem('st_session_id');

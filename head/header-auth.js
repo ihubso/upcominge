@@ -128,7 +128,7 @@ async function getCurrentUser() {
     const customerId = AppState.user.id;
 
     try {
-        // ✅ SECURE: Fetch via RPC instead of .from()
+        
         const { data, error } = await client.rpc('get_customer_by_id', { p_id: customerId });
 
         if (error) {

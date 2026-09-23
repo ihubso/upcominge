@@ -74,8 +74,6 @@
                     'get_product_details_and_increment_views',
                     { p_product_id: productId }
                 );
-                // NOTE: that RPC increments views. If you don't want a view bump
-                // from the wishlist, use `get_product_by_id` instead if it exists.
 
                 if (!error && data && data.length > 0) {
                     const p = data[0];

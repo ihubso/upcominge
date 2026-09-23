@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // ✅ SECURE: Use RPC instead of direct .from('products')
+
     const { data: productRows, error } = await supabase
       .rpc('get_product_by_id', { p_id: product });
 

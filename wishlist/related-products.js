@@ -197,21 +197,20 @@
         }
     }
 
-    async function saveRandomWishlistToDB(identifier, wishlist, hasCustomerId = false) {
-        const client = getClient();
-        if (!client) return;
-        const col = hasCustomerId ? 'customer_id' : 'session_id';
-        try {
-            await client.from('wishlist').delete().eq(col, identifier);
-            if (wishlist.length > 0) {
-                const rows = wishlist.map(pid => ({ [col]: identifier, product_id: pid }));
-                const { error } = await client.from('wishlist').insert(rows);
-                if (error) console.error('❌ Error saving wishlist:', error.message);
-            }
-        } catch (err) {
-            console.error('❌ Error:', err.message);
-        }
+async function saveRandomWishlistToDB(identifier, wishlist, hasCustomerId = false) {
+    const client = getClient();
+    if (!client) return;
+    try {
+        // ✅ SECURE: Single RPC replaces the delete + insert loop
+        await client.rpc('sync_user_wishlist', {
+            p_customer_id: hasCustomerId ? identifier : null,
+            p_session_id:  !hasCustomerId ? identifier : null,
+            p_product_ids: Array.isArray(wishlist) ? wishlist : []
+        });
+    } catch (err) {
+        console.error('❌ Error saving wishlist:', err.message);
     }
+}
 
     /* ============================================================
        TOAST

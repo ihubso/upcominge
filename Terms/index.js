@@ -65,35 +65,29 @@
     /* ============================================================
        BUSINESS INFO
        ============================================================ */
-    async function fetchBusinessInfo() {
-        try {
-            const supabase = window.getSupabaseClient?.();
-            if (!supabase || typeof supabase.from !== 'function') {
-                showFallbackData();
-                return;
-            }
+async function fetchBusinessInfo() {
+    const client = window.getSupabaseClient?.();
+    if (!client) { showFallbackData(); return; }
 
-            const [bizRes, contactRes] = await Promise.all([
-                supabase.from('business_info').select('*').eq('id', 1).single(),
-                supabase.from('contact_info').select('*').eq('id', 1).single(),
-            ]);
+    try {
+       
+        const { data, error } = await client.rpc('get_contact_business_info');
 
-            if (bizRes.error)     console.warn('⚠️ Business info fetch error:', bizRes.error.message);
-            if (contactRes.error) console.warn('⚠️ Contact info fetch error:', contactRes.error.message);
+        if (error) throw error;
+        const row = Array.isArray(data) ? data[0] : data;
 
-            const combined = { ...(bizRes.data || {}), ...(contactRes.data || {}) };
-
-            if (combined && Object.keys(combined).length > 0) {
-                renderBusinessInfo(combined);
-            } else {
-                showFallbackData();
-            }
-        } catch (err) {
-            console.error('❌ Error fetching business info:', err);
+        if (!row) {
+            console.warn('⚠️ No business/contact info found, using fallback');
             showFallbackData();
+            return;
         }
-    }
 
+        renderContactInfo(row);
+    } catch (err) {
+        console.error('❌ Error fetching data:', err.message);
+        showFallbackData();
+    }
+}
     function renderBusinessInfo(data) {
         const els = getEls();
 

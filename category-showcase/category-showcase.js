@@ -87,79 +87,79 @@
     // 3. FETCH CONFIG FROM SUPABASE (ONLY SOURCE OF TRUTH)
     // ============================================================
 
-    async function fetchShowcaseConfig() {
-        if (cachedConfig) return cachedConfig;
+async function fetchShowcaseConfig() {
+    if (cachedConfig) return cachedConfig;
 
-        const client = getSupabaseClient();
-        if (!client) {
-            console.warn('⚠️ Supabase not available, using default config');
+    const client = getSupabaseClient();
+    if (!client) {
+        console.warn('⚠️ Supabase not available, using default config');
+        cachedConfig = DEFAULT_CONFIG;
+        return DEFAULT_CONFIG;
+    }
+
+    try {
+    
+        const { data, error } = await client.rpc('get_showcase_config');
+
+        if (error) {
+            console.warn('⚠️ No config found in Supabase, using default:', error.message);
             cachedConfig = DEFAULT_CONFIG;
             return DEFAULT_CONFIG;
         }
 
-        try {
-            // Note: Ensure 'category_showcase_config' has RLS policies allowing public read
-            const { data, error } = await client
-                .from('category_showcase_config')
-                .select('*')
-                .eq('id', 1)
-                .single();
+        // RPC returns an array — take the first row
+        const row = Array.isArray(data) ? data[0] : data;
 
-            if (error) {
-                console.warn('⚠️ No config found in Supabase, using default:', error.message);
-                cachedConfig = DEFAULT_CONFIG;
-                return DEFAULT_CONFIG;
-            }
+        if (!row) {
+            console.warn('⚠️ No config data, using default');
+            cachedConfig = DEFAULT_CONFIG;
+            return DEFAULT_CONFIG;
+        }
 
-            if (!data) {
-                console.warn('⚠️ No config data, using default');
-                cachedConfig = DEFAULT_CONFIG;
-                return DEFAULT_CONFIG;
-            }
-
-            let heroImages = DEFAULT_CONFIG.heroImages;
-            if (data.hero_images) {
-                if (Array.isArray(data.hero_images)) {
-                    heroImages = data.hero_images;
-                } else if (typeof data.hero_images === 'string') {
-                    try {
-                        heroImages = JSON.parse(data.hero_images);
-                        if (!Array.isArray(heroImages)) {
-                            heroImages = [data.hero_images];
-                        }
-                    } catch (parseError) {
-                        heroImages = [data.hero_images];
-                    }
+        // Parse hero_images (handles jsonb, JSON string, or plain string)
+        let heroImages = DEFAULT_CONFIG.heroImages;
+        if (row.hero_images) {
+            if (Array.isArray(row.hero_images)) {
+                heroImages = row.hero_images;
+            } else if (typeof row.hero_images === 'string') {
+                try {
+                    const parsed = JSON.parse(row.hero_images);
+                    heroImages = Array.isArray(parsed) ? parsed : [row.hero_images];
+                } catch (parseError) {
+                    heroImages = [row.hero_images];
                 }
             }
-
-            const config = {
-                ...DEFAULT_CONFIG,
-                filterType: data.filter_type || DEFAULT_CONFIG.filterType,
-                filterValue: data.filter_value || DEFAULT_CONFIG.filterValue,
-                title: data.title || DEFAULT_CONFIG.title,
-                subtitle: data.subtitle || DEFAULT_CONFIG.subtitle,
-                badge: data.badge || DEFAULT_CONFIG.badge,
-                countdownHours: data.countdown_hours || DEFAULT_CONFIG.countdownHours,
-                viewAllLink: data.view_all_link || DEFAULT_CONFIG.viewAllLink,
-                ctaText: data.cta_text || DEFAULT_CONFIG.ctaText,
-                ctaSecondaryText: data.cta_secondary_text || DEFAULT_CONFIG.ctaSecondaryText,
-                showHero: data.show_hero !== undefined ? data.show_hero : DEFAULT_CONFIG.showHero,
-                maxProducts: data.max_products || DEFAULT_CONFIG.maxProducts,
-                heroImages
-            };
-
-            cachedConfig = config;
-            console.log('✅ Category Showcase config loaded from Supabase');
-            console.log(`📋 Filter: ${config.filterType} = "${config.filterValue}"`);
-            return config;
-
-        } catch (err) {
-            console.error('❌ Error fetching config:', err);
-            cachedConfig = DEFAULT_CONFIG;
-            return DEFAULT_CONFIG;
         }
+
+        const config = {
+            ...DEFAULT_CONFIG,
+            filterType:        row.filter_type        || DEFAULT_CONFIG.filterType,
+            filterValue:       row.filter_value       || DEFAULT_CONFIG.filterValue,
+            title:             row.title              || DEFAULT_CONFIG.title,
+            subtitle:          row.subtitle           || DEFAULT_CONFIG.subtitle,
+            badge:             row.badge              || DEFAULT_CONFIG.badge,
+            countdownHours:    row.countdown_hours    || DEFAULT_CONFIG.countdownHours,
+            viewAllLink:       row.view_all_link      || DEFAULT_CONFIG.viewAllLink,
+            ctaText:           row.cta_text           || DEFAULT_CONFIG.ctaText,
+            ctaSecondaryText:  row.cta_secondary_text || DEFAULT_CONFIG.ctaSecondaryText,
+            showHero:          row.show_hero !== undefined && row.show_hero !== null
+                                 ? row.show_hero
+                                 : DEFAULT_CONFIG.showHero,
+            maxProducts:       row.max_products       || DEFAULT_CONFIG.maxProducts,
+            heroImages
+        };
+
+        cachedConfig = config;
+        console.log('✅ Category Showcase config loaded via RPC');
+        console.log(`📋 Filter: ${config.filterType} = "${config.filterValue}"`);
+        return config;
+
+    } catch (err) {
+        console.error('❌ Error fetching config:', err);
+        cachedConfig = DEFAULT_CONFIG;
+        return DEFAULT_CONFIG;
     }
+}
 
     // ============================================================
     // 4. FETCH PRODUCTS BASED ON CONFIG (SECURED)
@@ -436,9 +436,9 @@
                             <span class="rating-count">(${product.reviewCount || 0})</span>
                         </div>
                         <div class="category-product-price">
-                            <span class="current-price">${formatPrice(price)}</span>
+                            <span class="current-price">fcfa${price.toFixed(2)}</span>
                             ${isDeal && originalPrice > price ? 
-                                `<span class="original-price">${formatPrice(originalPrice)}</span>` : ''}
+                                `<span class="original-price">fcfa${originalPrice.toFixed(2)}</span>` : ''}
                         </div>
                         <a onclick="window.navigateWithUserInfo('/item/?product=${product.id}'); return false;"  class="st-btn-view">
                             <i class="fas fa-eye"></i>
@@ -455,14 +455,7 @@
     // 10. FORMAT PRICE
     // ============================================================
 
-    function formatPrice(price) {
-        if (price >= 1000000) {
-            return (price / 1000000).toFixed(0) + 'M FCFA';
-        } else if (price >= 1000) {
-            return (price / 1000).toFixed(0) + 'K FCFA';
-        }
-        return price.toFixed(0) + ' FCFA';
-    }
+
 
     // ============================================================
     // 11. INJECT STYLES

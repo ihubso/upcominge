@@ -414,7 +414,7 @@ async function loadOrders() {
             const user = await getUserData();
             if (!user?.id) return showToast('❌ No user logged in', 'error');
 
-            // ✅ SECURE: Use RPC instead of .from().update()
+        
             const { error } = await client.rpc('update_customer_profile', {
                 p_id: user.id,
                 p_name: name,
@@ -509,7 +509,7 @@ async function loadOrders() {
             const user = await getUserData();
             
             if (client && user?.id) {
-                // ✅ SECURE: Use RPC instead of .from().delete()
+               
                 const { error } = await client.rpc('delete_customer_account', { p_id: user.id });
                 if (error) throw error;
                 

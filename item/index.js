@@ -421,27 +421,86 @@
     /* ============================================================
        REVIEWS
        ============================================================ */
-    async function loadReviewsFromSupabase() {
-        try {
-            const client = getSupabaseClient();
-            if (!client) { loadReviewsFromLocalStorage(); return; }
-            const { data, error } = await client.from('reviews').select('*')
-                .order('created_at', { ascending: false });
-            if (error) { console.error('❌ Error loading reviews:', error); loadReviewsFromLocalStorage(); return; }
-            const reviews = {};
-            data.forEach(r => {
-                if (!reviews[r.product_id]) reviews[r.product_id] = [];
-                reviews[r.product_id].push({
-                    id: r.id, user: r.user_name, rating: r.rating,
-                    comment: r.comment,
-                    date: r.date || new Date(r.created_at).toLocaleDateString()
-                });
-            });
-            _cachedReviews = reviews;
-            localStorage.setItem('st_reviews', JSON.stringify(reviews));
-        } catch (err) { console.error('❌ Error loading reviews:', err); loadReviewsFromLocalStorage(); }
-    }
+async function loadReviewsFromSupabase() {
+    try {
+        const client = getSupabaseClient();
+        if (!client) { loadReviewsFromLocalStorage(); return; }
 
+        const { data, error } = await client.rpc('get_all_reviews');
+        if (error) {
+            console.error('❌ Error loading reviews:', error);
+            loadReviewsFromLocalStorage();
+            return;
+        }
+
+        const reviews = {};
+        (data || []).forEach(r => {
+            if (!reviews[r.product_id]) reviews[r.product_id] = [];
+            reviews[r.product_id].push({
+                id: r.id,
+                user: r.user_name,
+                rating: r.rating,
+                comment: r.comment,
+                date: r.date || (r.created_at ? new Date(r.created_at).toLocaleDateString() : '')
+            });
+        });
+
+        _cachedReviews = reviews;
+        localStorage.setItem('st_reviews', JSON.stringify(reviews));
+    } catch (err) {
+        console.error('❌ Error loading reviews:', err);
+        loadReviewsFromLocalStorage();
+    }
+}
+async function handleSubmitReview(productId) {
+    const nameInput    = document.getElementById('reviewUserName');
+    const ratingSelect = document.getElementById('reviewRating');
+    const commentInput = document.getElementById('reviewComment');
+    const submitBtn    = document.getElementById('submitReviewBtn');
+    if (!nameInput || !ratingSelect || !commentInput || !submitBtn) return;
+
+    const userName = nameInput.value.trim();
+    if (!userName) return showToast(t('please_enter_name', 'Please enter your name'));
+    const rating  = parseInt(ratingSelect.value);
+    const comment = commentInput.value.trim();
+    if (!comment) return showToast(t('please_write_review', 'Please write a review'));
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = t('submitting', 'Submitting...');
+
+    try {
+        const client = getSupabaseClient();
+        const reviewId = Date.now();
+
+        if (client) {
+            const { data, error } = await client.rpc('submit_review', {
+                p_id:         reviewId,
+                p_product_id: String(productId),
+                p_user_name:  userName,
+                p_rating:     rating,
+                p_comment:    comment,
+                p_date:       new Date().toLocaleDateString()
+            });
+
+            if (error) {
+                console.warn('⚠️ Supabase review error:', error.message);
+                // Fall through to local save so the user still sees their review
+            }
+        }
+
+        // Always update the local cache so the UI reflects the new review immediately
+        saveReviewLocally(productId, userName, rating, comment);
+        commentInput.value = '';
+        showToast(t('thank_you_review', 'Thank you for your review! 🎉'));
+    } catch (e) {
+        console.error('Review error:', e);
+        saveReviewLocally(productId, userName, rating, comment);
+        showToast(t('error_saving_review', 'Error saving review. Saved locally.'));
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = t('submit_review', 'Submit Review');
+    }
+}
     function loadReviewsFromLocalStorage() {
         try { _cachedReviews = JSON.parse(localStorage.getItem('st_reviews') || '{}'); }
         catch { _cachedReviews = {}; }
@@ -488,46 +547,7 @@
         if (labelEl)  labelEl.textContent  = count;
     }
 
-    async function handleSubmitReview(productId) {
-        const nameInput    = document.getElementById('reviewUserName');
-        const ratingSelect = document.getElementById('reviewRating');
-        const commentInput = document.getElementById('reviewComment');
-        const submitBtn    = document.getElementById('submitReviewBtn');
-        if (!nameInput || !ratingSelect || !commentInput || !submitBtn) return;
 
-        const userName = nameInput.value.trim();
-        if (!userName) return showToast(t('please_enter_name', 'Please enter your name'));
-        const rating  = parseInt(ratingSelect.value);
-        const comment = commentInput.value.trim();
-        if (!comment) return showToast(t('please_write_review', 'Please write a review'));
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = t('submitting', 'Submitting...');
-
-        try {
-            const client = getSupabaseClient();
-            const reviewData = {
-                id: Date.now(), product_id: productId, user_name: userName,
-                rating, comment,
-                date: new Date().toLocaleDateString(),
-                created_at: new Date().toISOString()
-            };
-            if (client) {
-                const { error } = await client.from('reviews').insert([reviewData]).select();
-                if (error) console.warn('Supabase review error:', error);
-            }
-            saveReviewLocally(productId, userName, rating, comment);
-            commentInput.value = '';
-            showToast(t('thank_you_review', 'Thank you for your review! 🎉'));
-        } catch (e) {
-            console.error('Review error:', e);
-            saveReviewLocally(productId, userName, rating, comment);
-            showToast(t('error_saving_review', 'Error saving review. Saved locally.'));
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = t('submit_review', 'Submit Review');
-        }
-    }
 
     function saveReviewLocally(productId, userName, rating, comment) {
         if (!_cachedReviews[productId]) _cachedReviews[productId] = [];

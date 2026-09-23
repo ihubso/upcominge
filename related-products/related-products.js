@@ -33,22 +33,22 @@
     /* ============================================================
        FETCH PRODUCTS
        ============================================================ */
-   async function fetchAllProducts() {
-        if (allProductsCache.length > 0) return allProductsCache;
-        const client = window.getSupabaseClient?.();
-        if (!client) return [];
-        try {
+async function fetchAllProducts() {
+    if (allProductsCache.length > 0) return allProductsCache;
+    const client = window.getSupabaseClient?.();
+    if (!client) return [];
+    try {
+    
+        const { data, error } = await client.rpc('get_all_products');
         
-            const { data, error } = await client.rpc('get_all_products');
-            
-            if (error) throw error;
-            allProductsCache = data || [];
-            return allProductsCache;
-        } catch (err) {
-            console.error('❌ Error fetching products:', err.message);
-            return [];
-        }
+        if (error) throw error;
+        allProductsCache = data || [];
+        return allProductsCache;
+    } catch (err) {
+        console.error('❌ Error fetching products:', err.message);
+        return [];
     }
+}
 
     function getRandomProducts(allProducts) {
         if (!allProducts?.length) return [];
@@ -160,57 +160,63 @@
     /* ============================================================
        WISHLIST TOGGLE
        ============================================================ */
-    async function toggleRandomWishlist(productId) {
-        try {
-            let wishlist = JSON.parse(localStorage.getItem('st_wishlist') || '[]');
-            const index = wishlist.indexOf(productId);
-
-            if (index !== -1) {
-                wishlist.splice(index, 1);
-                showRandomToast('❤️ Removed from wishlist', 'info');
-            } else {
-                wishlist.push(productId);
-                showRandomToast('❤️ Added to wishlist!', 'success');
-            }
-            localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
-
-            const customerId = window.getCurrentCustomerId?.();
-            const sessionId  = localStorage.getItem('st_session_id') || 'session_' + Date.now();
-            const client = getClient();
-            if (client) {
-                await saveRandomWishlistToDB(customerId || sessionId, wishlist, !!customerId);
-            }
-
-            if (window.STHeader) {
-                window.STHeader.AppState.wishlist = wishlist;
-                window.STHeader.updateCounts?.();
-            }
-
-            // Toggle active class — now correctly scoped by data-product-id on the button
-            document.querySelectorAll(`.rp-wishlist-btn[data-product-id="${productId}"]`)
-                .forEach(btn => btn.classList.toggle('active'));
-
-        } catch (err) {
-            console.error('❌ Error toggling wishlist:', err);
-            showRandomToast('❌ Failed to update wishlist', 'error');
-        }
-    }
-
-    async function saveRandomWishlistToDB(identifier, wishlist, hasCustomerId = false) {
+async function toggleRandomWishlist(productId) {
+    try {
         const client = getClient();
-        if (!client) return;
-        const col = hasCustomerId ? 'customer_id' : 'session_id';
-        try {
-            await client.from('wishlist').delete().eq(col, identifier);
-            if (wishlist.length > 0) {
-                const rows = wishlist.map(pid => ({ [col]: identifier, product_id: pid }));
-                const { error } = await client.from('wishlist').insert(rows);
-                if (error) console.error('❌ Error saving wishlist:', error.message);
-            }
-        } catch (err) {
-            console.error('❌ Error:', err.message);
+        const customerId = window.getCurrentCustomerId?.();
+        const sessionId  = localStorage.getItem('st_session_id') || 'session_' + Date.now();
+
+        // Always prefer the AppState wishlist if it exists (kept fresh by header),
+        // otherwise fall back to localStorage.
+        let wishlist = Array.isArray(window.STHeader?.AppState?.wishlist)
+            ? [...window.STHeader.AppState.wishlist]
+            : JSON.parse(localStorage.getItem('st_wishlist') || '[]');
+
+        const index = wishlist.indexOf(productId);
+        if (index !== -1) {
+            wishlist.splice(index, 1);
+            showRandomToast('❤️ Removed from wishlist', 'info');
+        } else {
+            wishlist.push(productId);
+            showRandomToast('❤️ Added to wishlist!', 'success');
         }
+
+        localStorage.setItem('st_wishlist', JSON.stringify(wishlist));
+
+        if (client) {
+            // ✅ SECURE: sync via RPC
+            await saveRandomWishlistToDB(customerId || sessionId, wishlist, !!customerId);
+        }
+
+        if (window.STHeader) {
+            window.STHeader.AppState.wishlist = wishlist;
+            window.STHeader.updateCounts?.();
+        }
+
+        // Toggle heart icon in place
+        document.querySelectorAll(`.rp-wishlist-btn[data-product-id="${productId}"]`)
+            .forEach(btn => btn.classList.toggle('active'));
+
+    } catch (err) {
+        console.error('❌ Error toggling wishlist:', err);
+        showRandomToast('❌ Failed to update wishlist', 'error');
     }
+}
+
+async function saveRandomWishlistToDB(identifier, wishlist, hasCustomerId = false) {
+    const client = getClient();
+    if (!client) return;
+    try {
+        // ✅ SECURE: Single RPC replaces the delete + insert loop
+        await client.rpc('sync_user_wishlist', {
+            p_customer_id: hasCustomerId ? identifier : null,
+            p_session_id: !hasCustomerId ? identifier : null,
+            p_product_ids: wishlist
+        });
+    } catch (err) {
+        console.error('❌ Error saving wishlist:', err.message);
+    }
+}
 
     /* ============================================================
        TOAST
