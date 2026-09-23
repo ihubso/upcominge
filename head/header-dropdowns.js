@@ -154,18 +154,48 @@ function setupNotificationSubscription() {
                 schema: 'public',
                 table: 'products'
             }, async (payload) => {
-                console.log('🆕 New product added:', payload.new);
-                
-                // Get the new product details
-                const product = payload.new;
-                
-                // Add notification
+                console.log('🆕 New product added (raw payload):', payload);
+
+                // Try every plausible path for the fields we need.
+                // RLS / REPLICA IDENTITY differences can strip columns.
+                let productId    = payload?.new?.id     || payload?.record?.id     || null;
+                let productName  = payload?.new?.name   || payload?.record?.name   || null;
+                let productImage = payload?.new?.image  || payload?.record?.image  || null;
+
+                // ✅ RPC fallback: if the payload is missing the id,
+                // ask the server for the newest product (SECURITY DEFINER — no RLS).
+                if (!productId) {
+                    console.warn('⚠️ Realtime payload had no id — calling get_latest_product RPC');
+                    try {
+                        const { data, error } = await client.rpc('get_latest_product');
+                        if (error) throw error;
+
+                        if (data && typeof data === 'object') {
+                            productId    = data.id    || productId;
+                            productName  = data.name  || productName;
+                            productImage = data.image || productImage;
+                        }
+                    } catch (err) {
+                        console.warn('⚠️ get_latest_product RPC failed:', err.message);
+                    }
+                }
+
+                // If we still have no id, skip the notification entirely —
+                // better than linking to /item/?product=undefined
+                if (!productId) {
+                    console.warn('⚠️ Skipping notification — product id could not be resolved');
+                    return;
+                }
+
+                // encodeURIComponent guards against ids containing & # ? etc.
+                const safeId = encodeURIComponent(String(productId));
+
                 addNotification(
                     '🆕 New Product Added!',
-                    `${product.name || 'A new product'} has been added to the store.`,
+                    `${productName || 'A new product'} has been added to the store.`,
                     'product',
-                    `/item/?product=${product.id}`,
-                    product.image
+                    `/item/?product=${safeId}`,
+                    productImage || null
                 );
             })
             .subscribe((status) => {
