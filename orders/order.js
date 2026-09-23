@@ -398,9 +398,6 @@ async function loadOrders() {
     /* ============================================================
        ORDER DETAIL — NO HISTORY MANIPULATION
        ============================================================ */
-/* ============================================================
-   ORDER DETAIL — SYNCHRONOUS OVERLAY, NO AWAIT BEFORE SHOW
-   ============================================================ */
 function openOrderDetail(orderId) {
     // 1. Find the order (synchronous)
     const order = allOrders.find(o => o.id === orderId);

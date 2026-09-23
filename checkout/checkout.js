@@ -337,8 +337,8 @@ function generateUUID() {
 
            
             const { data, error } = await client.rpc('create_order', {
-                p_id:             uuid,
-                p_orderid:        orderId, // ✅ CORRECT CASING (matches database)
+                p_id:             orderId,
+                p_orderid:        uuid, // ✅ CORRECT CASING (matches database)
                 p_customer_id:    customerId,
                 p_customer_name:  name,
                 p_phone:          formattedPhone || phone,
@@ -353,7 +353,7 @@ function generateUUID() {
 
             if (error) throw error;
 
-            // Fire-and-forget admin push (don't block UI)
+
             (async () => {
                 try {
                     const url  = window.SUPABASE_CONFIG?.url    || 'https://bulprhgwuwatzobiojwz.supabase.co';
