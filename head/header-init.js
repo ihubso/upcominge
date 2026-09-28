@@ -1722,11 +1722,11 @@ elements.androidLogout.addEventListener('click', () => {
     });
     elements.aboutUsBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
-        window.navigateWithUserInfo('/aboutus/');
+        window.navigateWithUserInfo('/Aboutus/');
     });
     elements.termsBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
-        window.navigateWithUserInfo('/terms/');
+        window.navigateWithUserInfo('/Terms/');
     });
     elements.contactBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
