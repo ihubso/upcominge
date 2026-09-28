@@ -1722,7 +1722,7 @@ elements.androidLogout.addEventListener('click', () => {
     });
     elements.aboutUsBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
-        window.navigateWithUserInfo('/Aboutus/');
+        window.navigateWithUserInfo('/AboutUs/');
     });
     elements.termsBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
