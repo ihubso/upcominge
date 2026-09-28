@@ -183,6 +183,9 @@ async function initHeader() {
         andmyOrdersBtn: document.getElementById('andstMyOrdersBtn'),
         settingsBtn: document.getElementById('stSettingsBtn'),
         andsettingsBtn: document.getElementById('andstSettingsBtn'),
+        aboutUsBtn: document.getElementById('stAboutUsBtn'),
+        termsBtn: document.getElementById('stTermsBtn'),
+        contactBtn: document.getElementById('stContactBtn'),
         loginEmailError: document.getElementById('stLoginEmailError'),
         loginPasswordError: document.getElementById('stLoginPasswordError'),
         registerNameError: document.getElementById('stRegisterNameError'),
@@ -1638,7 +1641,7 @@ async function handleLogout() {
     AppState.wishlist = [];
     AppState.authAttempts = 0;
 
-    // Clear all storage
+
     try {
         localStorage.removeItem('st_customer');
         localStorage.removeItem('st_cart');
@@ -1650,14 +1653,10 @@ async function handleLogout() {
         sessionStorage.removeItem('st_user_synced');
     } catch (_) {}
 
-    // Refresh UI (buttons, avatar, counts)
     updateAuthUI();
     try { elements.accountDropdown?.classList.remove('open'); } catch (_) {}
     showNotification('notif_logout_success');
 
-    // ============================================================
-    // ✅ CRITICAL: strip user params from URL, THEN navigate home
-    // ============================================================
     try {
         // 1. Remove user_* / session / logged_in from current URL
         const url = new URL(window.location.href);
@@ -1666,17 +1665,11 @@ async function handleLogout() {
 
         const cleanSearch = url.searchParams.toString();
         const cleanPath   = url.pathname + (cleanSearch ? '?' + cleanSearch : '') + url.hash;
-
-        // 2. Replace current history entry so back button doesn't return to the
-        //    logged-in version of this URL
         window.history.replaceState({}, '', cleanPath);
     } catch (_) {}
 
-    // 3. Close any open overlays / reset body scroll (drawer, modals, etc.)
     try { window.closeAllOverlays?.(); } catch (_) {}
 
-    // 4. Navigate to a clean home URL (do NOT use reload — that would keep
-    //    the current URL and re-trigger auto-login from leftover params)
     setTimeout(() => {
         window.location.href = '/product/';
     }, 300);
@@ -1714,7 +1707,7 @@ elements.androidLogout.addEventListener('click', () => {
     elements.settingsBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
         if (AppState.isLoggedIn) {
-            window.navigateWithUserInfo('/account-settings');
+            window.navigateWithUserInfo('/account-settings/');
         } else {
             openLoginModal();
         }
@@ -1722,10 +1715,22 @@ elements.androidLogout.addEventListener('click', () => {
         elements.andsettingsBtn.addEventListener('click', () => {
         elements.accountDropdown.classList.remove('open');
         if (AppState.isLoggedIn) {
-            window.navigateWithUserInfo('/account-settings');
+            window.navigateWithUserInfo('/account-settings/');
         } else {
             openLoginModal();
         }
+    });
+    elements.aboutUsBtn.addEventListener('click', () => {
+        elements.accountDropdown.classList.remove('open');
+        window.navigateWithUserInfo('/aboutus/');
+    });
+    elements.termsBtn.addEventListener('click', () => {
+        elements.accountDropdown.classList.remove('open');
+        window.navigateWithUserInfo('/terms/');
+    });
+    elements.contactBtn.addEventListener('click', () => {
+        elements.accountDropdown.classList.remove('open');
+        window.navigateWithUserInfo('/contactus/');
     });
     
     // ============================================================

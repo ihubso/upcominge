@@ -2005,10 +2005,10 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                                 <button class="st-account-dropdown-item danger" id="stLogoutBtn" style="display:none;" >
                                     <i class="fas fa-sign-out-alt"></i> <span data-translate="logout">Logout</span>
                                 </button>
-                               <button class="st-account-dropdown-item" onclick="closeMobileDrawer(); window.navigateWithUserInfo('/AboutUs/')" >
+                               <button class="st-account-dropdown-item" id="stAboutUsBtn" onclick="closeMobileDrawer(); window.navigateWithUserInfo('/AboutUs/')" >
                                     <i class="fa fa-info-circle"></i> <span data-translate="about_us">About Us</span>
                                 </button>
-                               <button class="st-account-dropdown-item" onclick="closeMobileDrawer(); window.navigateWithUserInfo('/Terms/')" >
+                               <button class="st-account-dropdown-item" id="stTermsBtn" onclick="closeMobileDrawer(); window.navigateWithUserInfo('/Terms/')" >
                                     <i class="fa fa-file-text"></i> <span data-translate="terms">Terms & Conditions</span>
                                 </button>
                                 <button class="st-account-dropdown-item" id="stContactBtn" onclick="closeMobileDrawer(); window.navigateWithUserInfo('/contactus/')">
