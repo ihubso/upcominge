@@ -25,6 +25,16 @@
 
     let infiniteScrollObserver = null;
 
+    // In-memory cart snapshot (shared across clicks)
+    let _cartSnapshot = null;
+    let _cartOwnerId  = null;
+
+    // Resize handler ref so we can remove it on cleanup
+    let _catBarResizeHandler = null;
+
+    /* ============================================================
+       SMALL HELPERS
+       ============================================================ */
     function t(key, fallback) {
         if (window.Translations?.translate) {
             const r = window.Translations.translate(key);
@@ -38,8 +48,13 @@
     }
 
     function showToast(msg) {
-        const el = document.getElementById('toastMsg');
-        if (!el) { console.log(msg); return; }
+        let el = document.getElementById('toastMsg');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'toastMsg';
+            el.className = 'toast-msg';
+            document.body.appendChild(el);
+        }
         el.textContent = msg;
         el.classList.add('show');
         clearTimeout(el._timeout);
@@ -216,74 +231,170 @@
         return data || [];
     }
 
+    // ✅ FIXED — p_id uses productId, and RPC returns an array
     async function fetchProductById(productId) {
+        if (!productId) return null;
         if (productCache.has(productId)) return productCache.get(productId);
 
         const client = window.getSupabaseClient?.();
         if (!client) return null;
-    const { data, error } = await client
-      .rpc('get_product_by_id', { p_id: product });
-        if (error || !data) return null;
-        productCache.set(data.id, data);
-        return data;
-    }
-    function getCartOwnerId() {
-        const juId = window.getCurrentCustomerId?.();
-        let sessionId = localStorage.getItem('st_session_id');
-        if (!sessionId) {
-            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
-            localStorage.setItem('st_session_id', sessionId);
+
+        try {
+            const { data, error } = await client.rpc('get_product_by_id', { p_id: productId });
+            if (error) throw error;
+            const p = Array.isArray(data) ? data[0] : data;   // RPC returns a set
+            if (!p) return null;
+            productCache.set(p.id, p);
+            return p;
+        } catch (err) {
+            console.warn('fetchProductById failed:', err);
+            return null;
         }
-        return juId || sessionId;
     }
 
-    async function addToCart(productId, qty = 1) {
+    /* ============================================================
+       CART HELPERS — matches saveCart / sync_user_cart style
+       ============================================================ */
+    function resolveOwner() {
         try {
-            const product = await fetchProductById(productId);
+            const owner = window.getOwner?.();
+            if (owner && typeof owner === 'object') {
+                return owner.id || owner.customerId || owner.customer_id || null;
+            }
+            if (typeof owner === 'string' && owner) return owner;
+        } catch {}
+        if (typeof window.getCurrentCustomerId === 'function') {
+            const id = window.getCurrentCustomerId();
+            if (id) return id;
+        }
+        return null;
+    }
+
+    function resolveSessionId() {
+        let sid = localStorage.getItem('st_session_id');
+        if (!sid) {
+            sid = 'session_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+            localStorage.setItem('st_session_id', sid);
+        }
+        return sid;
+    }
+
+    // Load cart once per session (or when owner changes)
+    async function ensureCartLoaded() {
+        const customerId = resolveOwner();
+        const cacheKey   = customerId || '__guest__';
+
+        if (_cartOwnerId === cacheKey && _cartSnapshot) return _cartSnapshot;
+
+        _cartOwnerId = cacheKey;
+        try {
+            const remote = await window.fetchCartFromDB?.(customerId);
+            _cartSnapshot = Array.isArray(remote) ? remote : [];
+        } catch {
+            _cartSnapshot = [];
+        }
+        return _cartSnapshot;
+    }
+
+    // ✅ Single source of truth — mirrors your saveCart/sync_user_cart
+    async function saveCart(cart) {
+        const customerId = resolveOwner();
+        const sessionId  = resolveSessionId();
+        const client     = window.getSupabaseClient?.();
+
+        const cartItemsPayload = cart.map(item => ({
+            product_id:     item.product_id || item.id || '',
+            name:           item.name || 'Unknown Product',
+            price:          item.price || 0,
+            qty:            item.qty || 1,
+            image:          item.image || 'https://placehold.co/400x400',
+            variants:       item.variants || {},
+            is_deal:        item.isDeal ?? false,
+            original_price: item.originalPrice ?? null,
+            discount:       item.discount ?? null,
+            brand:          item.brand || null
+        }));
+
+        if (client) {
+            try {
+                await client.rpc('sync_user_cart', {
+                    p_customer_id: customerId || null,
+                    p_session_id:  sessionId,
+                    p_cart_items:  cartItemsPayload
+                });
+            } catch (err) {
+                console.warn('⚠️ Cart sync error:', err.message);
+            }
+        }
+
+        localStorage.setItem('st_cart', JSON.stringify(cart));
+        _cartSnapshot = cart;
+        _cartOwnerId  = customerId || '__guest__';
+
+        if (window.STHeader) {
+            window.STHeader.AppState.cart = cart;
+            window.STHeader.updateCounts?.();
+        }
+
+        if (typeof window.renderCart === 'function') {
+            try { await window.renderCart(); } catch {}
+        }
+    }
+
+    // ✅ Optimistic: instant toast + badge, DB save in background
+    async function addToCart(productId, qty = 1) {
+        if (!productId) return;
+
+        // 1. Resolve product (cache first, DB second)
+        let product = productCache.get(productId);
+        if (!product) {
+            product = await fetchProductById(productId);
             if (!product) {
                 showToast('❌ ' + t('product_not_found', 'Product not found'));
                 return;
             }
-
-              const owner = window.getOwner();
-        const customerId  = owner
-            const cart = (await window.fetchCartFromDB?.(customerId)) || [];
-            const existing = cart.find(i => i.product_id === productId || i.id === productId);
-
-            if (existing) {
-                existing.qty = (existing.qty || 0) + qty;
-            } else {
-                cart.push({
-                    product_id: productId,
-                    id:         productId,
-                    name:       product.name,
-                    price:      product.price || 0,
-                    qty,
-                    image:      product.image || 'https://placehold.co/400x400',
-                    variants:   {},
-                    category:   product.category || ''
-                });
-            }
-
-            await window.saveCartToDB?.(customerId, cart);
-
-            showToast(`✅ ${product.name} ${t('added_to_cart', 'added to cart!')}`);
-
-            if (window.STHeader) {
-                window.STHeader.AppState.cart = cart;
-                window.STHeader.updateCounts?.();
-            }
-        } catch (err) {
-            console.error('addToCart failed:', err);
-            showToast('❌ ' + t('cart_error', 'Could not add to cart'));
         }
+
+        // 2. Load cart snapshot (only 1 network call per session)
+        await ensureCartLoaded();
+        const cart = _cartSnapshot || (_cartSnapshot = []);
+
+        // 3. Optimistic in-memory update
+        const existing = cart.find(i => (i.product_id || i.id) === productId);
+        if (existing) {
+            existing.qty = (existing.qty || 0) + qty;
+        } else {
+            cart.push({
+                product_id:    productId,
+                id:            productId,
+                name:          product.name,
+                price:         product.price || 0,
+                qty,
+                image:         product.image || 'https://placehold.co/400x400',
+                variants:      {},
+                category:      product.category || '',
+                isDeal:        product.isDeal || false,
+                originalPrice: product.originalPrice ?? null,
+                discount:      product.discount ?? null,
+                brand:         product.brand || null
+            });
+        }
+
+        // 4. INSTANT feedback — toast + header badge, no awaits
+        showToast(`✅ ${product.name} ${t('added_to_cart', 'added to cart!')}`);
+        if (window.STHeader) {
+            window.STHeader.AppState.cart = cart;
+            window.STHeader.updateCounts?.();
+        }
+
+        // 5. Fire-and-forget DB save (uses your sync_user_cart RPC)
+        saveCart(cart);
     }
 
     /* ============================================================
        RENDER HELPERS
        ============================================================ */
 
-    /* --- In-grid category header (like the screenshot) --------- */
     function renderCategoryHeader(category, count) {
         const key     = String(category || 'uncategorized').toLowerCase();
         const display = getTranslatedCategory(key);
@@ -302,7 +413,6 @@
             </div>`;
     }
 
-    /* --- Single product card ----------------------------------- */
     function renderProductCard(p) {
         const avg = getAverageRating(p.id);
         const cnt = getReviewCount(p.id);
@@ -330,8 +440,7 @@
                     <div class="product-actions">
                         <span class="product-price">FCFA ${(Number(p.price) || 0).toFixed(2)}</span>
                         <button class="btn-cart"
-                                onclick="event.stopPropagation(); window.addToCart('${p.id}')"
-                                data-translate="add_to_cart">
+                                onclick="event.stopPropagation(); window.addToCart('${p.id}')">
                             <i class="fas fa-shopping-cart"></i>
                         </button>
                     </div>
@@ -339,12 +448,9 @@
             </div>`;
     }
 
-    /* --- Build HTML for a batch of products, inserting category
-           headers whenever the category changes. Works across pages. */
     function buildGroupedHtml(products, category, isReset) {
         let html = '';
 
-        // ---- Specific category page: one header at the very top ----
         if (category !== 'all' && category !== '') {
             if (isReset) {
                 const count = categoryCountMap.get(category) || totalProducts || products.length;
@@ -354,7 +460,6 @@
             return html;
         }
 
-        // ---- "All" page: insert a header each time category changes ----
         for (const p of products) {
             const cat = String(p.category || 'uncategorized').toLowerCase();
             if (cat !== lastRenderedCategory) {
@@ -489,7 +594,12 @@
         };
 
         inner.addEventListener('scroll', updateArrows, { passive: true });
-        window.addEventListener('resize', updateArrows, { passive: true });
+
+        if (_catBarResizeHandler) {
+            window.removeEventListener('resize', _catBarResizeHandler);
+        }
+        _catBarResizeHandler = updateArrows;
+        window.addEventListener('resize', _catBarResizeHandler, { passive: true });
 
         const activeChip = bar.querySelector('.st-cat-chip.active');
         if (activeChip) {
@@ -517,7 +627,7 @@
     }
 
     /* ============================================================
-       LOAD PRODUCTS (server-side pagination + in-grid headers)
+       LOAD PRODUCTS
        ============================================================ */
     async function loadCategoryProducts(reset = true) {
         if (isLoading) return;
@@ -547,26 +657,21 @@
         try {
             const { products, total } = await fetchCategoryPage(category, page);
 
-            /* ---------- Reset-only UI work ---------- */
             if (reset) {
                 totalProducts = total;
 
-                // Category bar + build the count map used by headers
                 try {
                     const cats = await fetchCategoryCounts();
-
                     categoryCountMap.clear();
                     cats.forEach(c => {
                         const k = String(c.category || '').toLowerCase();
                         categoryCountMap.set(k, Number(c.product_count || 0));
                     });
-
                     await buildCategoryBar(cats);
                 } catch (e) {
                     console.warn('Category bar failed:', e);
                 }
 
-                // Hero header
                 const title    = document.getElementById('categoryTitle');
                 const subtitle = document.getElementById('categorySubtitle');
                 const icon     = document.getElementById('categoryIcon');
@@ -591,12 +696,10 @@
                     if (icon) icon.innerHTML = `<i class="${getCategoryIcon(category)}"></i>`;
                 }
 
-                // Hero images
                 const heroImageUrls = products.filter(p => p.image).slice(0, 10).map(p => p.image);
                 startHeroRotation(heroImageUrls);
             }
 
-            /* ---------- Empty state ---------- */
             if (products.length === 0 && reset) {
                 document.getElementById('noProducts')?.classList.remove('hidden');
                 hasMoreProducts = false;
@@ -604,19 +707,16 @@
                 return;
             }
 
-            /* ---------- Render cards (with category headers) ---------- */
             const html = buildGroupedHtml(products, category, reset);
             if (reset) grid.innerHTML = html;
             else       grid.insertAdjacentHTML('beforeend', html);
 
-            /* ---------- Pagination bookkeeping ---------- */
             hasMoreProducts = (page * perPage) < totalProducts;
             page++;
 
             if (hasMoreProducts) setupInfiniteScroll();
             else                 hideInfiniteScrollIndicator();
 
-            /* ---------- Related products (first page only) ---------- */
             if (reset) {
                 try {
                     const related = await fetchRelatedProducts(category, 32);
@@ -715,6 +815,10 @@
         stopHeroRotation();
         if (infiniteScrollObserver) { infiniteScrollObserver.disconnect(); infiniteScrollObserver = null; }
         if (relatedObserver)        { relatedObserver.disconnect();        relatedObserver = null; }
+        if (_catBarResizeHandler) {
+            window.removeEventListener('resize', _catBarResizeHandler);
+            _catBarResizeHandler = null;
+        }
         document.getElementById('stCategoryBar')?.remove();
 
         currentCategory      = 'all';
@@ -734,9 +838,7 @@
     async function syncHeaderCart() {
         if (!window.STHeader) return;
         try {
-               const owner = window.getOwner();
-        const customerId  = owner
-            const cart = (await window.fetchCartFromDB?.(customerId)) || [];
+            const cart = await ensureCartLoaded();
             window.STHeader.AppState.cart = cart;
             window.STHeader.updateCounts?.();
         } catch (err) {
@@ -774,13 +876,8 @@
 
         window.clearCart = async () => {
             try {
-                   const owner = window.getOwner();
-        const customerId  = owner
-                await window.saveCartToDB?.(customerId, []);
-                if (window.STHeader) {
-                    window.STHeader.AppState.cart = [];
-                    window.STHeader.updateCounts?.();
-                }
+                _cartSnapshot = [];
+                await saveCart([]);
                 showToast(t('cart_cleared', 'Cart cleared'));
             } catch (e) {
                 console.warn('clearCart failed:', e);
@@ -794,13 +891,13 @@
     function start() {
         bindGlobals();
         init();
+        showLoadingSkeletons();
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', start, { once: true } ,showLoadingSkeletons());
+        document.addEventListener('DOMContentLoaded', start, { once: true });
     } else {
         start();
-        showLoadingSkeletons();
     }
 
     window.addEventListener('st:page-loaded', () => { bindGlobals(); init(); });

@@ -41,7 +41,6 @@ function translate(key, params = {}) {
     
     // 3. If still not found, return the original key as a last resort
     if (translation === undefined) {
-        
         return key;
     }
     
@@ -207,7 +206,8 @@ function detectUserLanguage() {
     const browserLang = navigator.language || navigator.userLanguage || 'en';
     
     // Extract the base language code (e.g., 'en' from 'en-US')
-    const langCode = browserLang.toLowerCase().split('-')[0];
+    // Handles both '-' and '_' separators
+    const langCode = browserLang.toLowerCase().split(/[-_]/)[0];
     
     // Define supported languages (ADD YOUR SUPPORTED LANGUAGES HERE)
     const supportedLanguages = ['en', 'fr', 'es', 'de']; 
@@ -223,29 +223,48 @@ function detectUserLanguage() {
 
 /**
  * Initialize the translation system
+ * 
+ * 🎯 BROWSER ALWAYS WINS POLICY:
+ * The browser's language is always used on page load.
+ * localStorage is only used as a fallback if browser detection fails.
+ * This means a user's manual language toggle won't persist across page loads.
  */
 function initTranslation() {
-    // 1. Check if a language is already saved in localStorage
-    const savedLanguage = localStorage.getItem('language');
+    // 🐛 DEBUG BLOCK
+    console.log('=== 🌐 TRANSLATION DEBUG ===');
+    console.log('navigator.language:', navigator.language);
+    console.log('navigator.languages:', navigator.languages);
+    console.log('detectUserLanguage() returned:', detectUserLanguage());
+    console.log('localStorage language (ignored):', localStorage.getItem('language'));
+    console.log('translations object exists?', typeof translations);
+    console.log('available languages:', translations ? Object.keys(translations) : 'NONE');
     
-    // 2. Use saved language if it exists and is valid, otherwise detect
-    if (savedLanguage && translations && translations[savedLanguage]) {
-        currentLanguage = savedLanguage;
-    } else {
-        currentLanguage = detectUserLanguage();
+    if (!translations) {
+        console.error('❌ FATAL: translations is undefined!');
+        return;
     }
     
-    // 3. Final safety fallback: if the determined language somehow isn't in translations, use 'en'
-    if (!translations || !translations[currentLanguage]) {
-        console.warn(`⚠️ Translation for '${currentLanguage}' not found. Falling back to 'en'.`);
-        currentLanguage = 'en';
+    // ✅ OPTION B: BROWSER ALWAYS WINS
+    // Always detect from the browser — do NOT trust the saved value
+    currentLanguage = detectUserLanguage();
+    console.log('✅ Browser-detected language:', currentLanguage);
+    
+    // 🛡️ SAFETY FALLBACK: Only if detection somehow produces an unsupported language,
+    // then check localStorage as a backup, then finally fall back to 'en'
+    if (!translations[currentLanguage]) {
+        const saved = localStorage.getItem('language');
+        if (saved && translations[saved]) {
+            console.warn(`⚠️ Browser detection failed, using saved: ${saved}`);
+            currentLanguage = saved;
+        } else {
+            console.warn(`⚠️ Falling back to 'en'`);
+            currentLanguage = 'en';
+        }
     }
     
-    // 4. Save to localStorage for persistence across page reloads
+    // Keep localStorage in sync (useful for other scripts, but never read as source of truth)
     localStorage.setItem('language', currentLanguage);
     
-    console.log(`🌐 Translation initialized: ${currentLanguage}`);
-    
-    // 5. Apply translations to UI
+    console.log(`🌐 Final language: ${currentLanguage}`);
     translateUI();
 }

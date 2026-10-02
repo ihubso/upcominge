@@ -290,25 +290,12 @@ function initHeroSlider(count) {
 // 6. HERO BANNER STYLES (Includes Skeleton)
 // ============================================================
 
-function injectHeroStyles() {
-    const style = document.createElement('style');
-    style.textContent = `
-     // ============================================================
-     // HERO BANNER STYLES WAS MOVED TO ANOTHER CSS FILE FOR BETTER MAINTAINABILITY
-     // ============================================================
-    
-    `;
-    document.head.appendChild(style);
-}
 
 // ============================================================
 // 7. INITIALIZE HERO BANNER
 // ============================================================
 
 async function initHeroBanner(containerId = 'heroBanner') {
-
-
-    await injectHeroStyles();
 
     const container = document.getElementById(containerId);
     if (!container) {

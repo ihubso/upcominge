@@ -15,6 +15,7 @@
     let heroInterval = null;
     let currentSlide = 0;
     let pageObserver = null;
+    let activeFilterKey = 'default';   // ← remembered so re-render knows the mode
 
     // ============================================================
     //  HELPERS
@@ -32,6 +33,131 @@
         return (typeof getSupabaseClient === 'function' && getSupabaseClient())
             || window.supabaseClient
             || null;
+    }
+
+    // ============================================================
+    //  FILTER CONFIG (with translation keys)
+    // ============================================================
+    const FILTER_CONFIG = {
+        hot: {
+            rpc: 'get_hot_products',
+            badge: '🔥 Trending Now',
+            badgeKey: 'badge_trending',
+            chipIcon: 'fa-fire',
+            chipLabel: 'Hot Products',
+            chipLabelKey: 'filter_hot',
+            title: 'Hot <span class="gradient-text">Right Now</span>',
+            titleKey: 'title_hot',
+            subtitle: 'The products everyone is buying this week — grab them before they sell out.',
+            subtitleKey: 'subtitle_hot',
+            heroHeading: 'Hot Products',
+            heroHeadingKey: 'filter_hot'
+        },
+        new: {
+            rpc: 'get_new_products',
+            badge: '✨ Just Dropped',
+            badgeKey: 'badge_just_dropped',
+            chipIcon: 'fa-sparkles',
+            chipLabel: 'New Arrivals',
+            chipLabelKey: 'filter_new',
+            title: 'Fresh <span class="gradient-text">Arrivals</span>',
+            titleKey: 'title_new',
+            subtitle: 'The newest additions to our catalog, updated daily.',
+            subtitleKey: 'subtitle_new',
+            heroHeading: 'New Arrivals',
+            heroHeadingKey: 'filter_new'
+        },
+        deals: {
+            rpc: 'get_active_deals',
+            badge: '🔥 Limited-Time Deals',
+            badgeKey: 'badge_limited_deals',
+            chipIcon: 'fa-tags',
+            chipLabel: 'Active Deals',
+            chipLabelKey: 'filter_deals',
+            title: 'Deals <span class="gradient-text">Too Good</span> To Miss',
+            titleKey: 'title_deals',
+            subtitle: 'Massive discounts on top products — while stocks last.',
+            subtitleKey: 'subtitle_deals',
+            heroHeading: 'Active Deals',
+            heroHeadingKey: 'filter_deals'
+        },
+        featured: {
+            rpc: 'get_featured_products',
+            badge: '⭐ Editor\'s Picks',
+            badgeKey: 'badge_editors_picks',
+            chipIcon: 'fa-star',
+            chipLabel: 'Featured',
+            chipLabelKey: 'filter_featured',
+            title: 'Featured <span class="gradient-text">Selections</span>',
+            titleKey: 'title_featured',
+            subtitle: 'Curated by our team for quality and value.',
+            subtitleKey: 'subtitle_featured',
+            heroHeading: 'Featured',
+            heroHeadingKey: 'filter_featured'
+        },
+        default: {
+            rpc: 'get_all_products',
+            badge: 'Curated Just For You',
+            badgeKey: 'badge_curated',
+            chipIcon: null,
+            chipLabel: 'All Products',
+            chipLabelKey: 'filter_all_products',
+            title: 'Discover <span class="gradient-text">Your</span> Perfect Picks',
+            titleKey: 'title_default',
+            subtitle: 'Handpicked products from your favorite brands and categories. Personalized recommendations updated daily.',
+            subtitleKey: 'subtitle_default',
+            heroHeading: 'For You',
+            heroHeadingKey: 'for_you'
+        }
+    };
+
+    function getActiveFilter() {
+        const params = new URLSearchParams(window.location.search);
+        const raw = (params.get('filter') || '').toLowerCase().trim();
+        return FILTER_CONFIG[raw] ? raw : 'default';
+    }
+
+    function renderFilterBar(filterKey, cfg) {
+        const bar = document.getElementById('filterBar');
+        if (!bar) return;
+
+        if (filterKey === 'default') {
+            bar.style.display = 'none';
+            bar.innerHTML = '';
+            return;
+        }
+
+        bar.style.display = 'flex';
+        bar.innerHTML = `
+            <span class="filter-chip">
+                <i class="fas ${cfg.chipIcon || 'fa-filter'}"></i>
+                <span data-translate="${cfg.chipLabelKey}">${t(cfg.chipLabelKey, cfg.chipLabel)}</span>
+            </span>
+            <span class="filter-subtitle" data-translate="${cfg.subtitleKey}">${t(cfg.subtitleKey, cfg.subtitle)}</span>
+            <select id="filterSort" class="filter-sort">
+                <option value="default" data-translate="sort_featured">Sort: Featured</option>
+                <option value="price-asc" data-translate="sort_price_asc">Price: Low → High</option>
+                <option value="price-desc" data-translate="sort_price_desc">Price: High → Low</option>
+                <option value="name" data-translate="sort_name_az">Name: A → Z</option>
+                <option value="newest" data-translate="sort_newest">Newest first</option>
+            </select>
+            <a class="filter-clear" href="/product/">
+                <i class="fas fa-times"></i> <span data-translate="clear">Clear</span>
+            </a>
+        `;
+
+        // wire up sort (operates on allProducts snapshot for this filter)
+        bar.querySelector('#filterSort')?.addEventListener('change', (e) => {
+            const v = e.target.value;
+            const arr = [...allProducts];
+            if (v === 'price-asc')  arr.sort((a, b) => (a.price || 0) - (b.price || 0));
+            if (v === 'price-desc') arr.sort((a, b) => (b.price || 0) - (a.price || 0));
+            if (v === 'name')       arr.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            if (v === 'newest')     arr.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            const c = document.getElementById('foryouGroups');
+            if (c) c.innerHTML = renderFilterGrid(arr);
+        });
     }
 
     // Grab elements fresh — DOM is swapped by pjax
@@ -96,24 +222,14 @@
     }
 
     // ============================================================
-    //  HERO SLIDESHOW (SECURED)
+    //  HERO SLIDESHOW
     // ============================================================
 
-    async function fetchHeroImages(count = 6) {
-        const client = getClient();
-        if (!client) return [];
-        try {
-            const { data, error } = await client.rpc('get_all_products');
-            
-            if (error) throw error;
-            
-            // Filter for items with images and shuffle
-            const withImages = (data || []).filter(p => p.image);
-            return shuffleArray(withImages).slice(0, count).map(p => p.image);
-        } catch (err) {
-            console.error('❌ Error fetching hero images:', err.message);
-            return [];
-        }
+    async function fetchHeroImages(count = 6, sourceProducts = null) {
+        const pool = sourceProducts && sourceProducts.length
+            ? sourceProducts
+            : await fetchProductsForFilter('default');
+        return shuffleArray(pool.filter(p => p.image)).slice(0, count).map(p => p.image);
     }
 
     function initHeroSlideshow(images, els) {
@@ -176,27 +292,34 @@
     }
 
     // ============================================================
-    //  FETCH + BUILD (SECURED)
+    //  FETCH
     // ============================================================
 
-    async function fetchAllProducts() {
+    async function fetchProductsForFilter(filterKey) {
         const client = getClient();
         if (!client) return [];
+        const cfg = FILTER_CONFIG[filterKey] || FILTER_CONFIG.default;
         try {
-            const { data, error } = await client.rpc('get_all_products');
-            
+            const { data, error } = await client.rpc(cfg.rpc);
             if (error) throw error;
-            
             return (data || []).map(p => {
                 if (typeof p.variants === 'string') { try { p.variants = JSON.parse(p.variants); } catch { p.variants = []; } }
                 if (typeof p.images   === 'string') { try { p.images   = JSON.parse(p.images);   } catch { p.images = [p.image]; } }
+                if (p.deal_discount && !p.discount) p.discount = Number(p.deal_discount);
+                if (p.discounted_price && !p.price)  p.price    = Number(p.discounted_price);
+                if (p.original_price   && !p.originalPrice) p.originalPrice = Number(p.original_price);
+                if (p.is_deal) p.isDeal = p.is_deal;
                 return p;
             });
         } catch (err) {
-            console.error('❌ Error fetching products:', err.message);
+            console.error(`❌ RPC ${cfg.rpc} failed:`, err.message);
             return [];
         }
     }
+
+    // ============================================================
+    //  BUILD GROUPS (default mode only)
+    // ============================================================
 
     function buildGroups() {
         const brands = new Map();
@@ -249,11 +372,30 @@
                     <div class="group-title">
                         <div class="group-icon"><i class="${iconClass}"></i></div>
                         <h3>${group.name}</h3>
-                        <span style="font-size:12px;color:#94A3B8;font-weight:400;">${typeLabel}</span>
+                        <span style="font-size:12px;color:#94A3B8;font-weight:400;" data-translate="${group.type === 'brand' ? 'brand' : 'category'}">${typeLabel}</span>
                     </div>
-                    <span class="group-count">${products.length} ${t('products', 'products')}</span>
+                    <span class="group-count">${products.length} <span data-translate="products">${t('products', 'products')}</span></span>
                 </div>
                 <div class="group-scroll">
+                    ${products.map(p => renderProductCard(p)).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // Flat grid used on filtered pages (?filter=hot etc.)
+    function renderFilterGrid(products) {
+        if (!products.length) return '';
+        return `
+            <div class="group-section">
+                <div class="group-header">
+                    <div class="group-title">
+                        <div class="group-icon"><i class="fas fa-th"></i></div>
+                        <h3 data-translate="results">${t('results', 'Results')}</h3>
+                    </div>
+                    <span class="group-count">${products.length} <span data-translate="products">${t('products', 'products')}</span></span>
+                </div>
+                <div class="group-scroll filter-grid">
                     ${products.map(p => renderProductCard(p)).join('')}
                 </div>
             </div>
@@ -300,7 +442,7 @@
     }
 
     // ============================================================
-    //  LOAD MORE + INFINITE SCROLL
+    //  LOAD MORE + INFINITE SCROLL (default mode)
     // ============================================================
 
     function loadMoreGroups(els) {
@@ -370,16 +512,21 @@
                 window.STHeader.updateCounts?.();
             }
 
-            // Re-render visible groups (only if we're still on the For You page)
             const els = getEls();
             if (!els.container) return;
-            const currentGroups = groups.slice(0, currentPage * GROUPS_PER_PAGE);
-            els.container.innerHTML = '';
-            currentGroups.forEach(group => {
-                const products = group.products.slice(0, PRODUCTS_PER_GROUP);
-                els.container.insertAdjacentHTML('beforeend', renderGroup(group, products));
-            });
-            if (!hasMore && els.endResults) els.endResults.style.display = 'block';
+
+            // Respect the current mode when re-rendering
+            if (activeFilterKey !== 'default') {
+                els.container.innerHTML = renderFilterGrid(allProducts);
+            } else {
+                const currentGroups = groups.slice(0, currentPage * GROUPS_PER_PAGE);
+                els.container.innerHTML = '';
+                currentGroups.forEach(group => {
+                    const products = group.products.slice(0, PRODUCTS_PER_GROUP);
+                    els.container.insertAdjacentHTML('beforeend', renderGroup(group, products));
+                });
+                if (!hasMore && els.endResults) els.endResults.style.display = 'block';
+            }
         } catch (err) {
             console.error('❌ Wishlist error:', err);
             showToast('❌ ' + t('wishlist_failed', 'Failed to update wishlist'), 'error');
@@ -407,44 +554,89 @@
         currentSlide = 0;
     }
 
+    function applyHeroCopy(cfg, els) {
+        const heroContent = els.heroContent;
+        if (!heroContent) return;
+
+        const badgeEl = heroContent.querySelector('.hero-badge');
+        const h1El    = heroContent.querySelector('h1');
+        const pEl     = heroContent.querySelector('p');
+        if (badgeEl) badgeEl.innerHTML = `<i class="fas fa-star"></i> <span data-translate="${cfg.badgeKey}">${t(cfg.badgeKey, cfg.badge)}</span>`;
+        if (h1El)    h1El.innerHTML    = `<span data-translate="${cfg.titleKey}">${t(cfg.titleKey, cfg.title)}</span>`;
+        if (pEl)     pEl.innerHTML     = `<span data-translate="${cfg.subtitleKey}">${t(cfg.subtitleKey, cfg.subtitle)}</span>`;
+
+        if (els.heroSkeleton) els.heroSkeleton.style.display = 'none';
+        heroContent.style.display = 'block';
+
+        document.title = `${t(cfg.heroHeadingKey, cfg.heroHeading)} · Sucess Technology`;
+    }
+
     async function init() {
-        // 1. Bail if we're not on the For You page
         const els = getEls();
         if (!els.container) return;
 
-        // 2. Tear down previous instance
         cleanup();
-
         loadWishlist();
         loadCart();
 
+        const filterKey = getActiveFilter();
+        const cfg = FILTER_CONFIG[filterKey];
+        const isFiltered = filterKey !== 'default';
+        activeFilterKey = filterKey;
+
+        // ── INSTANT: hero copy + filter bar (before any async work) ──
+        applyHeroCopy(cfg, els);
+        renderFilterBar(filterKey, cfg);
+
+        // ── Grid loading placeholder ──
         els.container.innerHTML = `
             <div style="text-align:center;padding:60px 20px;grid-column:1/-1;">
                 <div style="width:48px;height:48px;border:4px solid #E2E8F0;border-top-color:#6C3CE1;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
-                <p style="color:#94A3B8;font-weight:500;" data-translate="curating_picks">Curating your personalized picks...</p>
+                <p style="color:#94A3B8;font-weight:500;" data-translate="curating_picks">${t('curating_picks', 'Loading…')}</p>
             </div>
             <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
         `;
 
-        const [heroImages, products] = await Promise.all([
-            fetchHeroImages(6),
-            fetchAllProducts()
-        ]);
+        // ── Fetch filtered products ──
+        const products = await fetchProductsForFilter(filterKey);
         allProducts = products;
 
+        const heroImages = await fetchHeroImages(6, products);
         initHeroSlideshow(heroImages, els);
 
+        // ── Empty state ──
         if (allProducts.length === 0) {
             els.container.innerHTML = `
                 <div style="text-align:center;padding:60px 20px;grid-column:1/-1;">
                     <i class="fas fa-box-open" style="font-size:48px;color:#E2E8F0;margin-bottom:16px;display:block;"></i>
-                    <h3 style="font-weight:700;font-size:20px;color:#0F172A;" data-translate="no_products_title">No products available</h3>
-                    <p style="color:#94A3B8;margin-top:4px;" data-translate="no_products_sub">Check back later for personalized recommendations.</p>
+                    <h3 style="font-weight:700;font-size:20px;color:#0F172A;">
+                        <span data-translate="no_products_filtered">No products available</span>
+                    </h3>
+                    <p style="color:#94A3B8;margin-top:4px;" data-translate="check_back_or_browse">Check back later or browse all products.</p>
+                    <a href="/product/" style="display:inline-block;margin-top:16px;padding:10px 22px;
+                       background:#6C3CE1;color:white;border-radius:12px;font-weight:600;
+                       text-decoration:none;font-size:14px;" data-translate="browse_all_products">Browse all products</a>
                 </div>
             `;
             return;
         }
 
+        // ══════════════════════════════════════════════════════════
+        //  FILTER MODE → one flat grid of ALL matching products
+        // ══════════════════════════════════════════════════════════
+        if (isFiltered) {
+            processedProducts = new Set(allProducts.map(p => p.id));
+            els.container.innerHTML = renderFilterGrid(allProducts);
+            if (els.endResults) els.endResults.style.display = 'none';
+            if (els.loader)     els.loader.classList.remove('visible');
+            hasMore = false;
+            console.log(`📄 For You [${filterKey}] — ${allProducts.length} products (flat grid)`);
+            return;
+        }
+
+        // ══════════════════════════════════════════════════════════
+        //  DEFAULT MODE → grouped sections + infinite scroll
+        // ══════════════════════════════════════════════════════════
         groups = buildGroups();
         currentPage = 0;
         hasMore = groups.length > 0;
@@ -464,6 +656,10 @@
                 loadWishlist();
                 loadCart();
                 const c = document.getElementById('foryouGroups');
+                if (activeFilterKey !== 'default') {
+                    c.innerHTML = renderFilterGrid(allProducts);
+                    return;
+                }
                 const cur = groups.slice(0, currentPage * GROUPS_PER_PAGE);
                 c.innerHTML = '';
                 cur.forEach(g => {
