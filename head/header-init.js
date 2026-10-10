@@ -2250,11 +2250,6 @@ async function subscribeToPush(vapidPublicKey) {
     }
 }
 
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-K0X0VJC3GE');
 window.testOrderNotif = function(payload = {}) {
     try {
         const message = {
