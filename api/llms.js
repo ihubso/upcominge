@@ -41,7 +41,7 @@ export default async function handler(req, res) {
     txt += `## Products\n\n`;
     for (const p of products) {
       const inStock = Number(p.stock ?? 0) > 0 ? 'in stock' : 'out of stock';
-      txt += `- [${p.name}](${SITE_URL}/product/${encodeURIComponent(p.id)}): `;
+      txt += `- [${p.name}](${SITE_URL}/item/${encodeURIComponent(p.id)}): `;
       txt += `${p.brand || ''} ${p.category || ''} — $${p.price} — ${inStock}\n`;
     }
 

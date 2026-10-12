@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 const SITE_URL = 'https://www.suctech.store';
 
 const ROUTES = {
-  product:  '/product',
+  product:  '/item',
   category: '/category',
 };
 
