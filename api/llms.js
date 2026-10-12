@@ -36,13 +36,13 @@ export default async function handler(req, res) {
       return;
     }
 
-    let txt = `# SucTech Store\n\n`;
-    txt += `> SucTech is an online store selling phones and electronics.\n\n`;
-    txt += `## Products\n\n`;
+let txt = `# SUCCESS Technology\n\n`;
+txt += `> Vente d'appareils électroniques : Ordinateur Portable, Ecran PC, Imprimante, Batterie, Souris, Clavier, Clé USB, Chargeur, Encre & Divers.\n\n`;
+txt += `## Products\n\n`;
     for (const p of products) {
       const inStock = Number(p.stock ?? 0) > 0 ? 'in stock' : 'out of stock';
       txt += `- [${p.name}](${SITE_URL}/item/${encodeURIComponent(p.id)}): `;
-      txt += `${p.brand || ''} ${p.category || ''} — $${p.price} — ${inStock}\n`;
+      txt += `${p.brand || ''} ${p.category || ''} — FCFA${p.price} — ${inStock}\n`;
     }
 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
