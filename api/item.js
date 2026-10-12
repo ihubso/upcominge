@@ -139,7 +139,31 @@ export default async function handler(req, res) {
     const productName        = escapeHtml(productData.name || 'Product');
     const productBrand       = escapeHtml(productData.brand || '');
     const productCategory    = escapeHtml(productData.category || '');
-    const imageUrl           = productData.image || 'https://placehold.co/600x400/0f172a/ffffff?text=No+Image';
+
+    // ---------- BUILD BASE URL FIRST (needed for image normalization) ----------
+    const protocol = req.headers['x-forwarded-proto'] || 'https';
+    const host     = req.headers.host || 'www.suctech.store';
+    const baseUrl  = `${protocol}://${host}`;
+
+    // ---------- NORMALIZE IMAGE URL TO ABSOLUTE ----------
+    // Social crawlers (Facebook, WhatsApp, Twitter) REQUIRE absolute URLs.
+    let imageUrl = (productData.image || '').trim();
+
+    if (!imageUrl) {
+      // No image in DB → placeholder
+      imageUrl = 'https://placehold.co/600x400/0f172a/ffffff?text=No+Image';
+    } else if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      // Already absolute — leave it alone
+    } else if (imageUrl.startsWith('//')) {
+      // Protocol-relative → add https:
+      imageUrl = `https:${imageUrl}`;
+    } else if (imageUrl.startsWith('/')) {
+      // Root-relative → prepend domain
+      imageUrl = `${baseUrl}${imageUrl}`;
+    } else {
+      // Bare relative path → prepend domain + slash
+      imageUrl = `${baseUrl}/${imageUrl}`;
+    }
 
     // ✅ PRICE FIRST so social platforms never truncate it away
     const shortDescription   = `${displayPriceText} • ${stockStatus}${productBrand ? ' • ' + productBrand : ''}`;
@@ -148,10 +172,7 @@ export default async function handler(req, res) {
     // For OG description: price-first, brand second, then trimmed original description
     const productDescription = escapeHtml(shortDescription);
 
-    // Build absolute URL
-    const protocol = req.headers['x-forwarded-proto'] || 'https';
-    const host     = req.headers.host || 'upcominge.vercel.app';
-    const baseUrl  = `${protocol}://${host}`;
+    // Build remaining URLs
     const canonicalUrl = `${baseUrl}/api/item?product=${encodeURIComponent(product)}`;
     const redirectUrl  = `/item/?product=${encodeURIComponent(product)}`;
 
@@ -174,7 +195,10 @@ export default async function handler(req, res) {
     <meta property="og:title" content="${productName} — ${discountedText}" />
     <meta property="og:description" content="${productDescription}" />
     <meta property="og:image" content="${imageUrl}" />
+    <meta property="og:image:secure_url" content="${imageUrl}" />
     <meta property="og:image:alt" content="${productName}" />
+    <meta property="og:image:width" content="600" />
+    <meta property="og:image:height" content="400" />
     <meta property="og:url" content="${canonicalUrl}" />
     <meta property="og:site_name" content="Sucess Technology" />
     <meta property="og:price:amount" content="${discountedPrice.toFixed(2)}" />
