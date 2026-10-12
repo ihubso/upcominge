@@ -6,28 +6,21 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 );
 
-// ⚠️ Change this to your actual live domain
-const SITE_URL = 'https://your-domain.com';
+// ✅ Your live domain (no trailing slash)
+const SITE_URL = 'https://www.suctech.store';
 
-// Your store's public route paths — adjust if your app uses different ones
+// Adjust these if your routes differ
 const ROUTES = {
-  product: '/product',   // e.g. /product/iphone-15-pro
-  category: '/category', // e.g. /category/phone
+  product:  '/product',
+  category: '/category',
 };
 
-/**
- * Normalize any date-ish string into a W3C/ISO-8601 string.
- * Falls back to `now` if the value is empty or unparseable.
- */
 function toISO(value) {
   if (!value) return new Date().toISOString();
   const d = new Date(value);
   return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
 }
 
-/**
- * Escape XML special chars in URLs / text nodes.
- */
 function esc(str = '') {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -39,8 +32,6 @@ function esc(str = '') {
 
 export default async function handler(req, res) {
   try {
-    // Fetch only the columns the sitemap actually needs.
-    // Adjust the `.gt('stock', 0)` filter if you want to include out-of-stock items.
     const { data: products, error } = await supabase
       .from('products')
       .select('id, category, stock, created_at, updated_at')
@@ -48,20 +39,19 @@ export default async function handler(req, res) {
 
     if (error) throw error;
 
-    // Derive unique categories from the products themselves
-    // (your schema has no separate categories table)
+    // Derive unique categories from products
     const categorySet = new Set();
     products.forEach(p => {
       if (p.category && p.category.trim()) categorySet.add(p.category.trim());
     });
     const categories = [...categorySet];
 
-    // ---- Build XML ----
+    const now = new Date().toISOString();
+
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
     // 1) Static pages
-    const now = new Date().toISOString();
     const staticPages = [
       { path: '/',        changefreq: 'daily',   priority: '1.0' },
       { path: '/shop',    changefreq: 'daily',   priority: '0.9' },
@@ -103,7 +93,6 @@ export default async function handler(req, res) {
 
     xml += `</urlset>`;
 
-    // ---- Respond ----
     res.setHeader('Content-Type', 'application/xml; charset=utf-8');
     res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
     res.status(200).send(xml);
