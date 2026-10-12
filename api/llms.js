@@ -1,27 +1,43 @@
 // api/llms.js
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
-);
-
 const SITE_URL = 'https://www.suctech.store';
 
 export default async function handler(req, res) {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    res.status(500).json({
+      debug: 'MISSING ENV VARS',
+      hasUrl: !!process.env.SUPABASE_URL,
+      hasKey: !!process.env.SUPABASE_ANON_KEY,
+    });
+    return;
+  }
+
   try {
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_ANON_KEY
+    );
+
     const { data: products, error } = await supabase
       .from('products')
       .select('id, name, price, category, brand, stock, description')
       .order('created_at', { ascending: false })
       .limit(500);
 
-    if (error) throw error;
+    if (error) {
+      res.status(500).json({
+        debug: 'SUPABASE ERROR',
+        message: error.message,
+        code:    error.code,
+        hint:    error.hint,
+        details: error.details,
+      });
+      return;
+    }
 
     let txt = `# SucTech Store\n\n`;
-    txt += `> SucTech is an online store selling phones and electronics. `;
-    txt += `All products ship with a delivery estimate shown on each product page.\n\n`;
-
+    txt += `> SucTech is an online store selling phones and electronics.\n\n`;
     txt += `## Products\n\n`;
     for (const p of products) {
       const inStock = Number(p.stock ?? 0) > 0 ? 'in stock' : 'out of stock';
@@ -29,27 +45,14 @@ export default async function handler(req, res) {
       txt += `${p.brand || ''} ${p.category || ''} — $${p.price} — ${inStock}\n`;
     }
 
-    txt += `\n## Pages\n\n`;
-    txt += `- [Home](${SITE_URL}/)\n`;
-    txt += `- [Shop](${SITE_URL}/shop)\n`;
-    txt += `- [About](${SITE_URL}/about)\n`;
-    txt += `- [Contact](${SITE_URL}/contact)\n`;
-
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
     res.status(200).send(txt);
 
-  }    catch (err) {
-    console.error('[llms] error:', err);
-    // ⚠️ TEMPORARY — remove after debugging
-    res.status(500).send(
-      `LLMs error:\n` +
-      `message: ${err?.message || err}\n` +
-      `code:    ${err?.code || 'n/a'}\n` +
-      `hint:    ${err?.hint || 'n/a'}\n` +
-      `details: ${err?.details || 'n/a'}\n` +
-      `hasUrl:  ${!!process.env.SUPABASE_URL}\n` +
-      `hasKey:  ${!!process.env.SUPABASE_ANON_KEY}\n`
-    );
+  } catch (err) {
+    res.status(500).json({
+      debug: 'UNEXPECTED ERROR',
+      message: err?.message || String(err),
+      stack:   err?.stack,
+    });
   }
 }

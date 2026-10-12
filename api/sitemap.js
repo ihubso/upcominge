@@ -1,15 +1,8 @@
 // api/sitemap.js
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
-);
-
-// ✅ Your live domain (no trailing slash)
 const SITE_URL = 'https://www.suctech.store';
 
-// Adjust these if your routes differ
 const ROUTES = {
   product:  '/product',
   category: '/category',
@@ -31,15 +24,40 @@ function esc(str = '') {
 }
 
 export default async function handler(req, res) {
+  // ---- DEBUG: verify env vars exist ----
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    res.status(500).json({
+      debug: 'MISSING ENV VARS',
+      hasUrl: !!process.env.SUPABASE_URL,
+      hasKey: !!process.env.SUPABASE_ANON_KEY,
+    });
+    return;
+  }
+
   try {
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_ANON_KEY
+    );
+
     const { data: products, error } = await supabase
       .from('products')
       .select('id, category, stock, created_at, updated_at')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      // ---- DEBUG: expose Supabase error ----
+      res.status(500).json({
+        debug: 'SUPABASE ERROR',
+        message: error.message,
+        code:    error.code,
+        hint:    error.hint,
+        details: error.details,
+        url:     process.env.SUPABASE_URL,
+      });
+      return;
+    }
 
-    // Derive unique categories from products
     const categorySet = new Set();
     products.forEach(p => {
       if (p.category && p.category.trim()) categorySet.add(p.category.trim());
@@ -51,7 +69,6 @@ export default async function handler(req, res) {
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
-    // 1) Static pages
     const staticPages = [
       { path: '/',        changefreq: 'daily',   priority: '1.0' },
       { path: '/shop',    changefreq: 'daily',   priority: '0.9' },
@@ -68,7 +85,6 @@ export default async function handler(req, res) {
       xml += `  </url>\n`;
     }
 
-    // 2) Category pages
     for (const cat of categories) {
       xml += `  <url>\n`;
       xml += `    <loc>${esc(`${SITE_URL}${ROUTES.category}/${encodeURIComponent(cat)}`)}</loc>\n`;
@@ -78,7 +94,6 @@ export default async function handler(req, res) {
       xml += `  </url>\n`;
     }
 
-    // 3) Product pages
     for (const p of products) {
       const lastmod = toISO(p.updated_at || p.created_at);
       const inStock = Number(p.stock ?? 0) > 0;
@@ -98,7 +113,10 @@ export default async function handler(req, res) {
     res.status(200).send(xml);
 
   } catch (err) {
-    console.error('[sitemap] error:', err);
-    res.status(500).send('Error generating sitemap');
+    res.status(500).json({
+      debug: 'UNEXPECTED ERROR',
+      message: err?.message || String(err),
+      stack:   err?.stack,
+    });
   }
 }
