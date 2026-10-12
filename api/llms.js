@@ -39,8 +39,17 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
     res.status(200).send(txt);
 
-  } catch (err) {
+  }    catch (err) {
     console.error('[llms] error:', err);
-    res.status(500).send('Error generating llms.txt');
+    // ⚠️ TEMPORARY — remove after debugging
+    res.status(500).send(
+      `LLMs error:\n` +
+      `message: ${err?.message || err}\n` +
+      `code:    ${err?.code || 'n/a'}\n` +
+      `hint:    ${err?.hint || 'n/a'}\n` +
+      `details: ${err?.details || 'n/a'}\n` +
+      `hasUrl:  ${!!process.env.SUPABASE_URL}\n` +
+      `hasKey:  ${!!process.env.SUPABASE_ANON_KEY}\n`
+    );
   }
 }
