@@ -1,8 +1,7 @@
 {
   "rewrites": [
-    {
-      "source": "/item/:productId",
-      "destination": "/api/item?product=:productId"
-    }
+    { "source": "/item/:productId", "destination": "/api/item?product=:productId" },
+    { "source": "/sitemap.xml",     "destination": "/api/sitemap" },
+    { "source": "/llms.txt",        "destination": "/api/llms" }
   ]
 }
