@@ -174,7 +174,7 @@ async function fetchBusinessInfo() {
         if (els.mapAddress)        els.mapAddress.textContent = address;
 
         // Phone
-        const phone = info.phone || t('default_phone', ' ');
+        const phone = info.phone || t('default_phone', '+2250172934545');
         const phoneClean = phone.replace(/\s/g, '');
         const phoneDigits = phone.replace(/\D/g, '');
 
@@ -268,7 +268,7 @@ async function fetchBusinessInfo() {
         renderContactInfo({
             shop_name: 'Sucess Technology',
             email: 'info@sucesstechnology.com',
-            phone: '+237 6XX XXX XXX',
+            phone: '+2250172934545',
             address: 'Douala, Cameroon',
             description: t('default_description', 'Your trusted partner for premium technology products and exceptional service.'),
             hours: 'Mon - Fri: 7:00 AM - 8:00 PM\nSun: Closed',

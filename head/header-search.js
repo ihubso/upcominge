@@ -2451,7 +2451,7 @@ footer { background: #0f172a; color: #e2e8f0; padding: 40px 30px; display: grid;
                                 <option value="+998">🇺🇿 +998</option>
                             </select>
                             <input type="tel" class="st-form-input" id="stRegisterPhone" 
-                                placeholder="6XX XXX XXX" style="flex:1;" data-translate-placeholder="phone_placeholder">
+                                placeholder="+2250172934545" style="flex:1;" data-translate-placeholder="phone_placeholder">
                         </div>
                         <div class="st-form-help" style="font-size:12px;color:#94A3B8;margin-top:4px;">
                             <i class="fas fa-info-circle"></i> <span data-translate="phone_help">We'll use this to contact you about your orders</span>

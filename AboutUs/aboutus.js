@@ -243,7 +243,7 @@ async function fetchBusinessInfo() {
         renderBusinessInfo({
             shop_name: 'Sucess Technology',
             email: 'info@sucesstechnology.com',
-            phone: '+237 6XX XXX XXX',
+            phone: '+2250172934545',
             address: 'Douala, Cameroon',
             description: "Your trusted partner for premium technology products and exceptional service. We're committed to bringing you the best in tech innovation.",
             hours: 'Mon - Fri: 7:00 AM - 8:00 PM\nSun: Closed',
