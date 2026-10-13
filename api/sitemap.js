@@ -87,7 +87,7 @@ export default async function handler(req, res) {
 
     for (const cat of categories) {
       xml += `  <url>\n`;
-      xml += `    <loc>${esc(`${SITE_URL}${ROUTES.category}/?category=${encodeURIComponent(cat)}`)}</loc>\n`;
+       xml += `    <loc>${esc(`${SITE_URL}${ROUTES.category}/?category=${encodeURIComponent(cat.toLowerCase())}`)}</loc>\n`;
       xml += `    <lastmod>${now}</lastmod>\n`;
       xml += `    <changefreq>weekly</changefreq>\n`;
       xml += `    <priority>0.8</priority>\n`;
