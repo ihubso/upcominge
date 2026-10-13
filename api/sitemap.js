@@ -71,9 +71,9 @@ export default async function handler(req, res) {
 
     const staticPages = [
       { path: '/',        changefreq: 'daily',   priority: '1.0' },
-      { path: '/shop',    changefreq: 'daily',   priority: '0.9' },
-      { path: '/about',   changefreq: 'monthly', priority: '0.5' },
-      { path: '/contact', changefreq: 'monthly', priority: '0.5' },
+      { path: '/product/',    changefreq: 'daily',   priority: '0.9' },
+      { path: '/AboutUs/',   changefreq: 'monthly', priority: '0.5' },
+      { path: '/contactus/', changefreq: 'monthly', priority: '0.5' },
     ];
 
     for (const page of staticPages) {
