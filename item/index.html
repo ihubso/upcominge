@@ -1271,6 +1271,19 @@
     padding-left: 0;
     padding-right: 0;
 }
+.specsman {
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: #f8fafc;
+    border-left: 4px solid #6C3CE1;
+    border-radius: 8px;
+}
+
+.specsman h3 {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6C3CE1 !important;
+}
 
 /* Breadcrumb row — the hero's inner div needs padding on its own
    since we can't rely on Tailwind's px-4/px-6/px-8 being present. */
@@ -1463,7 +1476,10 @@
                         <div id="descriptionSection" class="mb-6">
                             <p id="productDescription" class="text-gray-600 leading-relaxed"></p>
                         </div>
-                        <div id="specsSection" class="bg-gray-50 rounded-2xl p-5 mb-6 border border-gray-100">
+                        <div id="specsSection" class="mb-6">
+                            <p id="specsman" class="text-gray-600 leading-relaxed"></p>
+                        </div>
+                        <div id="specsSection" class="mb-6">
                             <h4 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider" data-translate="specifications">Specifications</h4>
                             <div id="specsGrid" class="grid grid-cols-2 gap-y-3 gap-x-6"></div>
                         </div>

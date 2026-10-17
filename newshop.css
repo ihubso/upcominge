@@ -935,3 +935,79 @@ footer .deal-countdown .unit .lbl {
     .hero-skeleton-slide,
     .hero-slides        { min-height: 320px; }
 }
+/* ============================================================
+   1. GLOBAL FIXES (Apply to all screen sizes)
+   ============================================================ */
+
+/* Remove dark overlays and show the clear image */
+.hero-slide-content {
+
+  background-blend-mode: normal !important;
+}
+
+/* Hide the extra dark layers (shadow overlays) */
+.hero-slide-content::before,
+.hero-slide-content::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Remove curved edges for a sharp square look */
+.hero-slide,
+.hero-slide-content {
+  border-radius: 0px !important;
+  overflow: visible !important;
+}
+@media (max-width: 768px) {
+  .hero-slide-content {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+/* ============================================================
+   2. MOBILE DESIGN (Screens 768px and smaller)
+   ============================================================ */
+@media (max-width: 768px) {
+  /* Position the text box at the bottom of the slide */
+  .hero-slide-content {
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding-bottom: 25px !important;
+  }
+
+  /* Modern Glass Effect Title Box */
+  .hero-text {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(8px);
+    padding: 12px 20px !important;
+    border-radius: 12px !important; /* Small curve for the text box ONLY */
+    width: 80% !important;
+    max-width: 300px;
+    margin: 0 auto !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+    text-align: center !important;
+    position: relative !important;
+  }
+
+  /* Item Name Styling */
+  .hero-title {
+    color: #1a1a1a !important;
+    font-size: 1rem !important;
+    font-weight: 800 !important;
+    margin: 0 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  /* Hide description, price, and other clutter on mobile */
+  .hero-description, 
+  .hero-price, 
+  .hero-btn, 
+  .hero-brand, 
+  .hero-badge {
+    display: none !important;
+  }
+}

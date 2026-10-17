@@ -58,6 +58,7 @@
             dealBadgeOverlay:   document.getElementById('dealBadgeOverlay'),
             productDescription: document.getElementById('productDescription'),
             specsGrid:          document.getElementById('specsGrid'),
+            specsman:            document.getElementById('specsman'),
             variantsSection:    document.getElementById('variantsSection'),
             stockDisplay:       document.getElementById('stockDisplay'),
             qtyInput:           document.getElementById('qtyInput'),
@@ -856,29 +857,45 @@ async function handleSubmitReview(productId) {
 
         els.productDescription.textContent = product.description || t('no_description', 'No description available.');
 
-        const specItems = [];
-        if (product.cpu)  specItems.push({ label: t('processor', 'Processor'), value: product.cpu });
-        if (product.os)   specItems.push({ label: t('operating_system', 'Operating System'), value: product.os });
-        if (product.specs) specItems.push({ label: t('specifications', 'Specifications'), value: product.specs });
-        if (product.stock !== undefined) {
-            const stockText  = product.stock > 0 ? `${t('in_stock', 'In Stock')} (${product.stock})` : t('out_of_stock', 'Out of Stock');
-            const stockColor = product.stock > 0 ? 'text-green-600' : 'text-red-600';
-            specItems.push({ label: t('stock_status', 'Stock Status'), value: `<span class="${stockColor} font-semibold">${stockText}</span>` });
-        }
-        
-        // Display View Count
-        if (product.view !== undefined) {
-            specItems.push({ label: t('views', 'Views'), value: `<span class="text-blue-600 font-semibold">${product.view}</span>` });
-        }
+        // ---- Build grid items (specs removed) ----
+const specItems = [];
+if (product.cpu)  specItems.push({ label: t('processor', 'Processor'), value: product.cpu });
+if (product.os)   specItems.push({ label: t('operating_system', 'Operating System'), value: product.os });
 
-        if (specItems.length === 0) {
-            els.specsGrid.innerHTML = '<p class="text-sm text-gray-400 col-span-2" data-translate="no_specs">No specifications available.</p>';
-        } else {
-            els.specsGrid.innerHTML = specItems.map(i =>
-                `<div><p class="text-xs text-gray-500">${i.label}</p><p class="font-semibold text-sm">${i.value}</p></div>`
-            ).join('');
-        }
+if (product.stock !== undefined) {
+    const stockText  = product.stock > 0 ? `${t('in_stock', 'In Stock')} (${product.stock})` : t('out_of_stock', 'Out of Stock');
+    const stockColor = product.stock > 0 ? 'text-green-600' : 'text-red-600';
+    specItems.push({ label: t('stock_status', 'Stock Status'), value: `<span class="${stockColor} font-semibold">${stockText}</span>` });
+}
 
+if (product.view !== undefined) {
+    specItems.push({ label: t('views', 'Views'), value: `<span class="text-blue-600 font-semibold">${product.view}</span>` });
+}
+
+// ---- Render grid ----
+if (specItems.length === 0) {
+    els.specsGrid.innerHTML = '<p class="text-sm text-gray-400 col-span-2" data-translate="no_specs">No specifications available.</p>';
+} else {
+    els.specsGrid.innerHTML = specItems.map(i =>
+        `<div><p class="text-xs text-gray-500">${i.label}</p><p class="font-semibold text-sm">${i.value}</p></div>`
+    ).join('');
+}
+
+// ---- Render product.specs into #specsman (separate) ----
+const specsmanEl = document.getElementById('specsman');
+if (specsmanEl) {
+    if (product.specs && String(product.specs).trim() !== '') {
+        specsmanEl.innerHTML = `
+            <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                ${product.specs}
+            </div>
+        `;
+        specsmanEl.style.display = 'block';
+    } else {
+        specsmanEl.innerHTML = '';
+        specsmanEl.style.display = 'none';
+    }
+}
         /* --- variants --- */
         currentVariants = {};
         if (product.variants && product.variants.length > 0) {

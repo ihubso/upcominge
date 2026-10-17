@@ -125,7 +125,9 @@ function renderHeroBanner(products, containerId = 'heroBanner') {
 
         html += `
             <div class="hero-slide ${index === 0 ? 'active' : ''}" data-index="${index}">
-                <div class="hero-slide-content" style="background-image: linear-gradient(135deg, rgba(15,23,42,0.7) 0%, rgba(15,23,42,0.3) 100%), url('${image}');">
+                <div class="hero-slide-content"
+                     style="background-image: url('${image}');"
+                     onclick="if(window.innerWidth <= 768) { window.navigateWithUserInfo('/item/?product=${product.id}'); return false; }">
                     <div class="hero-text">
                         ${badge}
                         <h2 class="hero-title">${product.name || 'Featured Product'}</h2>
@@ -165,7 +167,6 @@ function renderHeroBanner(products, containerId = 'heroBanner') {
 
     container.innerHTML = html;
     initHeroSlider(products.length);
-
 }
 // ============================================================
 // 5. HERO SLIDER CONTROLS
