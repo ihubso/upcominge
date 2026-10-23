@@ -43,9 +43,18 @@
         return fallback || key;
     }
 
-    function getCategoryFromUrl() {
-        return new URLSearchParams(location.search).get('category') || 'all';
-    }
+function getCategoryFromUrl() {
+    // 1. Explicit query param wins (e.g. from category bar chips)
+    const q = new URLSearchParams(location.search).get('category');
+    if (q) return q;
+
+    // 2. Otherwise, derive from pathname: /accessoires/ → "accessoires"
+    const trimmed = location.pathname.replace(/^\/+|\/+$/g, ''); // "accessoires" or "informatique/peripheriques"
+    if (!trimmed || trimmed === 'category') return 'all';
+
+    const parts = trimmed.split('/');
+    return decodeURIComponent(parts[parts.length - 1]); // last segment = leaf category slug
+}
 
     function showToast(msg) {
         let el = document.getElementById('toastMsg');

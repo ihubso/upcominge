@@ -36,7 +36,14 @@
         }
         return fallback || key;
     }
-
+function escapeHtml(s) {
+    return String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
     /* ============================================================
        ELEMENT LOOKUP
        ============================================================ */
@@ -65,9 +72,7 @@
             addToCartBtn:       document.getElementById('addToCartBtn'),
             wishlistBtn:        document.getElementById('wishlistBtn'),
             shareBtn:           document.getElementById('shareBtn'),
-            breadcrumbBrand:    document.getElementById('breadcrumbBrand'),
-            breadcrumbCategory: document.getElementById('breadcrumbCategory'),
-            breadcrumbName:     document.getElementById('breadcrumbName'),
+            breadcrumbNav:      document.getElementById('breadcrumbNav'),
             relatedGrid:        document.getElementById('relatedGrid'),
             relatedLoadMore:    document.getElementById('relatedLoadMore'),
             reviewsList:        document.getElementById('reviewsList'),
@@ -773,7 +778,76 @@ async function handleSubmitReview(productId) {
         updateRelatedLoadMore(Boolean(relatedProductsPool.length));
         setTimeout(setupRelatedObserver, 100);
     }
+/* ============================================================
+   BREADCRUMB — single line, all categories
+   Format: Accueil / Cat1 / Cat2 / Cat3 / … / ProductName
+   Uses category_name_path for the primary (hierarchy-aware) path,
+   then appends any extra categories from all_categories.
+   No second row, no chips — everything in one line.
+   ============================================================ */
+function renderBreadcrumb(product) {
+    const nav = document.getElementById('breadcrumbNav');
+    if (!nav) return;
 
+    // Single row, wraps if too long
+    nav.className = 'flex items-center flex-wrap gap-2 text-sm text-gray-500';
+    nav.innerHTML = '';
+
+    const mkLink = (text, href) => {
+        const a = document.createElement('a');
+        a.textContent = text;
+        a.href = href;
+        a.className = 'hover:text-primary transition-colors';
+        return a;
+    };
+    const mkSep = () => {
+        const s = document.createElement('span');
+        s.textContent = '/';
+        s.className = 'text-gray-300';
+        return s;
+    };
+
+    // ---- 1. Accueil ----
+    nav.appendChild(mkLink(t('home', 'Accueil'), '/'));
+
+    // ---- 2. Primary hierarchy path ----
+    const names = Array.isArray(product.category_name_path) ? product.category_name_path : [];
+    const slugs = Array.isArray(product.category_slug_path) ? product.category_slug_path : [];
+
+    if (names.length > 0) {
+        names.forEach((name, i) => {
+            nav.appendChild(mkSep());
+            const href = `/category/?category=${encodeURIComponent(slugs[i])}`;
+            nav.appendChild(mkLink(name, href));
+        });
+    } else if (product.category) {
+        // Legacy fallback for products with no path yet
+        nav.appendChild(mkSep());
+        nav.appendChild(mkLink(
+            product.category,
+            '/category/?category=' + encodeURIComponent(product.category)
+        ));
+    }
+
+    // ---- 3. Additional categories (not primary, not already shown) ----
+    const allCats = Array.isArray(product.all_categories) ? product.all_categories : [];
+    const shownSlugs = new Set(slugs);
+
+    allCats
+        .filter(cat => !cat.is_primary && !shownSlugs.has(cat.slug))
+        .forEach(cat => {
+            nav.appendChild(mkSep());
+            const href = `/category/?category=${encodeURIComponent(cat.slug)}`;
+            nav.appendChild(mkLink(cat.name, href));
+        });
+
+    // ---- 4. Current product (not a link) ----
+    nav.appendChild(mkSep());
+    const cur = document.createElement('span');
+    cur.textContent = product.name;
+    cur.className = 'text-gray-700 font-medium truncate max-w-full';
+    nav.appendChild(cur);
+}
     /* ============================================================
        RENDER PRODUCT
        ============================================================ */
@@ -785,19 +859,7 @@ async function handleSubmitReview(productId) {
         currentProductId = product.id;
         document.title = `${product.name} · Sucess Technology`;
 
-        if (product.brand) {
-            els.breadcrumbBrand.textContent = product.brand;
-            els.breadcrumbBrand.href = `/brand/?brand=${encodeURIComponent(product.brand)}`;
-            els.breadcrumbBrand.style.display = 'inline';
-        } else els.breadcrumbBrand.style.display = 'none';
-
-        if (product.category) {
-            els.breadcrumbCategory.textContent = product.category;
-            els.breadcrumbCategory.href = `/category/?category=${encodeURIComponent(product.category)}`;
-            els.breadcrumbCategory.style.display = 'inline';
-        } else els.breadcrumbCategory.style.display = 'none';
-
-        els.breadcrumbName.textContent = product.name;
+      renderBreadcrumb(product);
 
         els.productBrand.textContent   = product.brand    || 'all';
         els.productcategory.textContent = product.category || 'all';
