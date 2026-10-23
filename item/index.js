@@ -1157,7 +1157,7 @@ if (specsmanEl) {
 
     async function init() {
           const notFound = document.getElementById('notFoundState');
-          notFound.classList.remove('hidden');
+          notFound.classList.add('hidden');
 
         const els = getEls();
         if (!els.root) return;
