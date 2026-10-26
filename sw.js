@@ -7,7 +7,7 @@
 // ============================================
 
 // Version number = Cache name - Changing version creates new cache
-const CACHE_NAME = 'success-technology-v3.1.89592'; // Increment this to create new cache
+const CACHE_NAME = 'success-technology-v3.1.89999999999'; // Increment this to create new cache
 
 // Assets to cache on install
 const ASSETS_TO_CACHE = [
@@ -23,22 +23,41 @@ const DEFAULT_NOTIFICATION = {
     requireInteraction: true,
     data: {
         url: '/',
-        orderId: null,
         fullUrl: '/'
     }
 };
 
-const NOTIFICATION_ACTIONS = [
-    {
-        action: 'open',
-        title: 'View Order'
-    },
-    {
-        action: 'close',
-        title: 'Dismiss'
-    }
-];
+// Different action buttons per notification type
+const ACTIONS_BY_TYPE = {
+    order: [
+        { action: 'open',  title: 'Voir la commande' },
+        { action: 'close', title: 'Fermer' }
+    ],
+    new_product: [
+        { action: 'open',  title: 'Voir le produit' },
+        { action: 'close', title: 'Fermer' }
+    ],
+    deal: [
+        { action: 'open',  title: 'Voir la promo' },
+        { action: 'close', title: 'Fermer' }
+    ],
+    deal_end: [
+        { action: 'open',  title: 'Voir le produit' },
+        { action: 'close', title: 'Fermer' }
+    ],
+    general: [
+        { action: 'open',  title: 'Ouvrir' },
+        { action: 'close', title: 'Fermer' }
+    ],
+    test: [
+        { action: 'open',  title: 'Ouvrir' },
+        { action: 'close', title: 'Fermer' }
+    ]
+};
 
+function getActionsForType(type) {
+    return ACTIONS_BY_TYPE[type] || ACTIONS_BY_TYPE.general;
+}
 // ============================================
 // INSTALL EVENT - Cache static assets
 // ============================================
@@ -219,31 +238,42 @@ self.addEventListener('push', function(event) {
 
             const baseUrl = self.location.origin;
 
-            const orderId = parsedData.orderId ||
-                            parsedData.data?.orderId ||
-                            parsedData.notification?.data?.orderId ||
-                            null;
+            // Extract everything the server sent — no assumptions
+            const type    = parsedData.type || parsedData.data?.type || 'general';
+            const title   = parsedData.title || parsedData.notification?.title || DEFAULT_NOTIFICATION.title;
+            const body    = parsedData.body  || parsedData.notification?.body  || parsedData.text || DEFAULT_NOTIFICATION.body;
+            const icon    = parsedData.icon  || parsedData.notification?.icon  || DEFAULT_NOTIFICATION.icon;
+            const badge   = parsedData.badge || parsedData.notification?.badge || DEFAULT_NOTIFICATION.badge;
+            const image   = parsedData.image || parsedData.data?.image || null;
+            const orderId = parsedData.orderId || parsedData.data?.orderId || null;
+            const url     = parsedData.url || parsedData.data?.url || null;
+            const extra   = parsedData.data || {};
 
-            const url = parsedData.url ||
-                        parsedData.data?.url ||
-                        parsedData.notification?.data?.url ||
-                        null;
-
-            let fullUrl = '/';
-            if (url && url.startsWith('http'))      fullUrl = url;
-            else if (url)                            fullUrl = baseUrl + url;
-            else if (orderId)                        fullUrl = baseUrl + '/orders/?order=' + encodeURIComponent(orderId);
-            else                                     fullUrl = baseUrl + '/';
+            // Build the click target — order-specific only when it's an order
+            let fullUrl;
+            if (url && url.startsWith('http')) {
+                fullUrl = url;
+            } else if (url) {
+                fullUrl = baseUrl + url;
+            } else if (type === 'order' && orderId) {
+                fullUrl = baseUrl + '/orders/?order=' + encodeURIComponent(orderId);
+            } else {
+                fullUrl = baseUrl + '/';
+            }
 
             notificationData = {
-                title: parsedData.title || parsedData.notification?.title || DEFAULT_NOTIFICATION.title,
-                body:  parsedData.body  || parsedData.notification?.body  || parsedData.text || DEFAULT_NOTIFICATION.body,
-                icon:  parsedData.icon  || parsedData.notification?.icon  || DEFAULT_NOTIFICATION.icon,
-                badge: parsedData.badge || parsedData.notification?.badge || DEFAULT_NOTIFICATION.badge,
+                title,
+                body,
+                icon,
+                badge,
+                image,
+                type,
                 data: {
                     url: fullUrl,
-                    orderId: orderId,
-                    fullUrl: fullUrl
+                    fullUrl: fullUrl,
+                    type,
+                    ...(type === 'order' && orderId ? { orderId } : {}),
+                    ...extra
                 }
             };
         } else {
@@ -257,25 +287,21 @@ self.addEventListener('push', function(event) {
             };
         }
 
-        // ✅ Broadcast to open clients so they can save to localStorage.
-        //    If no client is available, queue for later in IndexedDB.
+        // ---------- Broadcast to open clients (or queue for later) ----------
         const broadcastPromise = clients.matchAll({ type: 'window', includeUncontrolled: true })
             .then(clientList => {
                 if (clientList.length === 0) {
-                    // No open tabs — queue in IndexedDB
                     return swQueueForLater({
                         title: notificationData.title,
                         body:  notificationData.body,
                         icon:  notificationData.icon,
-                        image: notificationData.data?.image || null,
+                        image: notificationData.image,
                         url:   notificationData.data?.fullUrl,
-                        orderId: notificationData.data?.orderId || null,
-                        type: 'order'
+                        type:  notificationData.type,
+                        ...(notificationData.data?.orderId ? { orderId: notificationData.data.orderId } : {})
                     });
                 }
 
-                // Fan out the same payload to every tab.
-                // The client script decides how to persist it (localStorage).
                 clientList.forEach(client => {
                     client.postMessage({
                         type: 'PUSH_RECEIVED',
@@ -283,10 +309,10 @@ self.addEventListener('push', function(event) {
                             title: notificationData.title,
                             body:  notificationData.body,
                             icon:  notificationData.icon,
-                            image: notificationData.data?.image || null,
+                            image: notificationData.image,
                             url:   notificationData.data?.fullUrl,
-                            orderId: notificationData.data?.orderId || null,
-                            type: 'order',
+                            type:  notificationData.type,
+                            ...(notificationData.data?.orderId ? { orderId: notificationData.data.orderId } : {}),
                             receivedAt: new Date().toISOString()
                         }
                     });
@@ -294,7 +320,7 @@ self.addEventListener('push', function(event) {
                 return Promise.resolve();
             });
 
-        // Show the notification AND broadcast, both inside the same waitUntil
+        // ---------- Show the notification (with per-type actions) ----------
         event.waitUntil(
             Promise.all([
                 broadcastPromise,
@@ -302,17 +328,17 @@ self.addEventListener('push', function(event) {
                     body: notificationData.body,
                     icon: notificationData.icon,
                     badge: notificationData.badge,
+                    ...(notificationData.image ? { image: notificationData.image } : {}),
                     vibrate: DEFAULT_NOTIFICATION.vibrate,
                     data: notificationData.data,
                     requireInteraction: DEFAULT_NOTIFICATION.requireInteraction,
-                    actions: NOTIFICATION_ACTIONS
+                    actions: getActionsForType(notificationData.type)   // ← per type
                 })
             ])
         );
 
     } catch (error) {
         console.error('[Service Worker] Error processing push:', error);
-
         event.waitUntil(
             self.registration.showNotification(
                 DEFAULT_NOTIFICATION.title,
@@ -325,8 +351,9 @@ self.addEventListener('push', function(event) {
                     data: {
                         url: self.location.origin + '/',
                         fullUrl: self.location.origin + '/',
-                        orderId: null
-                    }
+                        type: 'general'
+                    },
+                    actions: getActionsForType('general')
                 }
             )
         );
@@ -337,101 +364,54 @@ self.addEventListener('push', function(event) {
 // NOTIFICATION CLICK HANDLER - FIXED
 // ============================================
 self.addEventListener('notificationclick', function(event) {
-    console.log('[Service Worker] Notification click event:', event);
-    
     const notification = event.notification;
     const action = event.action;
     const data = notification.data || {};
-    
-    // Close the notification
+    const type = data.type || 'general';
+
     notification.close();
-    
-    console.log('[Service Worker] Notification data:', data);
-    console.log('[Service Worker] Action:', action);
-    
-    // Get the URL - prefer fullUrl, then url, then construct from orderId
+
+    if (action === 'close') {
+        console.log('[Service Worker] Notification dismissed');
+        return;
+    }
+
+    // ---------- Build target URL ----------
     let targetUrl = data.fullUrl || data.url || '/';
-    const orderId = data.orderId || null;
-    
-    // If targetUrl is relative, make it absolute
     if (targetUrl.startsWith('/')) {
         targetUrl = self.location.origin + targetUrl;
     }
-    
-    // If there's an orderId and the URL doesn't contain it, add it
-    if (orderId && !targetUrl.includes('order=')) {
-        // Check if URL already has query params
-        const separator = targetUrl.includes('?') ? '&' : '?';
-        targetUrl = targetUrl + separator + 'order=' + encodeURIComponent(orderId);
+
+    // Only append orderId for ORDER notifications
+    if (type === 'order' && data.orderId && !targetUrl.includes('order=')) {
+        const sep = targetUrl.includes('?') ? '&' : '?';
+        targetUrl += sep + 'order=' + encodeURIComponent(data.orderId);
     }
-    
-    console.log('[Service Worker] Final target URL:', targetUrl);
-    console.log('[Service Worker] Order ID:', orderId);
-    
-    // Handle different actions
-    if (action === 'open' || action === '') {
-        event.waitUntil(
-            clients.matchAll({ 
-                type: 'window', 
-                includeUncontrolled: true 
-            })
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
             .then(function(clientList) {
-                console.log('[Service Worker] Found clients:', clientList.length);
-                
-                // First try: Find existing client with this order ID
-                let matchingClient = null;
-                for (let i = 0; i < clientList.length; i++) {
-                    const client = clientList[i];
-                    if (client.url && client.url.includes('order=' + orderId)) {
-                        matchingClient = client;
-                        break;
+                // Re-use a tab that's already on the target URL (or same page family)
+                for (const client of clientList) {
+                    if (client.url === targetUrl && 'focus' in client) {
+                        return client.focus();
                     }
                 }
-                
-                if (matchingClient) {
-                    console.log('[Service Worker] Found existing client with order:', matchingClient.url);
-                    return matchingClient.focus();
-                }
-                
-                // Second try: Find any client that can navigate
-                for (let i = 0; i < clientList.length; i++) {
-                    const client = clientList[i];
+                // Otherwise navigate an existing tab
+                for (const client of clientList) {
                     if ('navigate' in client) {
-                        console.log('[Service Worker] Navigating existing client to:', targetUrl);
-                        return client.navigate(targetUrl).then(() => {
-                            return client.focus();
-                        }).catch(err => {
-                            console.warn('[Service Worker] Navigation failed:', err);
-                            // If navigation fails, try opening new window
-                            if (clients.openWindow) {
-                                return clients.openWindow(targetUrl);
-                            }
-                        });
+                        return client.navigate(targetUrl)
+                            .then(c => c && c.focus())
+                            .catch(() => clients.openWindow(targetUrl));
                     }
                 }
-                
-                // Third try: Open new window
-                if (clients.openWindow) {
-                    console.log('[Service Worker] Opening new window to:', targetUrl);
-                    return clients.openWindow(targetUrl);
-                }
-                
-                // Final fallback: Open the home page
-                console.log('[Service Worker] Opening home page as fallback');
+                return clients.openWindow(targetUrl);
+            })
+            .catch(err => {
+                console.error('[Service Worker] notificationclick error:', err);
                 return clients.openWindow(self.location.origin);
             })
-            .catch(error => {
-                console.error('[Service Worker] Error handling notification click:', error);
-                // Fallback - open the main page
-                if (clients.openWindow) {
-                    return clients.openWindow(self.location.origin);
-                }
-            })
-        );
-    } else if (action === 'close') {
-        // Just dismiss, already closed
-        console.log('[Service Worker] Notification dismissed');
-    }
+    );
 });
 
 // ============================================

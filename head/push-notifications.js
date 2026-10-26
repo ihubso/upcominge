@@ -1,7 +1,6 @@
 // push-notifications.js - Fixed & Optimized Version
 const VAPID_CONFIG = {
     publicKey: 'BI-tM9VQcqAeco67R9VhA9TxByJyFjPgcMcqS_dhfOsve-BcVA5G_0fQIK9uVcECs_sbqnUGWOa1t5kFs-94FRg',
-    privateKey: 'Y0tevI6hf8uyKQr1rqOzXjTOGTBKT4Fz_VV9jnYrlOs',
     email: 'austinlebechi02@gmail.com',
     supabase: {
         url: 'https://bulprhgwuwatzobiojwz.supabase.co',
@@ -18,6 +17,7 @@ class PushNotificationManager {
         this.userId = null;
         this.initialized = false;
         this.maxRetries = 3;
+        this.swRegistrationPromise = null;
     }
     
     getUserId() {
@@ -83,7 +83,6 @@ class PushNotificationManager {
             
             if (permission === 'granted') {
                 await this.subscribeToPush();
-                await this.loadSubscriptionFromServer();
                 this.initialized = true;
                 console.log('✅ Push Notification Manager initialized');
             } else if (permission === 'denied') {
@@ -98,6 +97,7 @@ class PushNotificationManager {
             return true;
         } catch (error) {
             console.error('❌ Error initializing push notifications:', error);
+            this.showToast('Could not set up push notifications. Please check your connection and try again.');
             return false;
         }
     }
@@ -158,8 +158,10 @@ class PushNotificationManager {
             
             if (permission === 'granted') {
                 await this.subscribeToPush();
-                await this.loadSubscriptionFromServer();
                 this.initialized = true;
+                this.showToast(this.userId
+                    ? 'Notifications enabled.'
+                    : 'Notifications enabled on this device. Sign in to link them to your account.');
 
             } else {
                 this.showToast('⚠️ Notification permission was not granted.');
@@ -183,19 +185,31 @@ class PushNotificationManager {
         setTimeout(() => toast.remove(), 3300);
     }
     
-    async registerServiceWorker() {
-        if (navigator.serviceWorker.controller) {
-            this.swRegistration = await navigator.serviceWorker.ready;
-            return this.swRegistration;
+    async registerServiceWorker(force = false) {
+        if (this.swRegistrationPromise) return this.swRegistrationPromise;
+        if (!force && this.swRegistration?.active) return this.swRegistration;
+
+        this.swRegistrationPromise = (async () => {
+            await navigator.serviceWorker.register('/sw.js?v=3.1.31', { scope: '/' });
+            const registration = await navigator.serviceWorker.ready;
+            if (!registration.active) {
+                throw new Error('The service worker did not become active.');
+            }
+            this.swRegistration = registration;
+            return registration;
+        })();
+
+        try {
+            return await this.swRegistrationPromise;
+        } finally {
+            this.swRegistrationPromise = null;
         }
-        this.swRegistration = await navigator.serviceWorker.register('/sw.js?v=3.1.31', { scope: '/' });
-        return this.swRegistration;
     }
     
     async subscribeToPush() {
-        if (!this.swRegistration) await this.registerServiceWorker();
+        let registration = await this.registerServiceWorker();
         
-        let existingSubscription = await this.swRegistration.pushManager.getSubscription();
+        let existingSubscription = await registration.pushManager.getSubscription();
         if (existingSubscription) {
             this.subscription = existingSubscription;
             this.isSubscribed = true;
@@ -204,10 +218,28 @@ class PushNotificationManager {
         }
         
         const applicationServerKey = this.urlBase64ToUint8Array(this.vapidPublicKey);
-        this.subscription = await this.swRegistration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: applicationServerKey
-        });
+        for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+                this.subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: applicationServerKey
+                });
+                break;
+            } catch (error) {
+                if (attempt > 0 || error?.name !== 'AbortError') throw error;
+
+                console.warn('⚠️ Push subscription failed before the service worker was active; retrying.');
+                registration = await this.registerServiceWorker(true);
+                existingSubscription = await registration.pushManager.getSubscription();
+                if (existingSubscription) {
+                    this.subscription = existingSubscription;
+                    break;
+                }
+            }
+        }
+        if (!this.subscription) {
+            throw new Error('Push subscription failed after retrying with the active service worker.');
+        }
         this.isSubscribed = true;
         await this.saveSubscriptionToServer();
         return this.subscription;
@@ -216,59 +248,49 @@ class PushNotificationManager {
     async saveSubscriptionToServer() {
         if (!this.subscription) return;
         if (!this.userId) this.userId = this.getUserId();
+
+        if (typeof window.registerGeneralPushSubscription !== 'function') {
+            throw new Error('General push registration is not loaded.');
+        }
+        await window.registerGeneralPushSubscription(this.subscription.toJSON());
         
-        if (!this.userId || !this.supabase) {
+        if (!this.userId) {
             localStorage.setItem('push_subscription', JSON.stringify(this.subscription));
-            return;
+            return true;
         }
-        
-        try {
-            const subscriptionData = {
-                user_id: this.userId,
-                subscription: this.subscription,
-                endpoint: this.subscription.endpoint,
-                updated_at: new Date().toISOString()
-            };
-            
-            await this.supabase.from('push_subscriptions').upsert(subscriptionData, { onConflict: 'endpoint' });
-        } catch (error) {
-            console.error('❌ Error saving subscription:', error);
-            localStorage.setItem('push_subscription', JSON.stringify(this.subscription));
+
+        this.supabase = this.supabase || this.getSupabaseClient();
+        if (!this.supabase) {
+            throw new Error('Supabase client is unavailable; the push subscription was not saved.');
         }
+
+        const subscriptionData = {
+            user_id: this.userId,
+            subscription: this.subscription.toJSON(),
+            endpoint: this.subscription.endpoint,
+            updated_at: new Date().toISOString()
+        };
+
+        const { error } = await this.supabase
+            .from('push_subscriptions')
+            .upsert(subscriptionData, { onConflict: 'endpoint' });
+
+        if (error) {
+            console.error('❌ Error saving push subscription:', error);
+            throw new Error(`Could not save the push subscription: ${error.message}`);
+        }
+
+        localStorage.removeItem('push_subscription');
+        return true;
     }
-    
-    async loadSubscriptionFromServer() {
-        if (!this.userId) this.userId = this.getUserId();
-        if (!this.userId || !this.supabase) return this.loadSubscriptionFromLocalStorage();
-        
+
+    async saveSubscriptionAfterLogin() {
         try {
-            const { data } = await this.supabase
-                .from('push_subscriptions')
-                .select('*')
-                .eq('user_id', this.userId)
-                .maybeSingle();
-                
-            if (data?.subscription) {
-                this.subscription = data.subscription;
-                this.isSubscribed = true;
-                return data.subscription;
-            }
+            await this.saveSubscriptionToServer();
         } catch (error) {
-            console.error('❌ Error loading subscription:', error);
+            console.error('❌ Could not link push subscription after login:', error);
+            this.showToast('Your push subscription could not be linked to your account. Please try again.');
         }
-        return this.loadSubscriptionFromLocalStorage();
-    }
-    
-    loadSubscriptionFromLocalStorage() {
-        const localSub = localStorage.getItem('push_subscription');
-        if (localSub) {
-            try {
-                this.subscription = JSON.parse(localSub);
-                this.isSubscribed = true;
-                return this.subscription;
-            } catch (e) {}
-        }
-        return null;
     }
     
     setupListeners() {
@@ -278,7 +300,7 @@ class PushNotificationManager {
         });
         document.addEventListener('userLoggedIn', (event) => {
             this.userId = event.detail?.userId || this.getUserId();
-            if (this.userId) this.saveSubscriptionToServer();
+            if (this.userId) this.saveSubscriptionAfterLogin();
         });
     }
     
@@ -306,6 +328,24 @@ const pushManager = new PushNotificationManager();
 window.requestNotificationPermission = function() {
     pushManager.requestNotificationPermission();
 };
+
+function registerPushServiceWorkerOnLoad() {
+    if (!('serviceWorker' in navigator)) return;
+
+    const register = () => {
+        pushManager.registerServiceWorker().catch(error => {
+            console.error('❌ Could not register the push service worker:', error);
+        });
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', register, { once: true });
+    } else {
+        register();
+    }
+}
+
+registerPushServiceWorkerOnLoad();
 
 function getPushClientStorageKey() {
     try {

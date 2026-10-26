@@ -1865,6 +1865,9 @@ function setAuthenticatedUser(user, {remember = false, persist = true} = {}) {
         window.updateUrlWithUserInfo();
     }
     updateAuthUI();
+    document.dispatchEvent(new CustomEvent('userLoggedIn', {
+        detail: { userId: user.id }
+    }));
     return true;
 }
 window.addEventListener("storage", function(e) {
@@ -2168,12 +2171,11 @@ window.dispatchEvent(new CustomEvent('st:auth-ready', {
     console.log('📦 Cart:', AppState.cart.length, 'items');
     console.log('❤️ Wishlist:', AppState.wishlist.length, 'items');
     updateUrlWithUserInfo();
-     await requestNotificationPermission();
     await initNotifications();
     window.getCurrentUser = getCurrentUser;
     window.getBusinessInfo = getBusinessInfo;
         // Initialize the push manager
-    window.pushManager = new PushNotificationManager();
+    window.pushManager = pushManager;
     setTimeout(() => {
         window.pushManager.init();
     }, 2000);

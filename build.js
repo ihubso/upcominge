@@ -1,7 +1,10 @@
 // build.js
-const fs = require('fs');
-const path = require('path');
-const { minify } = require('terser');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { minify } from 'terser';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const headerFiles = [
   'lan.js',
@@ -10,6 +13,7 @@ const headerFiles = [
   'header-auth.js',
   'header-dropdowns.js',
   'header-search.js',
+  'general-push.js',
   'push-notifications.js',
   'header-init.js'
 ];

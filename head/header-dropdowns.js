@@ -105,9 +105,6 @@ function showNativeNotification(title, text, link = null, image = null) {
 function initNotificationSystem() {
     // Load saved notifications from localStorage
     loadNotifications();
-    
-    // Request native notification permission if supported
-    requestNotificationPermission();
 
     // Set up real-time subscription
     setupNotificationSubscription();
