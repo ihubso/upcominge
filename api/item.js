@@ -5,6 +5,62 @@ const supabaseUrl = process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL';
 const supabaseKey = process.env.SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// ============================================================
+// Shared SW registration snippet (browser-side, injected into HTML)
+// Hardened: timeouts, controllerchange drain, retry-reset.
+// ============================================================
+function buildServiceWorkerRegisterScript(swVersion = '3.1.31') {
+  return `
+<script>
+(function () {
+  if (window.__swRegistrationPromise) return;
+  if (!('serviceWorker' in navigator)) return;
+
+  window.__swRegistrationPromise = (async function () {
+    try {
+      var reg = await Promise.race([
+        navigator.serviceWorker.register('/sw.js?v=${swVersion}', { scope: '/' }),
+        new Promise(function (_, rej) {
+          setTimeout(function () { rej(new Error('SW register timeout (8s)')); }, 8000);
+        })
+      ]);
+
+      var ready = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise(function (_, rej) {
+          setTimeout(function () { rej(new Error('SW ready timeout (8s)')); }, 8000);
+        })
+      ]);
+
+      if (!ready.active) throw new Error('The service worker did not become active.');
+      window.__swRegistration = ready;
+
+      function drain() {
+        try {
+          if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: 'DRAIN_PUSH_QUEUE' });
+          }
+        } catch (_) { /* non-fatal */ }
+      }
+
+      if (navigator.serviceWorker.controller) {
+        drain();
+      } else {
+        navigator.serviceWorker.addEventListener('controllerchange', drain, { once: true });
+      }
+
+      console.log('[item.js] SW ready:', ready.scope);
+    } catch (err) {
+      console.warn('[item.js] SW registration failed:', err);
+      // Reset so a later page can retry
+      window.__swRegistrationPromise = null;
+    }
+  })();
+})();
+</script>
+`;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -117,7 +173,6 @@ export default async function handler(req, res) {
     const stock = Number(productData.stock) || 0;
     const stockStatus = stock > 0 ? 'In Stock' : 'Out of Stock';
 
-    // Format price nicely
     const formatPrice = (n) =>
       `${currency} ${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -136,43 +191,34 @@ export default async function handler(req, res) {
         .replace(/>/g, '&gt;');
     };
 
-    const productName        = escapeHtml(productData.name || 'Product');
-    const productBrand       = escapeHtml(productData.brand || '');
-    const productCategory    = escapeHtml(productData.category || '');
+    const productName     = escapeHtml(productData.name || 'Product');
+    const productBrand    = escapeHtml(productData.brand || '');
+    const productCategory = escapeHtml(productData.category || '');
 
-    // ---------- BUILD BASE URL FIRST (needed for image normalization) ----------
+    // ---------- BUILD BASE URL ----------
     const protocol = req.headers['x-forwarded-proto'] || 'https';
     const host     = req.headers.host || 'www.suctech.store';
     const baseUrl  = `${protocol}://${host}`;
 
     // ---------- NORMALIZE IMAGE URL TO ABSOLUTE ----------
-    // Social crawlers (Facebook, WhatsApp, Twitter) REQUIRE absolute URLs.
     let imageUrl = (productData.image || '').trim();
 
     if (!imageUrl) {
-      // No image in DB → placeholder
       imageUrl = 'https://placehold.co/600x400/0f172a/ffffff?text=No+Image';
     } else if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      // Already absolute — leave it alone
+      // already absolute
     } else if (imageUrl.startsWith('//')) {
-      // Protocol-relative → add https:
       imageUrl = `https:${imageUrl}`;
     } else if (imageUrl.startsWith('/')) {
-      // Root-relative → prepend domain
       imageUrl = `${baseUrl}${imageUrl}`;
     } else {
-      // Bare relative path → prepend domain + slash
       imageUrl = `${baseUrl}/${imageUrl}`;
     }
 
     // ✅ PRICE FIRST so social platforms never truncate it away
     const shortDescription   = `${displayPriceText} • ${stockStatus}${productBrand ? ' • ' + productBrand : ''}`;
-    const fullDescription    = `${displayPriceText}. ${escapeHtml(productData.description || '').slice(0, 160)}`;
-
-    // For OG description: price-first, brand second, then trimmed original description
     const productDescription = escapeHtml(shortDescription);
 
-    // Build remaining URLs
     const canonicalUrl = `${baseUrl}/api/item?product=${encodeURIComponent(product)}`;
     const redirectUrl  = `/item/?product=${encodeURIComponent(product)}`;
 
@@ -294,16 +340,17 @@ export default async function handler(req, res) {
     }
 
     // ============================================
-    // HUMAN → redirect
+    // HUMAN → serve 200 so SW script runs, then JS-redirect
     // ============================================
-    res.setHeader('Location', redirectUrl);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    return res.status(302).send(`
+    return res.status(200).send(`
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="UTF-8">
           <title>${productName} — ${discountedText} · Sucess Technology</title>
+          <!-- No-JS fallback redirect -->
           <meta http-equiv="refresh" content="0; url=${redirectUrl}">
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -382,6 +429,25 @@ export default async function handler(req, res) {
               <div class="redirect-text">Redirecting… <a href="${redirectUrl}">Click here if not redirected</a></div>
             </div>
           </div>
+
+          <!-- Register SW first, then redirect (max 800ms wait) -->
+          ${buildServiceWorkerRegisterScript('3.1.31')}
+          <script>
+            (function () {
+              var target = ${JSON.stringify(redirectUrl)};
+              function go() { window.location.replace(target); }
+              var regPromise = window.__swRegistrationPromise;
+              if (regPromise && typeof regPromise.then === 'function') {
+                Promise.race([
+                  regPromise,
+                  new Promise(function (r) { setTimeout(r, 800); })
+                ]).then(go, go);
+              } else {
+                // No SW support / already registered → redirect immediately
+                setTimeout(go, 50);
+              }
+            })();
+          </script>
         </body>
       </html>
     `);
@@ -394,7 +460,7 @@ export default async function handler(req, res) {
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Error · Sucess Technology</title>
+          <title>Error · Success Technology</title>
           <style>
             * { box-sizing: border-box; margin: 0; padding: 0; }
             body {
