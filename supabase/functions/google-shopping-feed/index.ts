@@ -151,8 +151,6 @@ Deno.serve(async (req)=>{
       const priceNumber = validPrice(p.price);
       const stock = validStock(p.stock);
       const imageLink = validHttpUrl(p.image);
-      // Required product fields must be valid.
-      // Do not use fake placeholder images.
       if (!id || !title || priceNumber === null || !imageLink) {
         skipped++;
         continue;
@@ -166,6 +164,7 @@ Deno.serve(async (req)=>{
       const additionalImagesXml = additionalImages.map((url)=>`      <g:additional_image_link>${xmlText(url)}</g:additional_image_link>`).join("\n");
       const descriptionXml = description ? `      <g:description>${xmlText(description)}</g:description>\n` : "";
       const brandXml = brand ? `      <g:brand>${xmlText(brand)}</g:brand>\n` : "";
+      const storeCode = "7292687853439677322";
       const categoryXml = category ? `      <g:product_type>${xmlText(category)}</g:product_type>\n` : "";
       items.push(`    <item>
       <g:id>${xmlText(id)}</g:id>
@@ -175,6 +174,8 @@ ${descriptionXml}      <g:link>${xmlText(link)}</g:link>
 ${additionalImagesXml ? additionalImagesXml + "\n" : ""}      <g:condition>new</g:condition>
       <g:availability>${availability}</g:availability>
       <g:price>${price}</g:price>
+      <g:store_code>${storeCode}</g:store_code>
+      <g:quantity>${stock}</g:quantity>
 ${brandXml}${categoryXml}      <g:shipping>
         <g:country>${COUNTRY}</g:country>
         <g:service>Standard</g:service>

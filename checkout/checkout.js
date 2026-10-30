@@ -367,7 +367,7 @@ function generateUUID() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
                         body: JSON.stringify({
-                            targetUserId: 'admin@sucesstechnology.com',
+                            targetUserId: '204f3080-5d6b-4f71-9f7f-a35e0e6d2a4b',
                             title: '🛒 New Order Received!',
                             body,
                             data: { url: `/vievorder/?order=${encodeURIComponent(orderId)}`, orderId, type: 'new_order' }
