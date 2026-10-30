@@ -1,118 +1,299 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 const SITE_URL = 'https://www.suctech.store';
 
 const ROUTES = {
-  product:  '/item',
-  category: '/category',
+  product: '/item/',
+  category: '/category/',
 };
 
-function toISO(value) {
-  if (!value) return new Date().toISOString();
-  const d = new Date(value);
-  return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
-}
+const PAGE_SIZE = 1000;
+const MAX_PRODUCTS = 50000;
 
-function esc(str = '') {
-  return String(str)
+const STATIC_PAGES = [
+  { path: '/', changefreq: 'daily', priority: '1.0' },
+  { path: '/AboutUs/', changefreq: 'monthly', priority: '0.5' },
+  { path: '/contactus/', changefreq: 'monthly', priority: '0.5' },
+];
+
+// --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
+
+function escapeXml(value = '') {
+  return String(value)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;'); // The fixed line
+    .replace(/'/g, '&apos;');
 }
 
+function validDate(value) {
+  if (!value) return null;
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime())
+    ? null
+    : date.toISOString();
+}
+
+function productUrl(id) {
+  return `${SITE_URL}${ROUTES.product}?product=${encodeURIComponent(id)}`;
+}
+
+function categoryUrl(category) {
+  return `${SITE_URL}${ROUTES.category}?category=${encodeURIComponent(
+    category.trim().toLowerCase()
+  )}`;
+}
+
+function addUrl(urls, url, lastmod, changefreq, priority) {
+  if (!url || urls.has(url)) return;
+
+  urls.set(url, {
+    lastmod,
+    changefreq,
+    priority,
+  });
+}
+
+// --------------------------------------------------
+// FETCH ALL PRODUCTS WITH PAGINATION
+// --------------------------------------------------
+
+async function fetchAllProducts(supabase) {
+  const allProducts = [];
+
+  for (let from = 0; from < MAX_PRODUCTS; from += PAGE_SIZE) {
+    const to = from + PAGE_SIZE - 1;
+
+    const { data, error } = await supabase
+      .from('products')
+      .select('id, category, stock, created_at, updated_at')
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      throw new Error(
+        `Supabase products query failed: ${error.message}`
+      );
+    }
+
+    if (!data || data.length === 0) break;
+
+    allProducts.push(...data);
+
+    if (data.length < PAGE_SIZE) break;
+  }
+
+  if (allProducts.length >= MAX_PRODUCTS) {
+    throw new Error(
+      `Product limit reached (${MAX_PRODUCTS}). Use a sitemap index and multiple sitemap files.`
+    );
+  }
+
+  return allProducts;
+}
+
+// --------------------------------------------------
+// SITEMAP HANDLER
+// --------------------------------------------------
+
 export default async function handler(req, res) {
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-    res.status(500).json({
-      debug: 'MISSING ENV VARS',
-      hasUrl: !!process.env.SUPABASE_URL,
-      hasKey: !!process.env.SUPABASE_ANON_KEY,
-    });
-    return;
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    res.setHeader('Allow', 'GET, HEAD');
+
+    return res.status(405).send('Method Not Allowed');
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('[sitemap] Missing Supabase environment variables');
+
+    return res.status(500).send('Sitemap configuration error');
   }
 
   try {
     const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_ANON_KEY
+      supabaseUrl,
+      supabaseKey
     );
 
-    const { data: products, error } = await supabase
-      .from('products')
-      .select('id, category, stock, created_at, updated_at')
-      .order('created_at', { ascending: false });
+    const products = await fetchAllProducts(supabase);
 
-    if (error) {
-      res.status(500).json({
-        debug: 'SUPABASE ERROR',
-        message: error.message,
-        code:    error.code,
-        hint:    error.hint,
-        details: error.details,
-        url:     process.env.SUPABASE_URL,
-      });
-      return;
+    // Map prevents duplicate URLs.
+    const urls = new Map();
+
+    // --------------------------------------------------
+    // STATIC PAGES
+    // --------------------------------------------------
+
+    // Do not use the current generation time as lastmod.
+    // Add a real modification date here only if you maintain one.
+    for (const page of STATIC_PAGES) {
+      addUrl(
+        urls,
+        `${SITE_URL}${page.path}`,
+        null,
+        page.changefreq,
+        page.priority
+      );
     }
 
-    const categorySet = new Set();
-    products.forEach(p => {
-      if (p.category && p.category.trim()) categorySet.add(p.category.trim());
-    });
-    const categories = [...categorySet];
+    // --------------------------------------------------
+    // CATEGORY PAGES
+    // --------------------------------------------------
 
-    const now = new Date().toISOString();
+    const categories = new Map();
 
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
-    xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+    for (const product of products) {
+      const category = String(product.category || '').trim();
 
-    const staticPages = [
-      { path: '/',           changefreq: 'daily',   priority: '1.0' },
-      { path: '/AboutUs/',   changefreq: 'monthly', priority: '0.5' },
-      { path: '/contactus/', changefreq: 'monthly', priority: '0.5' },
+      if (!category) continue;
+
+      const key = category.toLowerCase();
+
+      const productDate = validDate(
+        product.updated_at || product.created_at
+      );
+
+      const existing = categories.get(key);
+
+      if (!existing) {
+        categories.set(key, {
+          name: category,
+          lastmod: productDate,
+        });
+      } else if (
+        productDate &&
+        (!existing.lastmod ||
+          new Date(productDate) > new Date(existing.lastmod))
+      ) {
+        existing.lastmod = productDate;
+      }
+    }
+
+    for (const category of categories.values()) {
+      addUrl(
+        urls,
+        categoryUrl(category.name),
+        category.lastmod,
+        'weekly',
+        '0.8'
+      );
+    }
+
+    // --------------------------------------------------
+    // PRODUCT PAGES
+    // --------------------------------------------------
+
+    let includedProducts = 0;
+
+    for (const product of products) {
+      if (
+        product.id === null ||
+        product.id === undefined ||
+        String(product.id).trim() === ''
+      ) {
+        continue;
+      }
+
+      const id = String(product.id).trim();
+
+      const lastmod = validDate(
+        product.updated_at || product.created_at
+      );
+
+      const inStock = Number(product.stock ?? 0) > 0;
+
+      addUrl(
+        urls,
+        productUrl(id),
+        lastmod,
+        inStock ? 'daily' : 'weekly',
+        inStock ? '0.7' : '0.4'
+      );
+
+      includedProducts++;
+    }
+
+    // --------------------------------------------------
+    // BUILD XML
+    // --------------------------------------------------
+
+    const xmlLines = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ];
 
-    for (const page of staticPages) {
-      xml += `  <url>\n`;
-      xml += `    <loc>${esc(SITE_URL + page.path)}</loc>\n`;
-      xml += `    <lastmod>${now}</lastmod>\n`;
-      xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
-      xml += `    <priority>${page.priority}</priority>\n`;
-      xml += `  </url>\n`;
+    for (const [url, info] of urls.entries()) {
+      xmlLines.push('  <url>');
+      xmlLines.push(`    <loc>${escapeXml(url)}</loc>`);
+
+      if (info.lastmod) {
+        xmlLines.push(`    <lastmod>${info.lastmod}</lastmod>`);
+      }
+
+      if (info.changefreq) {
+        xmlLines.push(`    <changefreq>${info.changefreq}</changefreq>`);
+      }
+
+      if (info.priority) {
+        xmlLines.push(`    <priority>${info.priority}</priority>`);
+      }
+
+      xmlLines.push('  </url>');
     }
 
-    for (const cat of categories) {
-      xml += `  <url>\n`;
-      xml += `    <loc>${esc(`${SITE_URL}${ROUTES.category}/?category=${encodeURIComponent(cat.toLowerCase())}`)}</loc>\n`;
-      xml += `    <lastmod>${now}</lastmod>\n`;
-      xml += `    <changefreq>weekly</changefreq>\n`;
-      xml += `    <priority>0.8</priority>\n`;
-      xml += `  </url>\n`;
+    xmlLines.push('</urlset>');
+
+    const xml = xmlLines.join('\n');
+
+    // --------------------------------------------------
+    // RESPONSE
+    // --------------------------------------------------
+
+    res.setHeader(
+      'Content-Type',
+      'application/xml; charset=utf-8'
+    );
+
+    res.setHeader(
+      'Cache-Control',
+      'public, s-maxage=3600, stale-while-revalidate=86400'
+    );
+
+    res.setHeader(
+      'X-Robots-Tag',
+      'noindex'
+    );
+
+    res.setHeader(
+      'X-Sitemap-Product-Count',
+      String(includedProducts)
+    );
+
+    res.setHeader(
+      'X-Sitemap-URL-Count',
+      String(urls.size)
+    );
+
+    if (req.method === 'HEAD') {
+      return res.status(200).end();
     }
 
-    for (const p of products) {
-      const lastmod = toISO(p.updated_at || p.created_at);
-      const inStock = Number(p.stock ?? 0) > 0;
+    return res.status(200).send(xml);
 
-      xml += `  <url>\n`;
-      xml += `    <loc>${esc(`${SITE_URL}${ROUTES.product}/api/item?product=${encodeURIComponent(p.id)}`)}</loc>\n`;
-      xml += `    <lastmod>${lastmod}</lastmod>\n`;
-      xml += `    <changefreq>${inStock ? 'daily' : 'weekly'}</changefreq>\n`;
-      xml += `    <priority>${inStock ? '0.7' : '0.4'}</priority>\n`;
-      xml += `  </url>\n`;
-    }
+  } catch (error) {
+    console.error('[sitemap] Generation failed:', error);
 
-    xml += `</urlset>`;
-
-    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
-    res.status(200).send(xml);
-
-  } catch (err) {
-    res.status(500).json({
-      debug: 'UNEXPECTED ERROR',
-      message: err?.message || String(err),
-      stack:   err?.stack,
-    });
+    return res.status(500).send(
+      'Unable to generate sitemap'
+    );
   }
 }
