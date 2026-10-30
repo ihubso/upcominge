@@ -41,7 +41,7 @@ function validDate(value) {
 }
 
 function productUrl(id) {
-  return `${SITE_URL}${ROUTES.product}?product=${encodeURIComponent(id)}`;
+  return `${SITE_URL}/api/item?product=${encodeURIComponent(id)}`;
 }
 
 function categoryUrl(category) {
