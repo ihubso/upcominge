@@ -9,6 +9,7 @@
     let currentStatus   = 'all';
     let selectedOrder   = null;
     let routeOrderId    = null;
+    const ADMIN_NOTIFICATION_USER_ID = '204f3080-5d6b-4f71-9f7f-a35e0e6d2a4b';
 
     let _escHandler      = null;   // document-level keydown
     let _backHandler     = null;   // Android backbutton
@@ -565,13 +566,20 @@ function closeOrderDetail() {
                 <a href="/product/" class="st-btn-primary" style="flex:1;padding:12px 20px;background:linear-gradient(135deg,#6C3CE1,#5A2FC4);color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;text-align:center;transition:all .3s ease;" data-translate="continue_shopping">
                     <i class="fas fa-shopping-bag"></i> Continue Shopping
                 </a>
-                <button type="button" class="st-btn-print" onclick="window.printOrder('${order.id}')" style="flex:1;padding:12px 20px;background:#0F172A;color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-align:center;transition:all .3s ease;font-family:inherit;" data-translate="print_order">
-                    <i class="fas fa-print"></i> Print Order
+                <button type="button" class="st-btn-print" onclick="window.printOrder('${order.id}')" style="flex:1;padding:12px 20px;background:#0F172A;color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-align:center;transition:all .3s ease;font-family:inherit;" data-translate="save_order_pdf">
+                    <i class="fas fa-file-pdf"></i> Download PDF
                 </button>
+                ${['pending', 'confirmed', 'processing'].includes(order.status) && order.customer_id ? `
+                    <button type="button" class="st-btn-cancel-order" style="flex:1;padding:12px 20px;background:#DC2626;color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-align:center;font-family:inherit;" data-translate="cancel_order">
+                        <i class="fas fa-times-circle"></i> Cancel Order
+                    </button>` : ''}
                 <a href="${waUrl}" target="_blank" class="st-btn-whatsapp" style="flex:1;padding:12px 20px;background:#25D366;color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;text-align:center;transition:all .3s ease;" data-translate="contact_us">
                     <i class="fab fa-whatsapp"></i> Contact Us
                 </a>
             </div>`;
+
+        els.detailBody.querySelector('.st-btn-cancel-order')
+            ?.addEventListener('click', () => cancelCustomerOrder(order.id));
 
         if (typeof translateUI === 'function') translateUI();
     }
@@ -580,6 +588,106 @@ function closeOrderDetail() {
        COPY ORDER ID
        ============================================================ */
 
+async function cancelCustomerOrder(orderId) {
+    const order = allOrders.find(item => item.id === orderId) || selectedOrder;
+    if (!order || order.id !== orderId) {
+        showToast(t('order_not_found', 'Order not found'), 'error');
+        return;
+    }
+
+    if (!['pending', 'confirmed', 'processing'].includes(order.status)) {
+        showToast(t('order_cannot_cancel', 'This order can no longer be cancelled.'), 'error');
+        return;
+    }
+
+    if (!window.confirm(t('cancel_order_confirm', 'Cancel this order? This action cannot be undone.'))) return;
+
+    const password = window.prompt(t('cancel_order_password', 'Enter your account password to confirm cancellation.'));
+    if (password === null) return;
+    if (!password.trim()) {
+        showToast(t('cancel_order_password_required', 'Enter your password to cancel this order.'), 'error');
+        return;
+    }
+
+    const cancelButton = document.querySelector('.st-btn-cancel-order');
+    if (cancelButton) cancelButton.disabled = true;
+
+    try {
+        const client = getSupabaseClient();
+        if (!client) throw new Error('Supabase client is unavailable');
+
+        const { data, error } = await client.rpc('cancel_customer_order', {
+            p_order_id: order.id,
+            p_customer_id: order.customer_id,
+            p_password: password
+        });
+
+        if (error) throw new Error(error.message);
+        if (!data?.success) {
+            showToast(t('cancel_order_failed', 'Could not cancel this order. Check your password and order status.'), 'error');
+            if (cancelButton) cancelButton.disabled = false;
+            return;
+        }
+
+        order.status = 'cancelled';
+        selectedOrder = order;
+        renderOrderDetail(order);
+        updateCounts(allOrders);
+        filterOrders(currentStatus);
+
+        const link = `/orders/?order=${encodeURIComponent(order.id)}`;
+        const customerTitle = t('order_cancelled', 'Order cancelled');
+        const customerMessage = t('cancel_order_customer_notification', 'Your order {orderId} has been cancelled.')
+            .replace('{orderId}', order.id);
+        const adminTitle = t('admin_order_cancelled', 'Order cancelled by customer');
+        const adminMessage = t('admin_order_cancelled_notification', '{customerName} cancelled order {orderId}.')
+            .replace('{customerName}', order.customer_name || 'A customer')
+            .replace('{orderId}', order.id);
+
+        window.notificationSystem?.add?.(customerTitle, customerMessage, 'order', link, null);
+        showToast(t('cancel_order_success', 'Your order has been cancelled.'));
+
+        const sendPush = async (targetUserId, title, body, targetLink) => {
+            const url = window.SUPABASE_CONFIG?.url;
+            const key = window.SUPABASE_CONFIG?.anonKey;
+            if (!url || !key) throw new Error('Supabase push configuration is unavailable');
+
+            const response = await fetch(`${url}/functions/v1/send-push`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${key}`
+                },
+                body: JSON.stringify({
+                    targetUserId,
+                    title,
+                    body,
+                    data: { url: targetLink, orderId: order.id, type: 'order_cancelled' }
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Push request failed with status ${response.status}`);
+            }
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error || 'No push notifications were delivered');
+            }
+        };
+
+        void Promise.all([
+            sendPush(order.customer_id, customerTitle, customerMessage, link)
+                .catch(error => console.warn('Customer cancellation push failed:', error)),
+            sendPush(ADMIN_NOTIFICATION_USER_ID, adminTitle, adminMessage, `/vievorder/?order=${encodeURIComponent(order.id)}`)
+                .catch(error => console.warn('Admin cancellation push failed:', error))
+        ]);
+    } catch (error) {
+        console.error('Failed to cancel order:', error);
+        showToast(t('cancel_order_failed', 'Could not cancel this order. Check your password and order status.'), 'error');
+        if (cancelButton) cancelButton.disabled = false;
+    }
+}
+
 function printOrder(orderId) {
     const order = allOrders.find(o => o.id === orderId) || selectedOrder;
     if (!order) {
@@ -587,16 +695,71 @@ function printOrder(orderId) {
         return;
     }
 
-    // Ensure the sheet is open so its markup is in the DOM
     const overlay = document.getElementById('stDetailOverlay');
-    if (!overlay || !overlay.classList.contains('active')) {
-        openOrderDetail(order.id);
-        // Give the browser one frame to render, then print
-        setTimeout(() => window.print(), 300);
+    if (!overlay) {
+        console.error('❌ #stDetailOverlay not found in DOM. Order cannot be printed.');
+        showToast(t('order_not_available', 'Order details are unavailable right now.'), 'error');
         return;
     }
 
-    window.print();
+    const generatePdf = () => {
+        if (typeof window.html2pdf !== 'function') {
+            console.error('html2pdf.js is unavailable. Falling back to the browser print dialog.');
+            showToast(t('pdf_generator_unavailable', 'PDF download is unavailable. Use the print dialog to save as PDF.'), 'error');
+            window.print();
+            return;
+        }
+
+        const sheet = overlay.querySelector('#stDetailSheet');
+        if (!sheet) {
+            console.error('❌ #stDetailSheet not found in DOM. Order cannot be exported.');
+            showToast(t('order_not_available', 'Order details are unavailable right now.'), 'error');
+            return;
+        }
+
+        const pdfSheet = sheet.cloneNode(true);
+        pdfSheet.removeAttribute('id');
+        pdfSheet.querySelector('.st-sheet-handle')?.remove();
+        pdfSheet.querySelector('#stDetailClose')?.remove();
+        pdfSheet.querySelector('.st-sheet-actions')?.remove();
+        Object.assign(pdfSheet.style, {
+            position: 'static',
+            width: '100%',
+            maxWidth: 'none',
+            maxHeight: 'none',
+            overflow: 'visible',
+            transform: 'none',
+            boxShadow: 'none',
+            borderRadius: '0',
+            padding: '12px'
+        });
+
+        const filenameOrderId = String(order.id).replace(/[^a-z0-9_-]/gi, '_');
+        window.html2pdf()
+            .set({
+                margin: 10,
+                filename: `order-${filenameOrderId}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
+            })
+            .from(pdfSheet)
+            .save()
+            .then(() => showToast(t('order_pdf_saved', 'Order PDF downloaded.')))
+            .catch(error => {
+                console.error('Failed to generate order PDF:', error);
+                showToast(t('order_pdf_failed', 'Could not create the order PDF. Please try again.'), 'error');
+            });
+    };
+
+    if (!overlay.classList.contains('active')) {
+        openOrderDetail(order.id);
+        requestAnimationFrame(generatePdf);
+        return;
+    }
+
+    generatePdf();
 }
 window.printOrder = printOrder;
     function copyOrderId(orderId) {

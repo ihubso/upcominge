@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product · Sucess Technology</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+     <link rel="stylesheet" href="/CSS/styles.css"><link rel="stylesheet" href="/CSS/fixed.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+        <script src="/head/env/enx.js"></script>
+   <script src="/head/Translate.js"defer></script>
+<script src="/head/header.min.js" defer></script>
+<script src="/head/st-pjax.js" defer></script>
+
+     <script src="/item/index.js" defer></script>
+    <script src="/item/viewer/zoom.js" defer></script>
+
+<meta
+  name="description"
+  content="Shop electronics, computers, accessories and technology products at Success Technology. Explore our products and contact us for orders and support."
+/>
+
+<link
+  rel="canonical"
+  href="https://www.suctech.store/"
+/>
+
+<meta name="robots" content="index, follow" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Success Technology" />
+<meta
+  property="og:title"
+  content="Success Technology | Electronics & Technology"
+/>
+<meta
+  property="og:description"
+  content="Discover electronics, computers and technology accessories at Success Technology."
+/>
+<meta property="og:url" content="https://www.suctech.store/" />
+<meta
+  property="og:image"
+  content="https://www.suctech.store/images/logo.png"
+/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ElectronicsStore",
+  "@id": "https://www.suctech.store/#store",
+  "name": "SUCCESS Technology",
+  "url": "https://www.suctech.store/",
+  "logo": "https://www.suctech.store/logo.png",
+  "description": "Retailer of premium mobile phones, tech devices, and electronics accessories in Abidjan, Côte d'Ivoire.",
+  "telephone": "+2250172934545",
+  "email": "austinlebechi02@gmail.com",
+  "priceRange": "FCFA",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Angré Djibi Terminus 82, face à Snedai",
+    "addressLocality": "Abidjan",
+    "addressCountry": "CI"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "5.3600",
+    "longitude": "-4.0083"
+  },
+  "areaServed": {
+    "@type": "Country",
+    "name": "Côte d'Ivoire"
+  },
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+      ],
+      "opens": "08:00",
+      "closes": "19:30"
+    }
+  ],
+  "sameAs": [
+    "https://www.instagram.com/success_tch"
+  ]
+}
+</script>
+</head>
+<body>
+
+    <!-- Toast Message -->
+    <div id="toastMsg" class="toast-msg"></div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main>
+        <!-- Loading State -->
+<!-- Loading State -->
+        <div id="loadingState" class="pdp-skeleton-wrap">
+            <div class="pdp-skeleton-grid">
+                <!-- Left: image + thumbnails -->
+                <div class="pdp-skeleton-left">
+                    <div class="skeleton pdp-skeleton-image"></div>
+                    <div class="pdp-skeleton-thumbs">
+                        <div class="skeleton pdp-skeleton-thumb"></div>
+                        <div class="skeleton pdp-skeleton-thumb"></div>
+                        <div class="skeleton pdp-skeleton-thumb"></div>
+                        <div class="skeleton pdp-skeleton-thumb"></div>
+                    </div>
+                </div>
+
+                <!-- Right: title, price, specs -->
+                <div class="pdp-skeleton-right">
+                    <div class="skeleton pdp-skeleton-title"></div>
+                    <div class="skeleton pdp-skeleton-line w-75"></div>
+                    <div class="skeleton pdp-skeleton-price"></div>
+                    <div class="skeleton pdp-skeleton-line w-100"></div>
+                    <div class="skeleton pdp-skeleton-line w-100"></div>
+                    <div class="skeleton pdp-skeleton-line w-50"></div>
+                    <div class="pdp-skeleton-actions">
+                        <div class="skeleton pdp-skeleton-btn"></div>
+                        <div class="skeleton pdp-skeleton-btn"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Not Found -->
+        <div id="notFoundState" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+            <div class="text-6xl mb-4">🔍</div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-2" data-translate="product_not_found_title">Product Not Found</h2>
+            <p class="text-gray-500 mb-6" data-translate="product_not_found_sub">We couldn't find the product you're looking for.</p>
+            <a href="../" class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full font-medium hover:bg-primaryHover transition-colors" data-translate="return_to_store">
+                <i class="fas fa-arrow-left"></i> Return to Store
+            </a>
+        </div>
+
+        <!-- Product Content -->
+        <div id="productContent" class="hidden">
+            <div class="product-page-hero">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <nav id="breadcrumbNav" class="flex items-center flex-wrap gap-2 text-sm text-gray-500"></nav>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div id="productDetailContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <!-- Left: Images -->
+                    <div>
+                        <div class="main-image-container" id="mainImageContainer">
+                            <img id="mainProductImage" src="" alt="Product" />
+                            <div id="dealBadgeOverlay" class="dealBadge-Overlay absolute top-4 left-4 bg-red-1000 text-white px-4 py-2 rounded-full font-bold text-lg shadow-lg hidden">
+                                -0% OFF
+                            </div>
+                        </div>
+                        <div id="thumbnailGallery" class="thumb-gallery"></div>
+                    </div>
+
+                    <!-- Right: Details -->
+                    <div>
+                        <span id="productBrand" class="text-xs font-bold uppercase tracking-widest text-primary mb-1 block">Premium</span>
+                        <span id="productcategory" class="text-xs font-bold uppercase tracking-widest text-primary mb-1 block">Premium</span>
+                        <h1 id="productName" class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight"></h1>
+                        <div class="flex items-center gap-3 mt-3 mb-4">
+                            <div id="productRating" class="star-rating"></div>
+                            <span id="reviewCount" class="text-sm text-gray-500" data-translate="reviews">0 Reviews</span>
+                        </div>
+                        <div id="dealInfo" class="mt-4 hidden">
+                            <p class="text-sm text-green-600 font-medium" data-translate="deal_of_day">🔥 Deal of the Day - Limited Time Offer!</p>
+                        </div>
+                        <div id="priceSection" class="mb-6"></div>
+                        <div id="descriptionSection" class="mb-6">
+                            <p id="productDescription" class="text-gray-600 leading-relaxed"></p>
+                        </div>
+                        <div id="specsSection" class="mb-6">
+                            <p id="specsman" class="text-gray-600 leading-relaxed"></p>
+                        </div>
+                        <div id="specsSection" class="mb-6">
+                            <h4 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider" data-translate="specifications">Specifications</h4>
+                            <div id="specsGrid" class="grid grid-cols-2 gap-y-3 gap-x-6"></div>
+                        </div>
+                        <div id="variantsSection" class="mb-6 space-y-4"></div>
+                        <div class="flex flex-wrap items-center gap-4 mb-6">
+                            <span class="text-sm font-medium text-gray-600" data-translate="quantity">Quantity:</span>
+                            <div class="qty-selector">
+                                <button onclick="decrementQty()" aria-label="Decrease quantity" data-translate="decrease">−</button>
+                                <input type="number" id="qtyInput" value="1" min="1" max="99" />
+                                <button onclick="incrementQty(99)" aria-label="Increase quantity" data-translate="increase">+</button>
+                            </div>
+                            <span id="stockDisplay" class="text-xs text-gray-400"></span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button id="addToCartBtn" class="flex-1 bg-black text-white py-4 rounded-xl font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2" data-translate="add_to_cart">
+                                <span class="add-to-cart-content">
+                                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                                </span>
+                            </button>
+                            <button id="wishlistBtn" class="flex-1 bg-white border border-gray-200 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2" data-translate="wishlist">
+                                <i class="far fa-heart"></i> Wishlist
+                            </button>
+                            <button id="shareBtn" class="flex-1 bg-white border border-gray-200 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2" data-translate="share">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Deals Section -->
+                <div id="dealsSection" class="mt-12 pt-8 border-t border-gray-200 deals-section">
+                    <div class="deals-header">
+                        <h2><i class="fas fa-bolt"></i> <span data-translate="special_deals">Special Deals</span></h2>
+                        <span class="deals-subtitle" data-translate="limited_time_offers">🔥 Limited time offers</span>
+                    </div>
+                    <div id="dealsContainer"></div>
+                </div>
+
+                <!-- Reviews Section -->
+            <div id="reviewsSection" class="mt-12 pt-8 border-t border-gray-200">
+                <button id="reviewsToggleBtn" type="button" class="reviews-toggle text-left w-full mb-6 flex items-center justify-between" aria-expanded="false">
+                    <span class="text-2xl font-bold flex items-center gap-2">
+                        ⭐ <span data-translate="customer_reviews">Customer Reviews</span> (<span id="reviewCountLabel">0</span>)
+                    </span>
+                    <span id="reviewsToggleIcon" class="reviews-toggle-icon text-2xl transition-transform duration-300">▼</span>
+                </button>
+                <div id="reviewsContent" class="reviews-content hidden">
+                    <div id="reviewsList" class="space-y-4 max-h-96 overflow-y-auto pr-2 mb-8"></div>
+                    <div class="bg-gray-50 rounded-2xl p-6">
+                        <h4 class="font-bold mb-4" data-translate="write_review">✏️ Write a Review</h4>
+                        <form id="reviewForm" class="space-y-4">
+                            
+                        <div class="space-y-3">
+                            <input type="text" id="reviewUserName" placeholder="Your name" class="w-full border border-gray-200 rounded-lg p-3 text-sm" data-translate-placeholder="your_name" />
+                            <select id="reviewRating" class="w-full border border-gray-200 rounded-lg p-3 text-sm">
+                                <option value="5">★★★★★ (5)</option>
+                                <option value="4">★★★★☆ (4)</option>
+                                <option value="3">★★★☆☆ (3)</option>
+                                <option value="2">★★☆☆☆ (2)</option>
+                                <option value="1">★☆☆☆☆ (1)</option>
+                            </select>
+                            <textarea id="reviewComment" placeholder="Your review..." rows="3" class="w-full border border-gray-200 rounded-lg p-3 text-sm" data-translate-placeholder="your_review"></textarea>
+                            <button type="button" id="submitReviewBtn" class="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-primaryHover transition" data-translate="submit_review">
+                                Submit Review
+                            </button>
+                        </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+                <!-- Related Products -->
+                <div id="relatedSection" class="mt-12 pt-8 border-t border-gray-200">
+                    <h3 class="text-2xl font-bold mb-6" data-translate="you_may_also_like">🔄 You May Also Like</h3>
+                    <div id="relatedGrid" class="related-grid"></div>
+                    <div id="relatedLoadMore" class="related-loadmore hidden">
+                        <div class="loader-skeleton">
+                            <div class="skeleton-cards">
+                                ${Array(4).fill(0).map(() => `
+                                    <div class="skeleton-card-mini">
+                                        <div class="skeleton-img-mini">
+                                            <div class="shimmer"></div>
+                                        </div>
+                                        <div class="skeleton-line w-75"></div>
+                                        <div class="skeleton-line w-50"></div>
+                                        <div class="skeleton-line w-50" style="height:1rem;"></div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="loading-text">
+                                <div class="mini-spinner"></div>
+                                <span data-translate="loading_more_products">Loading more products...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+            <!-- Global Header -->
+    <div id="imageZoomModal" class="zoommodal-overlay hidden" onclick="closeImageZoom()">
+        <button class="absolute top-4 right-4 text-white text-3xl z-10 hover:text-gray-300 transition-colors duration-200" 
+                onclick="event.stopPropagation(); closeImageZoom()" 
+                title="Close (ESC)">
+            &times;
+        </button>
+        
+        <button id="downloadImageBtn" 
+                class="absolute top-4 right-16 text-white p-2 rounded-full hover:bg-white/10 transition-colors duration-200"
+                onclick="event.stopPropagation(); downloadZoomedImage()" 
+                title="Download Image">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+        </button>
+        
+        <div class="absolute top-4 left-4 flex gap-2">
+            <button class="zoom-control-btn" onclick="event.stopPropagation(); zoomIn()" title="Zoom In (+)">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+            </button>
+            <button class="zoom-control-btn" onclick="event.stopPropagation(); zoomOut()" title="Zoom Out (-)">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path>
+                </svg>
+            </button>
+            <button class="zoom-control-btn" onclick="event.stopPropagation(); resetZoom()" title="Reset Zoom (0)">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="relative max-w-full max-h-full flex items-center justify-center">
+            <img id="zoomedImage" 
+                alt="Zoomed Image" 
+                class="max-w-full max-h-full object-contain rounded-lg transition-transform duration-300 cursor-move"
+                draggable="false"
+                oncontextmenu="return false;">
+        </div>
+        
+        <div id="zoomedImageTitle" 
+            class="absolute bottom-4 left-0 w-full text-center text-white text-lg font-medium px-4">
+        </div>
+        
+        <div id="zoomLevelIndicator" 
+            class="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm hidden">
+            100%
+        </div>
+        
+        <div id="dragInstruction" 
+            class="absolute bottom-16 left-0 w-full text-center text-white/70 text-sm px-4 hidden sm:block">
+            Drag to pan • Pinch to zoom
+        </div>
+    </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12 mt-12">
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div>
+                <h4 class="font-bold mb-4" data-translate="footer_products">Products</h4>
+                <p class="text-slate-400 text-sm" data-translate="footer_phone">Phone</p>
+                <p class="text-slate-400 text-sm" data-translate="footer_tablet">Tablet</p>
+                <p class="text-slate-400 text-sm" data-translate="footer_audio">Audio</p>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4" data-translate="footer_follow">📱 Follow Us</h4>
+                <div class="flex gap-4 mt-2">
+                    <a id="facebookLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-facebook"></i></a>
+                    <a id="instagramLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-instagram"></i></a>
+                    <a id="tiktokLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4" data-translate="footer_about">About</h4>
+                <p class="text-slate-400 text-sm" data-translate="about_us">About Us</p>
+                <p class="text-slate-400 text-sm" data-translate="press">Press</p>
+                <a href="/contactus/" class="text-slate-400 text-sm block hover:text-primary transition-colors" data-translate="locate_us">📍 Locate Us</a>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4" data-translate="footer_contact">📞 Contact</h4>
+                <p id="footerEmail" class="text-slate-400 text-sm"></p>
+                <p id="footerPhone" class="text-slate-400 text-sm"></p>
+                <p id="footerAddress" class="text-slate-400 text-sm"></p>
+            </div>
+        </div>
+        <div class="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400 text-sm">
+            <p data-translate="copyright">&copy; 2024 Sucess Technology. All rights reserved.</p>
+        </div>
+    </footer>
+
+
+
+
+
+</body>
+</html>

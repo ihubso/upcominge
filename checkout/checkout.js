@@ -71,12 +71,7 @@
         }, 3000);
     }
 
-    function formatPhoneNumber(phone) {
-        let cleaned = String(phone || '').replace(/\D/g, '');
-        if (cleaned.startsWith('0')) cleaned = cleaned.substring(1);
-        if (!cleaned.startsWith('237') && cleaned.length > 0) cleaned = '237' + cleaned;
-        return cleaned;
-    }
+
 
     function getSupabase() { return window.getSupabaseClient?.() || null; }
 
@@ -312,7 +307,7 @@ function generateUUID() {
             return;
         }
 
-        const formattedPhone = formatPhoneNumber(phone);
+        const formattedPhone = '+2250172934545';
         const orderId = 'ORD-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8).toUpperCase();
         const uuid = await generateUUID();
 

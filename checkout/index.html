@@ -28,20 +28,8 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f8fafc;
-            color: #0F172A;
-            padding-top: 80px;
-            padding-bottom: 40px;
-        }
-
-        .st-checkout-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
+   html, body { overflow-x: hidden; width: 100%; max-width: 100%; }
+.st-checkout-container { max-width: 100%; overflow-x: hidden; }
         /* ----- Page Header ----- */
         .st-checkout-header {
             display: flex;
@@ -422,7 +410,8 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-
+.st-form-group .st-form-label { display: block; word-break: break-word; }
+.st-form-group .st-form-label > div { display: block; }
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -453,12 +442,18 @@
         .st-toast.error { background: #EF4444; }
         .st-toast.info { background: #3B82F6; }
         .st-toast.warning { background: #F59E0B; }
+        .st-checkout-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
+}
+.st-checkout-form,
+.st-order-summary { min-width: 0; }
 
         @keyframes toastSlideUp {
             from { transform: translateX(-50%) translateY(20px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
-
+.st-form-group .st-form-input { overflow-wrap: anywhere; }
+.st-order-summary .st-cart-item .st-item-name { overflow-wrap: anywhere; }
         /* ----- Responsive ----- */
         @media (max-width: 1024px) {
             .st-checkout-grid {
@@ -502,8 +497,11 @@
                 font-size: 12px;
                 padding: 8px 16px;
             }
+            .st-checkout-grid { grid-template-columns: minmax(0, 1fr); }
         }
-
+@media (max-width: 768px) {
+  .st-order-summary { position: static; top: auto; width: 100%; max-width: 100%; }
+}
         @media (max-width: 480px) {
             .st-checkout-form {
                 padding: 16px;
@@ -637,7 +635,7 @@
                             </a>
                         </div>
                         <!-- WhatsApp Contact Button -->
-                        <a href="#" id="stWhatsAppSuccess" class="st-whatsapp-btn" style="margin-top:16px;max-width:300px;margin-left:auto;margin-right:auto;" data-translate="contact_whatsapp">
+                        <a href="#" id="stWhatsAppSuccess" class="st-whatsapp-btn" data-translate="contact_whatsapp">
                             <i class="fab fa-whatsapp"></i> Contact Seller on WhatsApp
                         </a>
                     </div>
