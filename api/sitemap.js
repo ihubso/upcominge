@@ -95,7 +95,7 @@ export default async function handler(req, res) {
       const inStock = Number(p.stock ?? 0) > 0;
 
       xml += `  <url>\n`;
-      xml += `    <loc>${esc(`${SITE_URL}${ROUTES.product}/?product=${encodeURIComponent(p.id)}`)}</loc>\n`;
+      xml += `    <loc>${esc(`${SITE_URL}${ROUTES.product}/api/item?product=${encodeURIComponent(p.id)}`)}</loc>\n`;
       xml += `    <lastmod>${lastmod}</lastmod>\n`;
       xml += `    <changefreq>${inStock ? 'daily' : 'weekly'}</changefreq>\n`;
       xml += `    <priority>${inStock ? '0.7' : '0.4'}</priority>\n`;
