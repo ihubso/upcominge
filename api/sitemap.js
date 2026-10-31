@@ -41,7 +41,7 @@ function validDate(value) {
 }
 
 function productUrl(id) {
-  return `${SITE_URL}/api/item?product=${encodeURIComponent(id)}`;
+  return `${SITE_URL}/item/?product=${encodeURIComponent(id)}`;
 }
 
 function categoryUrl(category) {
@@ -268,10 +268,6 @@ export default async function handler(req, res) {
       'public, s-maxage=3600, stale-while-revalidate=86400'
     );
 
-    res.setHeader(
-      'X-Robots-Tag',
-      'noindex'
-    );
 
     res.setHeader(
       'X-Sitemap-Product-Count',

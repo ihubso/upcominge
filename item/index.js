@@ -848,16 +848,83 @@ function renderBreadcrumb(product) {
     cur.className = 'text-gray-700 font-medium truncate max-w-full';
     nav.appendChild(cur);
 }
+function updateProductSEO(product) {
+    if (!product || !product.id) return;
+
+    const baseUrl = 'https://www.suctech.store';
+    const productUrl =
+        `${baseUrl}/item/?product=${encodeURIComponent(product.id)}`;
+
+    const name = product.name || 'Product';
+    const brand = product.brand || 'Success Technology';
+    const description =
+        product.description || `${name} available at Success Technology.`;
+
+    const image = product.image || `${baseUrl}/images/logo.png`;
+    const currency = product.currency || 'FCFA';
+    const price = Number(product.price) || 0;
+    const stock = Number(product.stock) || 0;
+
+    const setMeta = (selector, attribute, value) => {
+        const element = document.querySelector(selector);
+        if (element) element.setAttribute(attribute, value);
+    };
+
+    document.title = `${name} | Success Technology`;
+
+    setMeta('#pageMetaDescription', 'content', description);
+    setMeta('#pageCanonical', 'href', productUrl);
+
+    setMeta('#ogTitle', 'content', name);
+    setMeta('#ogDescription', 'content', description);
+    setMeta('#ogUrl', 'content', productUrl);
+    setMeta('#ogImage', 'content', image);
+
+    setMeta('#twitterTitle', 'content', name);
+    setMeta('#twitterDescription', 'content', description);
+    setMeta('#twitterImage', 'content', image);
+
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: name,
+        description: description,
+        image: [image],
+        sku: String(product.id),
+        brand: {
+            '@type': 'Brand',
+            name: brand
+        },
+        offers: {
+            '@type': 'Offer',
+            url: productUrl,
+            priceCurrency: currency,
+            price: price.toFixed(2),
+            availability: stock > 0
+                ? 'https://schema.org/InStock'
+                : 'https://schema.org/OutOfStock',
+            itemCondition: 'https://schema.org/NewCondition'
+        }
+    };
+
+    const schemaElement =
+        document.getElementById('productStructuredData');
+
+    if (schemaElement) {
+        schemaElement.textContent = JSON.stringify(structuredData);
+    }
+}
     /* ============================================================
        RENDER PRODUCT
        ============================================================ */
     async function renderProduct(product) {
+         updateProductSEO(product);
         const els = getEls();
         if (!els.root) return;
 
         currentProduct = product;
         currentProductId = product.id;
-        document.title = `${product.name} · Sucess Technology`;
+        document.title = `${product.name} · Success Technology`;
 
       renderBreadcrumb(product);
 
