@@ -864,7 +864,16 @@ function updateProductSEO(product) {
     const currency = product.currency || 'cfa';
     const price = Number(product.price) || 0;
     const stock = Number(product.stock) || 0;
-
+    const CURRENCY_ISO_MAP = {
+        'FCFA': 'XOF',
+        'CFA':  'XOF',
+        'XOF':  'XOF',
+        'XAF':  'XAF',
+        'EUR':  'EUR',
+        'USD':  'USD'
+    };
+    const displayCurrency = (product.currency || 'FCFA').toUpperCase();
+    const schemaCurrency  = CURRENCY_ISO_MAP[displayCurrency] || 'XOF';
     const setMeta = (selector, attribute, value) => {
         const element = document.querySelector(selector);
         if (element) element.setAttribute(attribute, value);
@@ -895,15 +904,52 @@ function updateProductSEO(product) {
             '@type': 'Brand',
             name: brand
         },
-  offers: {
+offers: {
     '@type': 'Offer',
     url: productUrl,
-    priceCurrency: schemaCurrency,  // ← now sends "XOF" to Google
+    priceCurrency: schemaCurrency,
     price: price.toFixed(2),
     availability: stock > 0
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
-    itemCondition: 'https://schema.org/NewCondition'
+    itemCondition: 'https://schema.org/NewCondition',
+
+    // ⚠️ Change these to your ACTUAL policy:
+    shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingRate: {
+            '@type': 'MonetaryAmount',
+            value: '1500',
+            currency: schemaCurrency
+        },
+        shippingDestination: {
+            '@type': 'DefinedRegion',
+            addressCountry: 'CI'
+        },
+        deliveryTime: {
+            '@type': 'ShippingDeliveryTime',
+            handlingTime: {
+                '@type': 'QuantitativeValue',
+                minValue: 0,
+                maxValue: 1,
+                unitCode: 'DAY'
+            },
+            transitTime: {
+                '@type': 'QuantitativeValue',
+                minValue: 1,
+                maxValue: 3,
+                unitCode: 'DAY'
+            }
+        }
+    },
+    hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'CI',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 7,
+        returnMethod: 'https://schema.org/ReturnByMail',
+        returnFees: 'https://schema.org/FreeReturn'
+    }
 }
     };
 
