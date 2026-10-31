@@ -187,7 +187,7 @@
                                 ${order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'}
                             </div>
                         </div>
-                        <div class="st-order-total">FCFA ${(order.total || 0).toFixed(2)}</div>
+                        <div class="st-order-total">cfa ${(order.total || 0).toFixed(2)}</div>
                     </div>
                 </div>`;
         }).join('');

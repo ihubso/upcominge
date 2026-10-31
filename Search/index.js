@@ -211,9 +211,9 @@
                         <div class="st-product-name">${highlightMatch(product.name || 'Unknown', currentQuery)}</div>
                         ${product.brand ? `<div class="st-product-brand">${highlightMatch(product.brand, currentQuery)}</div>` : ''}
                         <div class="st-product-price">
-                            FCFA ${(Number(product.price) || 0).toFixed(2)}
+                            cfa ${(Number(product.price) || 0).toFixed(2)}
                             ${product.originalPrice && product.originalPrice > product.price
-                                ? `<span class="st-original-price">FCFA ${(Number(product.originalPrice) || 0).toFixed(2)}</span>`
+                                ? `<span class="st-original-price">cfa ${(Number(product.originalPrice) || 0).toFixed(2)}</span>`
                                 : ''}
                         </div>
                         ${rating > 0 ? `

@@ -133,9 +133,9 @@ function renderHeroBanner(products, containerId = 'heroBanner') {
                         <h2 class="hero-title">${product.name || 'Featured Product'}</h2>
                         ${product.brand ? `<p class="hero-brand">${product.brand}</p>` : ''}
                         <div class="hero-price">
-                            <span class="hero-current-price">FCFA${price.toFixed(2)}</span>
+                            <span class="hero-current-price">cfa${price.toFixed(2)}</span>
                             ${discountPercent > 0 ? `
-                                <span class="hero-original-price">FCFA${originalPrice.toFixed(2)}</span>
+                                <span class="hero-original-price">cfa${originalPrice.toFixed(2)}</span>
                                 <span class="hero-discount">-${discountPercent}%</span>
                             ` : ''}
                         </div>

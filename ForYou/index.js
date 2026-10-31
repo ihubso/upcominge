@@ -251,8 +251,8 @@
                             <span>${sold} ${t('sold', 'sold')}</span>
                         </div>
                         <div class="card-price">
-                            FCFA ${(p.price || 0).toFixed(2)}
-                            ${isDeal && p.originalPrice ? `<span class="original">FCFA ${(p.originalPrice || 0).toFixed(2)}</span>` : ''}
+                            cfa ${(p.price || 0).toFixed(2)}
+                            ${isDeal && p.originalPrice ? `<span class="original">cfa ${(p.originalPrice || 0).toFixed(2)}</span>` : ''}
                         </div>
                         <div class="card-actions">
                             <button class="btn-wish ${isWished ? 'active' : ''}"
@@ -304,8 +304,8 @@
                             ${tag ? `<span class="tag">${tag}</span>` : ''}
                         </div>
                         <div class="foryou-price">
-                            FCFA ${(p.price || 0).toFixed(2)}
-                            ${isDeal && p.originalPrice ? `<span class="original">FCFA ${(p.originalPrice || 0).toFixed(2)}</span>` : ''}
+                            cfa ${(p.price || 0).toFixed(2)}
+                            ${isDeal && p.originalPrice ? `<span class="original">cfa ${(p.originalPrice || 0).toFixed(2)}</span>` : ''}
                         </div>
                         <div class="foryou-stats">
                             ${rating > 0 ? `<span class="rating"><i class="fas fa-star" style="color:#F59E0B;"></i> ${rating.toFixed(1)}</span>` : ''}

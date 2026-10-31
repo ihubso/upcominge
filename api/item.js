@@ -169,7 +169,7 @@ export default async function handler(req, res) {
     const hasDeal = dealDiscount > 0;
     const discountedPrice = hasDeal ? price * (1 - dealDiscount / 100) : price;
 
-    const currency = productData.currency || 'FCFA';
+    const currency = productData.currency || 'cfa';
     const stock = Number(productData.stock) || 0;
     const stockStatus = stock > 0 ? 'In Stock' : 'Out of Stock';
 

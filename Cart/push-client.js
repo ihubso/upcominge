@@ -136,7 +136,7 @@
                 if (originalPrice > price) {
                     const discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
                     originalPriceMarkup = `
-                        <span class="st-original-price" style="text-decoration:line-through;color:#94A3B8;font-size:14px;margin-left:6px;">FCFA${originalPrice.toFixed(2)}</span>
+                        <span class="st-original-price" style="text-decoration:line-through;color:#94A3B8;font-size:14px;margin-left:6px;">cfa${originalPrice.toFixed(2)}</span>
                         <span class="st-deal-badge" style="background:#10B981;color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;margin-left:4px;">-${discountPercent}%</span>`;
                 }
             }
@@ -156,7 +156,7 @@
                         ${item.brand ? `<span class="st-item-brand">${escapeHtml(item.brand)}</span>` : ''}
                         ${variantMarkup}
                         <div class="st-item-price">
-                            FCFA ${price.toFixed(2)}
+                            cfa ${price.toFixed(2)}
                             ${originalPriceMarkup}
                             ${dealBadgeMarkup}
                         </div>
@@ -323,10 +323,10 @@
         const discountAmt = discountApplied > 0 ? (subtotal * discountApplied / 100) : 0;
         const total = subtotal + shipping - discountAmt;
 
-        if (els.subtotal) els.subtotal.textContent = `FCFA ${subtotal.toFixed(2)}`;
-        if (els.shipping) els.shipping.textContent = shipping === 0 ? t('free', 'Free') : `FCFA ${shipping.toFixed(2)}`;
-        if (els.discount) els.discount.textContent = discountAmt > 0 ? `-FCFA ${discountAmt.toFixed(2)}` : 'FCFA 0.00';
-        if (els.total)    els.total.textContent    = `FCFA ${total.toFixed(2)}`;
+        if (els.subtotal) els.subtotal.textContent = `cfa ${subtotal.toFixed(2)}`;
+        if (els.shipping) els.shipping.textContent = shipping === 0 ? t('free', 'Free') : `cfa ${shipping.toFixed(2)}`;
+        if (els.discount) els.discount.textContent = discountAmt > 0 ? `-cfa ${discountAmt.toFixed(2)}` : 'cfa 0.00';
+        if (els.total)    els.total.textContent    = `cfa ${total.toFixed(2)}`;
 
         if (els.checkoutBtn) els.checkoutBtn.disabled = cartItems.length === 0;
     }

@@ -114,8 +114,8 @@
                             <h3 class="deal-card-title">${deal.name || 'Unknown Product'}</h3>
                             ${deal.brand ? `<p class="deal-card-brand">${deal.brand}</p>` : ''}
                             <div class="deal-card-price">
-                                <span class="deal-current-price">FCFA ${currentPrice.toFixed(2)}</span>
-                                <span class="deal-original-price">FCFA ${originalPrice.toFixed(2)}</span>
+                                <span class="deal-current-price">cfa ${currentPrice.toFixed(2)}</span>
+                                <span class="deal-original-price">cfa ${originalPrice.toFixed(2)}</span>
                             </div>
       
                         </div>

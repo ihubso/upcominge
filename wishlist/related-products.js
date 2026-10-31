@@ -136,8 +136,8 @@
                         <h4 class="rp-card-title">${product.name || 'Unknown Product'}</h4>
                         ${product.brand ? `<p class="rp-card-brand">${product.brand}</p>` : ''}
                         <div class="rp-card-price">
-                            <span class="rp-current-price">FCFA ${price.toFixed(2)}</span>
-                            ${discountPercent > 0 ? `<span class="rp-original-price">FCFA ${originalPrice.toFixed(2)}</span>` : ''}
+                            <span class="rp-current-price">cfa ${price.toFixed(2)}</span>
+                            ${discountPercent > 0 ? `<span class="rp-original-price">cfa ${originalPrice.toFixed(2)}</span>` : ''}
                         </div>
                         ${rating > 0 ? `
                             <div class="rp-card-rating">

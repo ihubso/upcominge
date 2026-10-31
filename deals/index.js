@@ -281,8 +281,8 @@ async function fetchDeals() {
                             <span class="count">(${reviewCount})</span>
                         </div>
                         <div class="deal-price-row">
-                            <span class="deal-current-price">FCFA ${formatPrice(currentPrice)}</span>
-                            <span class="deal-original-price">FCFA ${formatPrice(originalPrice)}</span>
+                            <span class="deal-current-price">cfa ${formatPrice(currentPrice)}</span>
+                            <span class="deal-original-price">cfa ${formatPrice(originalPrice)}</span>
                             <span class="deal-savings" data-translate="save_percent">Save ${discount}%</span>
                         </div>
                         <div class="deal-actions">

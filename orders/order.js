@@ -360,7 +360,7 @@ async function loadOrders() {
                     <div class="st-order-bottom">
                         <div class="st-order-items-preview">${itemNames}${moreItems}</div>
                         <div style="display:flex;align-items:center;gap:12px;">
-                            <span class="st-order-total">FCFA ${(order.total || 0).toFixed(2)}</span>
+                            <span class="st-order-total">cfa ${(order.total || 0).toFixed(2)}</span>
                             <span class="st-order-arrow"><i class="fas fa-chevron-right"></i></span>
                         </div>
                     </div>
@@ -475,7 +475,7 @@ function closeOrderDetail() {
                         </span>
                     </div>
                     <span class="st-item-price" style="font-weight:700;font-size:14px;color:#0F172A;">
-                        FCFA ${((item.price || 0) * (item.qty || 1)).toFixed(2)}
+                        cfa ${((item.price || 0) * (item.qty || 1)).toFixed(2)}
                     </span>
                 </div>`).join('');
         }
@@ -505,9 +505,9 @@ function closeOrderDetail() {
             `📦 *${t('status', 'Status')}:* ${statusLabel}%0A` +
             `📅 *${t('date', 'Date')}:* ${formatDate(order.created_at || order.date)}%0A%0A` +
             `📦 *${t('items', 'Items')}:*%0A${order.items?.map(i =>
-                `• ${i.name} (${i.qty || 1}x) - FCFA ${((i.price || 0) * (i.qty || 1)).toFixed(2)}`
+                `• ${i.name} (${i.qty || 1}x) - cfa ${((i.price || 0) * (i.qty || 1)).toFixed(2)}`
             ).join('%0A') || 'No items'}%0A%0A` +
-            `💰 *${t('total', 'Total')}:* FCFA ${(order.total || 0).toFixed(2)}`;
+            `💰 *${t('total', 'Total')}:* cfa ${(order.total || 0).toFixed(2)}`;
 
         const phone = order.phone ? order.phone.replace(/\D/g, '') : '0172934545';
         const waUrl = `https://wa.me/${phone}?text=${waMessage}`;
@@ -547,7 +547,7 @@ function closeOrderDetail() {
             <div class="st-detail-section" style="margin-bottom:12px;">
                 <div class="st-section-label" style="font-weight:600;font-size:14px;color:#475569;margin-bottom:4px;"><i class="fas fa-money-bill-wave"></i> <span data-translate="order_total">Order Total</span></div>
                 <div class="st-section-value" style="font-size:24px;font-weight:800;color:#6C3CE1;">
-                    FCFA ${(order.total || 0).toFixed(2)}
+                    cfa ${(order.total || 0).toFixed(2)}
                 </div>
             </div>
 

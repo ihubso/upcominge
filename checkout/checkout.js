@@ -178,7 +178,7 @@ async function getBusinessInfo() {
                         ${variants ? `<div class="st-item-meta">${escapeHtml(variants)}</div>` : ''}
                         <div class="st-item-meta">${t('qty', 'Qty')}: ${qty}</div>
                     </div>
-                    <div class="st-item-price">FCFA ${line.toFixed(2)}</div>
+                    <div class="st-item-price">cfa ${line.toFixed(2)}</div>
                 </div>`;
         }).join('');
 
@@ -186,9 +186,9 @@ async function getBusinessInfo() {
         const deliveryFee = subtotal >= 50000 ? 0 : 2000;
         orderTotal = subtotal + deliveryFee;
 
-        if (els.subtotal)    els.subtotal.textContent    = `FCFA ${subtotal.toFixed(2)}`;
-        if (els.deliveryFee) els.deliveryFee.textContent = deliveryFee === 0 ? t('free', 'Free') : `FCFA ${deliveryFee.toFixed(2)}`;
-        if (els.total)       els.total.textContent       = `FCFA ${orderTotal.toFixed(2)}`;
+        if (els.subtotal)    els.subtotal.textContent    = `cfa ${subtotal.toFixed(2)}`;
+        if (els.deliveryFee) els.deliveryFee.textContent = deliveryFee === 0 ? t('free', 'Free') : `cfa ${deliveryFee.toFixed(2)}`;
+        if (els.total)       els.total.textContent       = `cfa ${orderTotal.toFixed(2)}`;
         if (els.whatsappBtn) els.whatsappBtn.style.display = 'flex';
 
         updateWhatsAppLink();
@@ -217,7 +217,7 @@ async function getBusinessInfo() {
             `💳 *${t('payment', 'Payment')}:* ${els.paymentMethod?.options[els.paymentMethod.selectedIndex]?.text || 'N/A'}%0A` +
             `📝 *${t('notes', 'Notes')}:* ${els.orderNotes?.value.trim() || 'None'}%0A%0A` +
             `📦 *${t('items', 'Items')}:*%0A• ${items}%0A%0A` +
-            `💰 *${t('total', 'Total')}:* FCFA ${orderTotal.toFixed(2)}`;
+            `💰 *${t('total', 'Total')}:* cfa ${orderTotal.toFixed(2)}`;
 
         const cleanPhone = String(phone).replace(/\D/g, '');
         const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
@@ -357,8 +357,8 @@ function generateUUID() {
                     const count = orderItems.reduce((s, it) => s + (it.qty || 1), 0);
                     const first = orderItems[0]?.name || 'item';
                     const body  = count === 1
-                        ? `${name} ordered ${first} — FCFA ${orderTotal.toFixed(2)}`
-                        : `${name} ordered ${count} items — FCFA ${orderTotal.toFixed(2)}`;
+                        ? `${name} ordered ${first} — cfa ${orderTotal.toFixed(2)}`
+                        : `${name} ordered ${count} items — cfa ${orderTotal.toFixed(2)}`;
                     await fetch(`${url}/functions/v1/send-push`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
@@ -422,9 +422,9 @@ function generateUUID() {
                 `💳 *${t('payment', 'Payment')}:* ${els.paymentMethod?.options[els.paymentMethod.selectedIndex]?.text || 'N/A'}%0A` +
                 `📝 *${t('notes', 'Notes')}:* ${els.orderNotes?.value.trim() || 'None'}%0A%0A` +
                 `📦 *${t('items', 'Items')}:*%0A• ${cartItems.map(i =>
-                    `${i.name || 'Product'} (${i.qty || 1}x) - FCFA ${((i.price || 0) * (i.qty || 1)).toFixed(2)}`
+                    `${i.name || 'Product'} (${i.qty || 1}x) - cfa ${((i.price || 0) * (i.qty || 1)).toFixed(2)}`
                 ).join('%0A• ')}%0A%0A` +
-                `💰 *${t('total', 'Total')}:* FCFA ${orderTotal.toFixed(2)}`;
+                `💰 *${t('total', 'Total')}:* cfa ${orderTotal.toFixed(2)}`;
 
             const cleanPhone = String(shopPhone).replace(/\D/g, '');
             const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(orderMessage)}`;
@@ -438,7 +438,7 @@ function generateUUID() {
             // Notification fanout (in-app + service worker)
             try {
                 const title = `✅ ${t('order', 'Order')} ${orderId} ${t('placed', 'Placed')}`;
-                const text  = `${t('thank_you', 'Thank you')} ${name}! ${t('your_order', 'Your order')} ${orderId} ${t('totaling', 'totaling')} FCFA ${orderTotal} ${t('has_been_received', 'has been received.')}`;
+                const text  = `${t('thank_you', 'Thank you')} ${name}! ${t('your_order', 'Your order')} ${orderId} ${t('totaling', 'totaling')} cfa ${orderTotal} ${t('has_been_received', 'has been received.')}`;
                 const link  = `/orders/?order=${encodeURIComponent(orderId)}`;
                 if (window.notificationSystem?.add) window.notificationSystem.add(title, text, 'order', link, null);
                 navigator.serviceWorker?.controller?.postMessage({

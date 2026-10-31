@@ -377,8 +377,8 @@ function escapeHtml(s) {
                             <h3 class="deal-card-title">${deal.name || 'Unknown Product'}</h3>
                             ${deal.brand ? `<p class="deal-card-brand">${deal.brand}</p>` : ''}
                             <div class="deal-card-price">
-                                <span class="deal-current-price">FCFA ${currentPrice.toFixed(2)}</span>
-                                <span class="deal-original-price">FCFA ${originalPrice.toFixed(2)}</span>
+                                <span class="deal-current-price">cfa ${currentPrice.toFixed(2)}</span>
+                                <span class="deal-original-price">cfa ${originalPrice.toFixed(2)}</span>
                             </div>
                             <div class="deal-card-actions">
                                 <button class="deal-btn-cart" onclick="window.navigateWithUserInfo('/item/?product=${deal.id}')" data-translate="view_details">
@@ -688,7 +688,7 @@ async function handleSubmitReview(productId) {
                      onerror="this.src='https://placehold.co/200x200?text=No+Image'">
                 <h4>${p.name}</h4>
                 <p class="text-xs text-gray-400">${p.brand || ''}</p>
-                <div class="price">FCFA ${(p.price || 0).toFixed(2)}</div>
+                <div class="price">cfa ${(p.price || 0).toFixed(2)}</div>
             </div>
         `).join(''));
     }
@@ -902,17 +902,17 @@ function renderBreadcrumb(product) {
         if (hasDeal && discount > 0) {
             els.priceSection.innerHTML = `
                 <div class="flex items-center gap-3 mb-2">
-                    <span class="text-2xl text-gray-400 line-through">FCFA ${originalPrice.toFixed(2)}</span>
+                    <span class="text-2xl text-gray-400 line-through">cfa ${originalPrice.toFixed(2)}</span>
                     <span class="bg-primary text-white px-3 py-1 rounded-full text-sm font-bold">${t('save', 'SAVE')} ${discount}%</span>
                 </div>
-                <div class="text-5xl font-bold text-primary">FCFA ${discountedPrice.toFixed(2)}</div>
+                <div class="text-5xl font-bold text-primary">cfa ${discountedPrice.toFixed(2)}</div>
             `;
             els.dealBadgeOverlay.classList.remove('hidden');
             els.dealBadgeOverlay.textContent = `-${discount}% ${t('off', 'OFF')}`;
             els.dealInfo.classList.remove('hidden');
             els.dealInfo.querySelector('p').textContent = `🔥 ${t('deal_of_day_text', 'Deal of the Day')} - ${discount}% ${t('off', 'OFF')}!`;
         } else {
-            els.priceSection.innerHTML = `<div class="text-4xl font-light text-gray-900">FCFA ${originalPrice.toFixed(2)}</div>`;
+            els.priceSection.innerHTML = `<div class="text-4xl font-light text-gray-900">cfa ${originalPrice.toFixed(2)}</div>`;
             els.dealBadgeOverlay.classList.add('hidden');
             els.dealInfo.classList.add('hidden');
         }
@@ -1142,7 +1142,7 @@ if (specsmanEl) {
                 <div class="cart-item flex justify-between items-center mb-4 border-b pb-2">
                     <div>
                         <strong>${item.name}</strong><br>
-                        <small>FCFA ${price.toFixed(2)}</small>
+                        <small>cfa ${price.toFixed(2)}</small>
                         ${variantText ? `<div class="text-xs text-gray-500">${variantText}</div>` : ''}
                     </div>
                     <div>

@@ -65,7 +65,7 @@ if (productsGrid) {
                         </div>
                         <div class="st-item-info">
                             <span class="st-item-name">${product.name}</span>
-                            <span class="st-item-count">FCFA ${(product.price || 0).toFixed(2)}</span>
+                            <span class="st-item-count">cfa ${(product.price || 0).toFixed(2)}</span>
                         </div>
                     </a>
                 `).join('');
@@ -859,7 +859,7 @@ function renderSearchResults(results, query) {
                     <div class="st-search-name">${highlightMatch(item.name || 'Unknown', query)}</div>
                     <div class="st-search-meta">${(item.brand || item.category || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
                 </div>
-                <div class="st-search-price">FCFA ${(item.price || 0).toFixed(2)}</div>
+                <div class="st-search-price">cfa ${(item.price || 0).toFixed(2)}</div>
             </a>
         `).join('') + `
             <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');" data-translate="view_all_results">
@@ -892,7 +892,7 @@ function renderSearchResults(results, query) {
                         <div class="st-search-name">${highlightMatch(item.name || 'Unknown', query)}</div>
                         <div class="st-search-meta">${(item.brand || item.category || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
                     </div>
-                    <div class="st-search-price">FCFA ${(item.price || 0).toFixed(2)}</div>
+                    <div class="st-search-price">cfa ${(item.price || 0).toFixed(2)}</div>
                 </a>
             `).join('') + `
                 <a href="/Search/?search=${encodeURIComponent(query)}" class="st-search-view-all" onclick="handleSearchClick(event, '${encodedQuery}', '/Search/?search=${encodeURIComponent(query)}');" data-translate="view_all_results">

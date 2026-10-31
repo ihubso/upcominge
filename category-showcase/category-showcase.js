@@ -436,9 +436,9 @@ async function fetchShowcaseConfig() {
                             <span class="rating-count">(${product.reviewCount || 0})</span>
                         </div>
                         <div class="category-product-price">
-                            <span class="current-price">fcfa${price.toFixed(2)}</span>
+                            <span class="current-price">cfa${price.toFixed(2)}</span>
                             ${isDeal && originalPrice > price ? 
-                                `<span class="original-price">fcfa${originalPrice.toFixed(2)}</span>` : ''}
+                                `<span class="original-price">cfa${originalPrice.toFixed(2)}</span>` : ''}
                         </div>
                         <a onclick="window.navigateWithUserInfo('/item/?product=${product.id}'); return false;"  class="st-btn-view">
                             <i class="fas fa-eye"></i>

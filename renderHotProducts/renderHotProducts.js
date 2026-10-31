@@ -193,8 +193,8 @@ async function fetchReviewsFromDB() {
                         <a class="hot-product-name">${product.name || 'Unknown Product'}</a>
                         ${product.brand ? `<span class="hot-product-brand">${product.brand}</span>` : ''}
                         <div class="hot-product-price">
-                            <span class="hot-current-price">FCFA ${price.toFixed(2)}</span>
-                            ${discountPercent > 0 ? `<span class="hot-original-price">FCFA ${originalPrice.toFixed(2)}</span>` : ''}
+                            <span class="hot-current-price">cfa ${price.toFixed(2)}</span>
+                            ${discountPercent > 0 ? `<span class="hot-original-price">cfa ${originalPrice.toFixed(2)}</span>` : ''}
                         </div>
                         ${rating > 0 ? `
                             <div class="hot-product-rating">
