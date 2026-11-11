@@ -214,9 +214,9 @@
                             </a>
                             ${brand ? `<div class="st-card-brand">${brand}</div>` : ''}
                             <div class="st-card-price">
-                                cfa ${price.toFixed(2)}
+                                ${window.formatCFA(price)}
                                 ${isDeal && originalPrice > price
-                                    ? `<span class="st-original-price">cfa ${originalPrice.toFixed(2)}</span>`
+                                    ? `<span class="st-original-price"> ${window.formatCFA(originalPrice)}</span>`
                                     : ''}
                             </div>
                             ${rating > 0 ? `

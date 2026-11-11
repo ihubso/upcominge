@@ -426,9 +426,9 @@
                     <div class="card-name">${product.name || 'Unknown Product'}</div>
                     ${product.brand ? `<div class="card-brand">${product.brand}</div>` : ''}
                     <div class="card-price">
-                        cfa ${currentPrice.toFixed(2)}
+                        ${window.formatCFA(currentPrice)}
                         ${isDeal && originalPrice > currentPrice
-                            ? `<span class="original">cfa ${originalPrice.toFixed(2)}</span>` : ''}
+                            ? `<span class="original"> ${window.formatCFA(originalPrice)}</span>` : ''}
                     </div>
                     <div class="card-actions">
                         <button class="btn-wish ${isWished ? 'active' : ''}"

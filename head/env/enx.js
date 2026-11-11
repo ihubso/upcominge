@@ -27,4 +27,32 @@ function getSupabaseClient() {
 }
     window.getSupabaseClient = getSupabaseClient;
 
+// head/price-formatter.js
+(function () {
+    'use strict';
 
+    function formatCFA(amount, opts = {}) {
+        const showCurrency = opts.showCurrency !== false;
+        const withDecimals = opts.withDecimals === true;
+
+        const n = Number(amount);
+        if (!Number.isFinite(n)) return showCurrency ? '0 CFA' : '0';
+
+        // Round to whole CFA (no decimals by default)
+        const value = withDecimals ? n : Math.round(n);
+
+      
+        const formatted = value.toLocaleString('fr-FR', {
+            minimumFractionDigits: withDecimals ? 2 : 0,
+            maximumFractionDigits: withDecimals ? 2 : 0,
+        });
+
+        return showCurrency ? `${formatted} CFA` : formatted;
+    }
+
+    // Expose globally
+    window.formatCFA = formatCFA;
+
+    // Short alias
+    window.fcfa = (amount) => formatCFA(amount);
+})();

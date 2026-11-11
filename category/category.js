@@ -536,7 +536,7 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
                         <span>(${cnt})</span>
                     </div>
                     <div class="product-actions">
-                        <span class="product-price">cfa ${(Number(p.price) || 0).toFixed(2)}</span>
+                        <span class="product-price">${window.formatCFA(p.price)}</span>
                         <button class="btn-cart"
                                 onclick="event.stopPropagation(); window.addToCart('${p.id}')">
                             <i class="fas fa-shopping-cart"></i>
@@ -857,7 +857,7 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
                      onerror="this.src='https://placehold.co/200x200?text=No+Image'">
                 <h4>${escapeHtml(p.name) || 'Unknown Product'}</h4>
                 <p class="text-gray-400">${escapeHtml(p.category) || ''}</p>
-                <div class="price">cfa ${(Number(p.price) || 0).toFixed(2)}</div>
+                <div class="price"> ${window.formatCFA(p.price)}</div>
             </div>`).join(''));
     }
 

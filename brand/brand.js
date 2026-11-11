@@ -243,7 +243,7 @@ function updateBrandSEO(brandName, productCount) {
                         <span>(${cnt})</span>
                     </div>
                     <div class="product-actions">
-                        <span class="product-price">cfa ${(p.price || 0).toFixed(2)}</span>
+                        <span class="product-price">${window.formatCFA(p.price)}</span>
                         <button class="btn-cart"
                                 onclick="event.stopPropagation(); window.addToCart('${p.id}')"
                                 data-translate="add_to_cart">
@@ -470,7 +470,7 @@ try {
                      onerror="this.src='https://placehold.co/200x200?text=No+Image'">
                 <h4>${escapeHtml(p.name) || 'Unknown Product'}</h4>
                 <p class="text-gray-400">${escapeHtml(p.brand) || ''}</p>
-                <div class="price">cfa ${(p.price || 0).toFixed(2)}</div>
+                <div class="price"> ${window.formatCFA(p.price)}</div>
             </div>`).join(''));
     }
 
