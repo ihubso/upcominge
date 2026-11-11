@@ -92,7 +92,96 @@ function getCategoryFromUrl() {
     function getReviewCount(id) {
         return (window._cachedReviews?.[id] || []).length;
     }
+function updateCategorySEO(categorySlug, categoryName, productCount) {
+    const baseUrl = 'https://www.suctech.store';
 
+    // Normaliser le slug
+    const slug = categorySlug && categorySlug !== 'all'
+        ? slugifyClient(categorySlug)
+        : 'all';
+
+    const pageUrl = slug === 'all'
+        ? `${baseUrl}/category/`
+        : `${baseUrl}/category/?category=${slug}`;
+
+    // Titres et descriptions optimisés pour l'intention de recherche locale et e-commerce
+    const title = slug === 'all'
+        ? 'Catalogue de tous les produits et High-Tech | Success Technology Abidjan'
+        : `Acheter ${categoryName} en ligne à Abidjan | Success Technology`;
+
+    const description = slug === 'all'
+        ? `Découvrez notre catalogue complet de matériel informatique, smartphones, appareils audio et accessoires électroniques chez Success Technology à Cocody, Abidjan.`
+        : `Achetez ${categoryName} de qualité chez Success Technology. ${productCount ? productCount + ' articles disponibles.' : 'Découvrez nos nouveautés'} avec livraison rapide à Abidjan, Côte d'Ivoire.`;
+
+    // Appliquer le titre
+    document.title = title;
+
+    // Utilitaire pour définir les balises meta
+    const setMeta = (selector, attr, value) => {
+        const el = document.querySelector(selector);
+        if (el) el.setAttribute(attr, value);
+    };
+
+    setMeta('#pageMetaDescription', 'content', description);
+    setMeta('#pageCanonical', 'href', pageUrl);
+    setMeta('#ogTitle', 'content', title);
+    setMeta('#ogDescription', 'content', description);
+    setMeta('#ogUrl', 'content', pageUrl);
+    setMeta('#twitterTitle', 'content', title);
+    setMeta('#twitterDescription', 'content', description);
+
+    // Données structurées JSON-LD avancées (CollectionPage + BreadcrumbList pour les rich snippets)
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'CollectionPage',
+                '@id': `${pageUrl}#webpage`,
+                url: pageUrl,
+                name: title,
+                description: description,
+                isPartOf: {
+                    '@type': 'WebSite',
+                    '@id': `${baseUrl}/#website`,
+                    name: 'Success Technology',
+                    url: baseUrl
+                }
+            },
+            {
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                    {
+                        '@type': 'ListItem',
+                        position: 1,
+                        name: 'Accueil',
+                        item: `${baseUrl}/`
+                    },
+                    {
+                        '@type': 'ListItem',
+                        position: 2,
+                        name: 'Catégories',
+                        item: `${baseUrl}/category/`
+                    },
+                    ...(slug !== 'all' ? [{
+                        '@type': 'ListItem',
+                        position: 3,
+                        name: categoryName,
+                        item: pageUrl
+                    }] : [])
+                ]
+            }
+        ]
+    };
+
+    let schemaEl = document.getElementById('categoryStructuredData');
+    if (!schemaEl) {
+        schemaEl = document.createElement('script');
+        schemaEl.type = 'application/ld+json';
+        schemaEl.id = 'categoryStructuredData';
+        document.head.appendChild(schemaEl);
+    }
+    schemaEl.textContent = JSON.stringify(structuredData);
+}
     function getCategoryIcon(category) {
         const icons = {
             smartphone: 'fas fa-mobile-alt', phone: 'fas fa-mobile-alt', tablet: 'fas fa-tablet-alt',
@@ -668,6 +757,14 @@ function getCategoryFromUrl() {
 
             if (reset) {
                 totalProducts = total;
+                try {
+        const catName = category === 'all'
+            ? 'All Products'
+            : getTranslatedCategory(category);
+        updateCategorySEO(category, catName, total);
+    } catch (e) {
+        console.warn('updateCategorySEO failed:', e);
+    }
 
                 try {
                     const cats = await fetchCategoryCounts();
@@ -677,6 +774,7 @@ function getCategoryFromUrl() {
                         categoryCountMap.set(k, Number(c.product_count || 0));
                     });
                     await buildCategoryBar(cats);
+                    
                 } catch (e) {
                     console.warn('Category bar failed:', e);
                 }

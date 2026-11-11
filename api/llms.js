@@ -21,7 +21,10 @@ export default async function handler(req, res) {
 
     const { data: products, error } = await supabase
       .from('products')
-      .select('id, name, price, category, brand, stock, description')
+      .select(`
+        id, name, price, brand, stock, description,
+        categories:category_id ( slug, name )
+      `)
       .order('created_at', { ascending: false })
       .limit(500);
 
@@ -36,16 +39,30 @@ export default async function handler(req, res) {
       return;
     }
 
-let txt = `# SUCCESS Technology\n\n`;
-txt += `> Vente d'appareils électroniques : Ordinateur Portable, Ecran PC, Imprimante, Batterie, Souris, Clavier, Clé USB, Chargeur, Encre & Divers.\n\n`;
-txt += `## Products\n\n`;
+    let txt = `# SUCCESS Technology\n\n`;
+    txt += `> Vente d'appareils électroniques : Ordinateur Portable, Ecran PC, Imprimante, Batterie, Souris, Clavier, Clé USB, Chargeur, Encre & Divers.\n`;
+    txt += `> Localisation : Angré Djibi Terminus 82, face à Snedai, Abidjan, Côte d'Ivoire\n`;
+    txt += `> Contact : +2250172934545 · austinlebechi02@gmail.com\n\n`;
+
+    txt += `## Products\n\n`;
+
     for (const p of products) {
       const inStock = Number(p.stock ?? 0) > 0 ? 'in stock' : 'out of stock';
-      txt += `- [${p.name}](${SITE_URL}/item/${encodeURIComponent(p.id)}): `;
-      txt += `${p.brand || ''} ${p.category || ''} — cfa${p.price} — ${inStock}\n`;
+      const catSlug = p.categories?.slug || '';
+      const catName = p.categories?.name || '';
+
+      // ✅ Fixed product URL: uses ?product= query param
+      txt += `- [${p.name}](${SITE_URL}/item/?product=${encodeURIComponent(p.id)}): `;
+      txt += `${p.brand || ''}${p.brand && catName ? ' ' : ''}${catName} — cfa${p.price} — ${inStock}\n`;
+
+      // ✅ Add category URL as a separate line so AI knows the correct slug
+      if (catSlug) {
+        txt += `  Category: [${catName}](${SITE_URL}/category/?category=${catSlug})\n`;
+      }
     }
 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
     res.status(200).send(txt);
 
   } catch (err) {

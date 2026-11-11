@@ -3,8 +3,87 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-    <title data-translate="brand_page_title">brand · Sucess Technology</title>
-    <link rel="icon" type="image/png" href="favicon.png">
+<!-- Balises SEO principales -->
+    <title data-translate="brand_page_title">Marques & Électronique | Success Technology Abidjan</title>
+    <meta name="description" content="Découvrez nos marques partenaires, ordinateurs, smartphones et accessoires de haute technologie chez Success Technology à Cocody, Abidjan." />
+    <meta name="keywords" content="Success Technology, marques high-tech Abidjan, smartphones Abidjan, matériel informatique Cocody, Côte d'Ivoire" />
+    <link rel="canonical" href="https://www.suctech.store/brand/" />
+
+    <!-- Référencement local et géographique -->
+    <meta name="geo.region" content="CI-AB" />
+    <meta name="geo.placename" content="Abidjan" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+
+    <!-- Open Graph / Réseaux sociaux -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Success Technology" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:title" content="Marques & Électronique | Success Technology Abidjan" />
+    <meta property="og:description" content="Découvrez nos marques partenaires, ordinateurs, smartphones et accessoires de haute technologie chez Success Technology." />
+    <meta property="og:url" content="https://www.suctech.store/brand/" />
+    <meta property="og:image" content="https://www.suctech.store/images/logo.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Marques & Électronique | Success Technology" />
+    <meta name="twitter:description" content="Découvrez nos marques partenaires et notre catalogue high-tech chez Success Technology." />
+    <meta name="twitter:image" content="https://www.suctech.store/images/logo.png" />
+
+    <!-- Données structurées JSON-LD (ElectronicsStore + BreadcrumbList) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "ElectronicsStore",
+          "@id": "https://www.suctech.store/#store",
+          "name": "SUCCESS Technology",
+          "url": "https://www.suctech.store/",
+          "logo": "https://www.suctech.store/logo.png",
+          "description": "Boutique d'électronique, smartphones, accessoires et matériel informatique à Abidjan, Cocody.",
+          "telephone": "+2250172934545",
+          "email": "austinlebechi02@gmail.com",
+          "priceRange": "CFA",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Angré Djibi Terminus 82, face à Snedai",
+            "addressLocality": "Abidjan",
+            "addressCountry": "CI"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "5.3600",
+            "longitude": "-4.0083"
+          },
+          "areaServed": {
+            "@type": "Country",
+            "name": "Côte d'Ivoire"
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Accueil",
+              "item": "https://www.suctech.store/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Marques",
+              "item": "https://www.suctech.store/brand/"
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <!-- Favicon & Styles -->
+    <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,11 +91,12 @@
     <link rel="stylesheet" href="/CSS/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+    <!-- Scripts de la page -->
     <script src="/head/env/enx.js"></script>
-   <script src="/head/Translate.js"></script>
-  <script src="/head/header.min.js" defer></script>
-     <script src="/head/st-pjax.js" defer></script>
-     <script src="/brand/brand.js" defer></script>
+    <script src="/head/Translate.js"></script>
+    <script src="/head/header.min.js" defer></script>
+    <script src="/head/st-pjax.js" defer></script>
+    <script src="/brand/brand.js" defer></script>
     <style>
         /* ============================================
            brand PAGE STYLES
