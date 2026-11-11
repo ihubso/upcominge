@@ -8,6 +8,71 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SEARCH PAGE SEO METADATA -->
+<meta name="description"
+      content="Search products at Success Technology — électronique, ordinateurs, accessoires et produits tech à Abidjan." />
+
+<link rel="canonical" id="pageCanonical" href="https://www.suctech.store/Search/" />
+
+<!-- Do NOT index search result pages — infinite URL combinations, thin content -->
+<meta name="robots" content="noindex, follow" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Success Technology" />
+<meta property="og:title" id="ogTitle"
+      content="Search · Success Technology" />
+<meta property="og:description" id="ogDescription"
+      content="Search our catalogue of electronics, computers, and accessories at Success Technology Abidjan." />
+<meta property="og:url" id="ogUrl"
+      content="https://www.suctech.store/Search/" />
+<meta property="og:image" id="ogImage"
+      content="https://www.suctech.store/images/logo.png" />
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" id="twitterTitle"
+      content="Search · Success Technology" />
+<meta name="twitter:description" id="twitterDescription"
+      content="Search our catalogue at Success Technology Abidjan." />
+<meta name="twitter:image" id="twitterImage"
+      content="https://www.suctech.store/images/logo.png" />
+
+<!-- Keep the ElectronicsStore JSON-LD from before, it's fine -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ElectronicsStore",
+  "@id": "https://www.suctech.store/#store",
+  "name": "SUCCESS Technology",
+  "url": "https://www.suctech.store/",
+  "logo": "https://www.suctech.store/images/logo.png",
+  "description": "Retailer of premium mobile phones, tech devices, and electronics accessories in Abidjan, Côte d'Ivoire.",
+  "telephone": "+2250172934545",
+  "email": "austinlebechi02@gmail.com",
+  "priceRange": "CFA",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Angré Djibi Terminus 82, face à Snedai",
+    "addressLocality": "Abidjan",
+    "addressRegion": "Abidjan",
+    "addressCountry": "CI"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "5.3600",
+    "longitude": "-4.0083"
+  },
+  "areaServed": { "@type": "Country", "name": "Côte d'Ivoire" },
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+      "opens": "08:00",
+      "closes": "19:30"
+    }
+  ],
+  "sameAs": ["https://www.instagram.com/success_tch"]
+}
+</script>
     <script src="/head/env/enx.js"></script>
    <script src="/head/Translate.js"></script>
   <script src="/head/header.min.js" defer></script>
@@ -677,80 +742,6 @@
 }
         
     </style>
-<meta
-  name="description"
-  content="Shop electronics, computers, accessories and technology products at Success Technology. Explore our products and contact us for orders and support."
-/>
-
-<link
-  rel="canonical"
-  href="https://www.suctech.store/"
-/>
-
-<meta name="robots" content="index, follow" />
-
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="Success Technology" />
-<meta
-  property="og:title"
-  content="Success Technology | Electronics & Technology"
-/>
-<meta
-  property="og:description"
-  content="Discover electronics, computers and technology accessories at Success Technology."
-/>
-<meta property="og:url" content="https://www.suctech.store/" />
-<meta
-  property="og:image"
-  content="https://www.suctech.store/images/logo.png"
-/>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "ElectronicsStore",
-  "@id": "https://www.suctech.store/#store",
-  "name": "SUCCESS Technology",
-  "url": "https://www.suctech.store/",
-  "logo": "https://www.suctech.store/logo.png",
-  "description": "Retailer of premium mobile phones, tech devices, and electronics accessories in Abidjan, Côte d'Ivoire.",
-  "telephone": "+2250172934545",
-  "email": "austinlebechi02@gmail.com",
-  "priceRange": "cfa",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Angré Djibi Terminus 82, face à Snedai",
-    "addressLocality": "Abidjan",
-    "addressCountry": "CI"
-  },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": "5.3600",
-    "longitude": "-4.0083"
-  },
-  "areaServed": {
-    "@type": "Country",
-    "name": "Côte d'Ivoire"
-  },
-  "openingHoursSpecification": [
-    {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday"
-      ],
-      "opens": "08:00",
-      "closes": "19:30"
-    }
-  ],
-  "sameAs": [
-    "https://www.instagram.com/success_tch"
-  ]
-}
-</script>
 </head>
 <body>
 
@@ -773,7 +764,7 @@
             <div class="st-search-actions">
                 <div class="st-search-input-wrapper">
                     <i class="fas fa-search"></i>
-                    <input type="search" id="stSearchInput" placeholder="Search again..." autocomplete="off" data-translate-placeholder="search_again" />
+                    <input type="search" id="stinputSearchInput" placeholder="Search again..." autocomplete="off" data-translate-placeholder="search_again" />
                 </div>
                 <button id="stSearchBtn" style="padding:10px 24px;background:#6C3CE1;color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:inherit;" data-translate="search">
                     <i class="fas fa-search"></i> Search

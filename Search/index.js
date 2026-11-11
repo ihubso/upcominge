@@ -32,6 +32,7 @@
             searchMeta:   document.getElementById('stSearchMeta'),
             resultCount:  document.getElementById('stResultCount'),
             searchInput:  document.getElementById('stSearchInput'),
+            searchbinInput:  document.getElementById('stinputSearchInput'),
             searchBtn:    document.getElementById('stSearchBtn'),
             sortSelect:   document.getElementById('stSortSelect'),
             filterChips:  document.querySelectorAll('.st-filter-chip'),
@@ -503,6 +504,50 @@
                 performSearch(q, 1, false, /* silent = */ false);
             };
         }
+          if (els.searchbinInput) {
+            els.searchbinInput.oninput = function () {
+                const q = this.value.trim();
+
+                // ✅ Clean the URL as soon as the user types
+                cleanURL();
+
+                clearTimeout(_liveSearchTimer);
+
+                // Empty input → reset the grid
+                if (!q) {
+                    currentQuery = '';
+                    allProducts = [];
+                    clearGridState();
+                    if (els.queryDisplay) {
+                        els.queryDisplay.textContent = t('all_products', 'All Products');
+                    }
+                    return;
+                }
+
+                // Show skeleton immediately (feels instant)
+                showSearchSkeleton(8);
+                if (els.loadMore) els.loadMore.style.display = 'none';
+
+                // Debounce the actual fetch
+                _liveSearchTimer = setTimeout(() => {
+                    currentQuery = q;
+                    performSearch(q, 1, false, /* silent = */ true);
+                }, 350);
+            };
+
+            /* ------- Enter key — search in place, no navigation ------- */
+            els.searchbinInput.onkeypress = function (e) {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                clearTimeout(_liveSearchTimer);
+                const q = this.value.trim();
+                if (!q) return;
+                currentQuery = q;
+                showSearchSkeleton(8);
+                performSearch(q, 1, false, /* silent = */ false);
+            };
+        }
+
 
         /* ------- Search button — search in place, no reload ------- */
         if (els.searchBtn) {
@@ -510,7 +555,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 clearTimeout(_liveSearchTimer);
-                const q = els.searchInput?.value.trim();
+                const q = els.searchInput?.value.trim() || els.searchbinInput?.value.trim();
                 if (!q) return;
                 currentQuery = q;
                 showSearchSkeleton(8);
@@ -603,7 +648,9 @@
         if (els.queryDisplay) {
             els.queryDisplay.textContent = initialQuery || t('all_products', 'All Products');
         }
-        if (els.searchInput) els.searchInput.value = initialQuery;
+       // Set value on whichever input exists
+if (els.searchInput) els.searchInput.value = initialQuery;
+if (els.searchbinInput) els.searchbinInput.value = initialQuery;
 
         currentFilter = 'all';
         currentSort = 'relevance';

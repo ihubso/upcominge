@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title data-translate="page_title">welcome · Sucess Technology</title>
+  <title>Success Technology | Électronique & Accessoires à Abidjan, Côte d'Ivoire</title>
+
   <link rel="icon" type="image/png" href="favicon.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,86 +17,101 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="newshop.css">
   <script src="/head/env/enx.js"></script>
-   <script src="/head/Translate.js"></script>
+  <script src="/head/Translate.js"></script>
   <script src="/head/header.min.js" defer></script>
-     <script src="/head/st-pjax.js" defer></script>
-  
+  <script src="/head/st-pjax.js" defer></script>
 
- 
-<meta
-  name="description"
-  content="Shop electronics, computers, accessories and technology products at Success Technology. Explore our products and contact us for orders and support."
-/>
+  <!-- ================= SEO METADATA ================= -->
+  <meta name="description"
+        content="Success Technology — électronique, ordinateurs, accessoires et produits tech à Abidjan, Côte d'Ivoire. Livraison rapide, paiement à la livraison. Contactez-nous pour vos commandes." />
 
-<link
-  rel="canonical"
-  href="https://www.suctech.store/"
-/>
+  <link rel="canonical" href="https://www.suctech.store/" />
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
 
-<meta name="robots" content="index, follow" />
+  <meta name="robots" content="index, follow" />
 
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="Success Technology" />
-<meta
-  property="og:title"
-  content="Success Technology | Electronics & Technology"
-/>
-<meta
-  property="og:description"
-  content="Discover electronics, computers and technology accessories at Success Technology."
-/>
-<meta property="og:url" content="https://www.suctech.store/" />
-<meta
-  property="og:image"
-  content="https://www.suctech.store/images/logo.png"
-/>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "ElectronicsStore",
-  "@id": "https://www.suctech.store/#store",
-  "name": "SUCCESS Technology",
-  "url": "https://www.suctech.store/",
-  "logo": "https://www.suctech.store/logo.png",
-  "description": "Retailer of premium mobile phones, tech devices, and electronics accessories in Abidjan, Côte d'Ivoire.",
-  "telephone": "+2250172934545",
-  "email": "austinlebechi02@gmail.com",
-  "priceRange": "cfa",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Angré Djibi Terminus 82, face à Snedai",
-    "addressLocality": "Abidjan",
-    "addressCountry": "CI"
-  },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": "5.3600",
-    "longitude": "-4.0083"
-  },
-  "areaServed": {
-    "@type": "Country",
-    "name": "Côte d'Ivoire"
-  },
-  "openingHoursSpecification": [
-    {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday"
-      ],
-      "opens": "08:00",
-      "closes": "19:30"
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Success Technology" />
+  <meta property="og:title" content="Success Technology | Électronique & Accessoires à Abidjan" />
+  <meta property="og:description" content="Électronique, ordinateurs et accessoires à Abidjan. Livraison rapide et paiement à la livraison." />
+  <meta property="og:url" content="https://www.suctech.store/" />
+  <meta property="og:image" content="https://www.suctech.store/images/logo.png" />
+  <meta property="og:image:alt" content="Success Technology — Électronique à Abidjan" />
+  <meta property="og:locale" content="fr_CI" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Success Technology | Électronique & Accessoires à Abidjan" />
+  <meta name="twitter:description" content="Électronique, ordinateurs et accessoires à Abidjan. Livraison rapide." />
+  <meta name="twitter:image" content="https://www.suctech.store/images/logo.png" />
+
+  <!-- JSON-LD: ElectronicsStore (business entity) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ElectronicsStore",
+    "@id": "https://www.suctech.store/#store",
+    "name": "SUCCESS Technology",
+    "url": "https://www.suctech.store/",
+    "logo": "https://www.suctech.store/images/logo.png",
+    "image": "https://www.suctech.store/images/logo.png",
+    "description": "Retailer of premium mobile phones, tech devices, and electronics accessories in Abidjan, Côte d'Ivoire.",
+    "telephone": "+2250172934545",
+    "email": "austinlebechi02@gmail.com",
+    "priceRange": "CFA",
+    "currenciesAccepted": "XOF",
+    "paymentAccepted": "Cash, Mobile Money, Card",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Angré Djibi Terminus 82, face à Snedai",
+      "addressLocality": "Abidjan",
+      "addressRegion": "Abidjan",
+      "addressCountry": "CI"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "5.3600",
+      "longitude": "-4.0083"
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "Côte d'Ivoire"
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+        "opens": "08:00",
+        "closes": "19:30"
+      }
+    ],
+    "sameAs": [
+      "https://www.instagram.com/success_tch"
+    ]
+  }
+  </script>
+
+  <!-- JSON-LD: WebSite (enables Google's sitelinks searchbox) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://www.suctech.store/#website",
+    "url": "https://www.suctech.store/",
+    "name": "Success Technology",
+    "inLanguage": "fr-CI",
+    "publisher": { "@id": "https://www.suctech.store/#store" },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://www.suctech.store/category/?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
     }
-  ],
-  "sameAs": [
-    "https://www.instagram.com/success_tch"
-  ]
-}
-</script>
+  }
+  </script>
 </head>
 <div id="app">
 <!-- Hero Banner Container -->
@@ -195,13 +212,13 @@
 <div>
   <h4 data-translate="footer_follow">📱 Follow Us</h4>
   <div class="flex gap-4 mt-2">
-    <a id="facebookLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
+    <a id="facebookLink" href="https://www.facebook.com/profile.php?id=61594990806622" target="_blank" class="text-2xl hover:text-primary transition-colors">
       <i class="fab fa-facebook"></i>
     </a>
-    <a id="instagramLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
+    <a id="instagramLink" href="https://www.instagram.com/success_tch/" target="_blank" class="text-2xl hover:text-primary transition-colors">
       <i class="fab fa-instagram"></i>
     </a>
-    <a id="tiktokLink" href="#" target="_blank" class="text-2xl hover:text-primary transition-colors">
+    <a id="tiktokLink" href="https://www.tiktok.com/@sucess_tech" target="_blank" class="text-2xl hover:text-primary transition-colors">
       <i class="fab fa-tiktok"></i>
     </a>
   </div>
