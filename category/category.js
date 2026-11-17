@@ -12,6 +12,7 @@
     let totalProducts       = 0;
     const productCache      = new Map();
     const categoryCountMap  = new Map();
+    const categoryNameMap   = new Map();   // slug → display name cache
     let lastRenderedCategory = null;
 
     let relatedProductsPool = [];
@@ -25,11 +26,8 @@
 
     let infiniteScrollObserver = null;
 
-    // In-memory cart snapshot (shared across clicks)
     let _cartSnapshot = null;
     let _cartOwnerId  = null;
-
-    // Resize handler ref so we can remove it on cleanup
     let _catBarResizeHandler = null;
 
     /* ============================================================
@@ -43,18 +41,16 @@
         return fallback || key;
     }
 
-function getCategoryFromUrl() {
-    // 1. Explicit query param wins (e.g. from category bar chips)
-    const q = new URLSearchParams(location.search).get('category');
-    if (q) return q;
+    function getCategoryFromUrl() {
+        const q = new URLSearchParams(location.search).get('category');
+        if (q) return q;
 
-    // 2. Otherwise, derive from pathname: /accessoires/ → "accessoires"
-    const trimmed = location.pathname.replace(/^\/+|\/+$/g, ''); // "accessoires" or "informatique/peripheriques"
-    if (!trimmed || trimmed === 'category') return 'all';
+        const trimmed = location.pathname.replace(/^\/+|\/+$/g, '');
+        if (!trimmed || trimmed === 'category') return 'all';
 
-    const parts = trimmed.split('/');
-    return decodeURIComponent(parts[parts.length - 1]); // last segment = leaf category slug
-}
+        const parts = trimmed.split('/');
+        return decodeURIComponent(parts[parts.length - 1]);
+    }
 
     function showToast(msg) {
         let el = document.getElementById('toastMsg');
@@ -92,96 +88,111 @@ function getCategoryFromUrl() {
     function getReviewCount(id) {
         return (window._cachedReviews?.[id] || []).length;
     }
-function updateCategorySEO(categorySlug, categoryName, productCount) {
-    const baseUrl = 'https://www.suctech.store';
 
-    // Normaliser le slug
-    const slug = categorySlug && categorySlug !== 'all'
-        ? slugifyClient(categorySlug)
-        : 'all';
-
-    const pageUrl = slug === 'all'
-        ? `${baseUrl}/category/`
-        : `${baseUrl}/category/?category=${slug}`;
-
-    // Titres et descriptions optimisés pour l'intention de recherche locale et e-commerce
-    const title = slug === 'all'
-        ? 'Catalogue de tous les produits et High-Tech | Success Technology Abidjan'
-        : `Acheter ${categoryName} en ligne à Abidjan | Success Technology`;
-
-    const description = slug === 'all'
-        ? `Découvrez notre catalogue complet de matériel informatique, smartphones, appareils audio et accessoires électroniques chez Success Technology à Cocody, Abidjan.`
-        : `Achetez ${categoryName} de qualité chez Success Technology. ${productCount ? productCount + ' articles disponibles.' : 'Découvrez nos nouveautés'} avec livraison rapide à Abidjan, Côte d'Ivoire.`;
-
-    // Appliquer le titre
-    document.title = title;
-
-    // Utilitaire pour définir les balises meta
-    const setMeta = (selector, attr, value) => {
-        const el = document.querySelector(selector);
-        if (el) el.setAttribute(attr, value);
-    };
-
-    setMeta('#pageMetaDescription', 'content', description);
-    setMeta('#pageCanonical', 'href', pageUrl);
-    setMeta('#ogTitle', 'content', title);
-    setMeta('#ogDescription', 'content', description);
-    setMeta('#ogUrl', 'content', pageUrl);
-    setMeta('#twitterTitle', 'content', title);
-    setMeta('#twitterDescription', 'content', description);
-
-    // Données structurées JSON-LD avancées (CollectionPage + BreadcrumbList pour les rich snippets)
-    const structuredData = {
-        '@context': 'https://schema.org',
-        '@graph': [
-            {
-                '@type': 'CollectionPage',
-                '@id': `${pageUrl}#webpage`,
-                url: pageUrl,
-                name: title,
-                description: description,
-                isPartOf: {
-                    '@type': 'WebSite',
-                    '@id': `${baseUrl}/#website`,
-                    name: 'Success Technology',
-                    url: baseUrl
-                }
-            },
-            {
-                '@type': 'BreadcrumbList',
-                itemListElement: [
-                    {
-                        '@type': 'ListItem',
-                        position: 1,
-                        name: 'Accueil',
-                        item: `${baseUrl}/`
-                    },
-                    {
-                        '@type': 'ListItem',
-                        position: 2,
-                        name: 'Catégories',
-                        item: `${baseUrl}/category/`
-                    },
-                    ...(slug !== 'all' ? [{
-                        '@type': 'ListItem',
-                        position: 3,
-                        name: categoryName,
-                        item: pageUrl
-                    }] : [])
-                ]
-            }
-        ]
-    };
-
-    let schemaEl = document.getElementById('categoryStructuredData');
-    if (!schemaEl) {
-        schemaEl = document.createElement('script');
-        schemaEl.type = 'application/ld+json';
-        schemaEl.id = 'categoryStructuredData';
-        document.head.appendChild(schemaEl);
+    // Slugify — strips accents, lowercases, replaces non-alphanumeric with hyphens
+    function slugifyClient(input) {
+        return String(input || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/&/g, ' ')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .replace(/-+/g, '-');
     }
-    schemaEl.textContent = JSON.stringify(structuredData);
-}
+
+    // ✅ Humanize a slug as a last-resort fallback when DB name not available
+    function humanizeSlug(slug) {
+        return String(slug || '')
+            .split('-')
+            .filter(Boolean)
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(' ');
+    }
+
+    /* ============================================================
+       SEO
+       ============================================================ */
+    function updateCategorySEO(categorySlug, categoryName, productCount) {
+        const baseUrl = 'https://www.suctech.store';
+
+        const slug = categorySlug && categorySlug !== 'all'
+            ? slugifyClient(categorySlug)
+            : 'all';
+
+        const pageUrl = slug === 'all'
+            ? `${baseUrl}/category/`
+            : `${baseUrl}/category/?category=${slug}`;
+
+        const title = slug === 'all'
+            ? 'Catalogue de tous les produits High-Tech | Success Technology Abidjan'
+            : `${categoryName} en ligne à Abidjan | Success Technology`;
+
+        const description = slug === 'all'
+            ? `Découvrez notre catalogue complet de matériel informatique, smartphones, audio et accessoires chez Success Technology à Abidjan.`
+            : `Achetez ${categoryName} chez Success Technology. ${productCount ? productCount + ' articles disponibles.' : 'Découvrez nos nouveautés'} Livraison rapide à Abidjan.`;
+
+        document.title = title;
+        const titleEl = document.getElementById('pageTitle');
+        if (titleEl) {
+            titleEl.textContent = title;
+            titleEl.removeAttribute('data-translate');
+        }
+
+        const setMeta = (selector, attr, value) => {
+            const el = document.querySelector(selector);
+            if (el) el.setAttribute(attr, value);
+        };
+
+        setMeta('#pageMetaDescription', 'content', description);
+        setMeta('#pageCanonical', 'href', pageUrl);
+        setMeta('#ogTitle', 'content', title);
+        setMeta('#ogDescription', 'content', description);
+        setMeta('#ogUrl', 'content', pageUrl);
+        setMeta('#twitterTitle', 'content', title);
+        setMeta('#twitterDescription', 'content', description);
+
+        const structuredData = {
+            '@context': 'https://schema.org',
+            '@graph': [
+                {
+                    '@type': 'CollectionPage',
+                    '@id': `${pageUrl}#webpage`,
+                    url: pageUrl,
+                    name: title,
+                    description: description,
+                    isPartOf: {
+                        '@type': 'WebSite',
+                        '@id': `${baseUrl}/#website`,
+                        name: 'Success Technology',
+                        url: baseUrl
+                    }
+                },
+                {
+                    '@type': 'BreadcrumbList',
+                    itemListElement: [
+                        { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${baseUrl}/` },
+                        { '@type': 'ListItem', position: 2, name: 'Catégories', item: `${baseUrl}/category/` },
+                        ...(slug !== 'all' ? [{
+                            '@type': 'ListItem',
+                            position: 3,
+                            name: categoryName,
+                            item: pageUrl
+                        }] : [])
+                    ]
+                }
+            ]
+        };
+
+        const schemaEl = document.getElementById('categoryStructuredData');
+        if (schemaEl) {
+            schemaEl.textContent = JSON.stringify(structuredData);
+        }
+    }
+
+    /* ============================================================
+       ICONS
+       ============================================================ */
     function getCategoryIcon(category) {
         const icons = {
             smartphone: 'fas fa-mobile-alt', phone: 'fas fa-mobile-alt', tablet: 'fas fa-tablet-alt',
@@ -318,6 +329,46 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
         return data || [];
     }
 
+    // ✅ Look up display name from slug via RPC (with in-memory cache)
+    async function fetchCategoryDisplayName(slug) {
+        if (!slug || slug === 'all') return null;
+
+        // Return from cache if available
+        const cacheKey = String(slug).toLowerCase();
+        if (categoryNameMap.has(cacheKey)) return categoryNameMap.get(cacheKey);
+
+        const client = window.getSupabaseClient?.();
+        if (!client) return null;
+
+        try {
+            const { data, error } = await client.rpc('get_category_display_name', {
+                p_slug: cacheKey
+            });
+            if (error) throw error;
+            const row = Array.isArray(data) ? data[0] : data;
+            const name = row?.display_name || null;
+            if (name) categoryNameMap.set(cacheKey, name);
+            return name;
+        } catch (err) {
+            console.warn('fetchCategoryDisplayName failed:', err);
+            return null;
+        }
+    }
+
+    // ✅ Resolve a human-readable display name for ANY slug — cache → RPC → humanize
+    async function resolveDisplayName(slug) {
+        if (!slug || slug === 'all') return t('all_categories', 'All Categories');
+
+        const key = String(slug).toLowerCase();
+        if (categoryNameMap.has(key)) return categoryNameMap.get(key);
+
+        const fromDb = await fetchCategoryDisplayName(key);
+        if (fromDb) return fromDb;
+
+        // Fallback: turn "accessoires-createurs-de-contenu" → "Accessoires Createurs De Contenu"
+        return humanizeSlug(key);
+    }
+
     async function fetchRelatedProducts(category = 'all', limit = 16) {
         const client = window.getSupabaseClient?.();
         if (!client) return [];
@@ -329,7 +380,6 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
         return data || [];
     }
 
-    // ✅ FIXED — p_id uses productId, and RPC returns an array
     async function fetchProductById(productId) {
         if (!productId) return null;
         if (productCache.has(productId)) return productCache.get(productId);
@@ -340,7 +390,7 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
         try {
             const { data, error } = await client.rpc('get_product_by_id', { p_id: productId });
             if (error) throw error;
-            const p = Array.isArray(data) ? data[0] : data;   // RPC returns a set
+            const p = Array.isArray(data) ? data[0] : data;
             if (!p) return null;
             productCache.set(p.id, p);
             return p;
@@ -351,7 +401,7 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
     }
 
     /* ============================================================
-       CART HELPERS — matches saveCart / sync_user_cart style
+       CART HELPERS
        ============================================================ */
     function resolveOwner() {
         try {
@@ -377,7 +427,6 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
         return sid;
     }
 
-    // Load cart once per session (or when owner changes)
     async function ensureCartLoaded() {
         const customerId = resolveOwner();
         const cacheKey   = customerId || '__guest__';
@@ -394,7 +443,6 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
         return _cartSnapshot;
     }
 
-    // ✅ Single source of truth — mirrors your saveCart/sync_user_cart
     async function saveCart(cart) {
         const customerId = resolveOwner();
         const sessionId  = resolveSessionId();
@@ -439,11 +487,9 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
         }
     }
 
-    // ✅ Optimistic: instant toast + badge, DB save in background
     async function addToCart(productId, qty = 1) {
         if (!productId) return;
 
-        // 1. Resolve product (cache first, DB second)
         let product = productCache.get(productId);
         if (!product) {
             product = await fetchProductById(productId);
@@ -453,11 +499,9 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
             }
         }
 
-        // 2. Load cart snapshot (only 1 network call per session)
         await ensureCartLoaded();
         const cart = _cartSnapshot || (_cartSnapshot = []);
 
-        // 3. Optimistic in-memory update
         const existing = cart.find(i => (i.product_id || i.id) === productId);
         if (existing) {
             existing.qty = (existing.qty || 0) + qty;
@@ -478,14 +522,12 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
             });
         }
 
-        // 4. INSTANT feedback — toast + header badge, no awaits
         showToast(`✅ ${product.name} ${t('added_to_cart', 'added to cart!')}`);
         if (window.STHeader) {
             window.STHeader.AppState.cart = cart;
             window.STHeader.updateCounts?.();
         }
 
-        // 5. Fire-and-forget DB save (uses your sync_user_cart RPC)
         saveCart(cart);
     }
 
@@ -493,11 +535,12 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
        RENDER HELPERS
        ============================================================ */
 
-    function renderCategoryHeader(category, count) {
-        const key     = String(category || 'uncategorized').toLowerCase();
-        const display = getTranslatedCategory(key);
-        const icon    = getCategoryIcon(key);
-        const badge   = Number(count) || 0;
+    // ✅ Render category header using a pre-resolved display name
+    function renderCategoryHeader(category, displayName, count) {
+        const key   = String(category || 'uncategorized').toLowerCase();
+        const icon  = getCategoryIcon(key);
+        const badge = Number(count) || 0;
+        const label = displayName || humanizeSlug(key);
 
         return `
             <div class="col-span-2 md:col-span-3 lg:col-span-4 mt-8 mb-4 st-cat-header" data-cat="${escapeHtml(key)}">
@@ -505,7 +548,7 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
                     <span class="text-3xl" style="color:#6C3CE1;">
                         <i class="${icon}"></i>
                     </span>
-                    <span data-translate="category_${key}">${escapeHtml(display)}</span>
+                    <span>${escapeHtml(label)}</span>
                     <span class="text-sm font-normal text-gray-500 ml-2">(${badge})</span>
                 </h2>
             </div>`;
@@ -546,27 +589,43 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
             </div>`;
     }
 
-    function buildGroupedHtml(products, category, isReset) {
+    // ✅ Now async — resolves display names for each category group header
+    async function buildGroupedHtml(products, category, isReset) {
         let html = '';
 
         if (category !== 'all' && category !== '') {
             if (isReset) {
                 const count = categoryCountMap.get(category) || totalProducts || products.length;
-                html += renderCategoryHeader(category, count);
+                const displayName = await resolveDisplayName(category);
+                html += renderCategoryHeader(category, displayName, count);
             }
             html += products.map(renderProductCard).join('');
             return html;
         }
 
+        // Group by category, then resolve names in parallel
+        const slugsInOrder = [];
+        const buckets = new Map();
+
         for (const p of products) {
             const cat = String(p.category || 'uncategorized').toLowerCase();
-            if (cat !== lastRenderedCategory) {
-                const count = categoryCountMap.get(cat) || 0;
-                html += renderCategoryHeader(cat, count);
-                lastRenderedCategory = cat;
+            if (!buckets.has(cat)) {
+                buckets.set(cat, []);
+                slugsInOrder.push(cat);
             }
-            html += renderProductCard(p);
+            buckets.get(cat).push(p);
         }
+
+        // Resolve every display name in parallel (cached after first hit)
+        const names = await Promise.all(slugsInOrder.map(resolveDisplayName));
+
+        for (let i = 0; i < slugsInOrder.length; i++) {
+            const cat = slugsInOrder[i];
+            const count = categoryCountMap.get(cat) || buckets.get(cat).length;
+            html += renderCategoryHeader(cat, names[i], count);
+            html += buckets.get(cat).map(renderProductCard).join('');
+        }
+
         return html;
     }
 
@@ -630,6 +689,12 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
         const activeCategory = getCategoryFromUrl().toLowerCase();
         const totalCount = categoriesData.reduce((s, c) => s + Number(c.product_count || 0), 0);
 
+        // ✅ Pre-warm the display name cache from the RPC payload
+        categoriesData.forEach(c => {
+            const slug = String(c.category || '').toLowerCase();
+            if (slug && c.display_name) categoryNameMap.set(slug, c.display_name);
+        });
+
         const chipsHtml = `
             <a href="/category/?category=all"
                class="st-cat-chip ${activeCategory === 'all' || !activeCategory ? 'active' : ''}"
@@ -640,7 +705,8 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
             </a>
             ${categoriesData.map(c => {
                 const key      = String(c.category || '').toLowerCase();
-                const display  = getTranslatedCategory(key);
+                // ✅ Use display_name from RPC; fall back to humanized slug
+                const display  = c.display_name || humanizeSlug(key);
                 const icon     = getCategoryIcon(key);
                 const isActive = activeCategory === key;
                 const encoded  = encodeURIComponent(key);
@@ -757,14 +823,21 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
 
             if (reset) {
                 totalProducts = total;
+
+                // ✅ Resolve display name ONCE, use everywhere
+                let displayName;
+                if (category === 'all') {
+                    displayName = t('all_categories', 'All Categories');
+                } else {
+                    displayName = await resolveDisplayName(category);
+                }
+
+                // ✅ SEO uses real display name
                 try {
-        const catName = category === 'all'
-            ? 'All Products'
-            : getTranslatedCategory(category);
-        updateCategorySEO(category, catName, total);
-    } catch (e) {
-        console.warn('updateCategorySEO failed:', e);
-    }
+                    updateCategorySEO(category, displayName, total);
+                } catch (e) {
+                    console.warn('updateCategorySEO failed:', e);
+                }
 
                 try {
                     const cats = await fetchCategoryCounts();
@@ -772,9 +845,10 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
                     cats.forEach(c => {
                         const k = String(c.category || '').toLowerCase();
                         categoryCountMap.set(k, Number(c.product_count || 0));
+                        // Pre-warm name cache
+                        if (k && c.display_name) categoryNameMap.set(k, c.display_name);
                     });
                     await buildCategoryBar(cats);
-                    
                 } catch (e) {
                     console.warn('Category bar failed:', e);
                 }
@@ -794,10 +868,13 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
                     }
                     if (icon) icon.innerHTML = '<i class="fas fa-th-large"></i>';
                 } else {
-                    const name = getTranslatedCategory(category);
-                    if (title) { title.textContent = name; title.removeAttribute('data-translate'); }
+                    // ✅ Use the resolved display name (with spaces, accents)
+                    if (title) {
+                        title.textContent = displayName;
+                        title.removeAttribute('data-translate');
+                    }
                     if (subtitle) {
-                        subtitle.textContent = t('discover_products', `Discover our ${name} products`);
+                        subtitle.textContent = `Découvrez nos produits ${displayName}`;
                         subtitle.removeAttribute('data-translate');
                     }
                     if (icon) icon.innerHTML = `<i class="${getCategoryIcon(category)}"></i>`;
@@ -814,7 +891,8 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
                 return;
             }
 
-            const html = buildGroupedHtml(products, category, reset);
+            // ✅ buildGroupedHtml is now async
+            const html = await buildGroupedHtml(products, category, reset);
             if (reset) grid.innerHTML = html;
             else       grid.insertAdjacentHTML('beforeend', html);
 
@@ -936,6 +1014,7 @@ function updateCategorySEO(categorySlug, categoryName, productCount) {
         lastRenderedCategory = null;
         productCache.clear();
         categoryCountMap.clear();
+        categoryNameMap.clear();   // ✅ also clear the name cache on cleanup
         relatedProductsPool = [];
         relatedLoadedCount  = 0;
         heroImages          = [];
