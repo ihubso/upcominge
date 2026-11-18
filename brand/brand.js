@@ -100,7 +100,7 @@ function updateBrandSEO(brandName, productCount) {
 
     const title = normalizedBrand === 'all'
         ? 'Toutes les Marques & High-Tech | Success Technology Abidjan'
-        : `Produits de la marque ${brandName} | Success Technology Abidjan`;
+        : `${brandName} | Success Technology Abidjan`;
 
     const description = normalizedBrand === 'all'
         ? 'Explorez toutes nos marques partenaires et notre gamme complète d’appareils électroniques et accessoires à Abidjan.'
@@ -315,38 +315,50 @@ function updateBrandSEO(brandName, productCount) {
         }
 
         try {
-            const brand = getBrandFromUrl();   // ← always fresh
-            const all   = await fetchAllProducts();
-            currentBrand = brand;
+ const brand = getBrandFromUrl();   // ← always fresh
+const all   = await fetchAllProducts();
+currentBrand = brand;
 
-            // Hero text
-            const title    = document.getElementById('brandTitle');
-            const subtitle = document.getElementById('brandSubtitle');
-            const icon     = document.getElementById('brandIcon');
+// Hero text
+const title         = document.getElementById('brandTitle');
+const documentTitle = document.getElementById('brandPageTitle'); // Fixed typo from 'BRANDageTitle'
+const subtitle      = document.getElementById('brandSubtitle');
+const icon          = document.getElementById('brandIcon');
 
-            if (brand === 'all') {
-                if (title) {
-                    title.textContent = t('all_brands', 'All Brands');
-                    title.setAttribute('data-translate', 'all_brands');
-                }
-                if (subtitle) {
-                    subtitle.textContent = t('explore_collection', 'Explore our collection');
-                    subtitle.setAttribute('data-translate', 'explore_collection');
-                }
-                if (icon) icon.textContent = '🏷️';
-            } else {
-                const display = brand.charAt(0).toUpperCase() + brand.slice(1);
-                if (title) {
-                    title.textContent = display;
-                    title.removeAttribute('data-translate');
-                }
-                if (subtitle) {
-                    subtitle.textContent = `Discover our ${display} products`;
-                    subtitle.removeAttribute('data-translate');
-                }
-                if (icon) icon.textContent = getBrandIcon(brand);
-            }
-            document.title = `${brand === 'all' ? 'All Brands' : brand} · Sucess Technology`;
+if (brand === 'all') {
+    if (title) {
+        title.textContent = t('all_brands', 'All Brands');
+        title.setAttribute('data-translate', 'all_brands');
+    }
+    if (documentTitle) {
+        documentTitle.textContent = t('all_brands', 'All Brands');
+    }
+    if (subtitle) {
+        subtitle.textContent = t('explore_collection', 'Explore our collection');
+        subtitle.setAttribute('data-translate', 'explore_collection');
+    }
+    if (icon) icon.textContent = '🏷️';
+    
+    document.title = 'All Brands · Success Technology';
+} else {
+    const display = brand.charAt(0).toUpperCase() + brand.slice(1);
+    
+    if (title) {
+        title.textContent = display;
+        title.removeAttribute('data-translate');
+    }
+    if (documentTitle) {
+        documentTitle.textContent = `${display} · ${t('brand_page_title', 'All Brands')}`;
+    }
+    if (subtitle) {
+        subtitle.textContent = `Discover our ${display} products`;
+        subtitle.removeAttribute('data-translate');
+    }
+    if (icon) icon.textContent = getBrandIcon(brand);
+    
+    document.title = `${display} · Success Technology`;
+}
+
 
             // Filter (case-insensitive)
             const norm = normalizeBrand(brand);
