@@ -1,0 +1,10 @@
+HTTP/1.1 200 OK
+Cache-Control: no-store, max-age=0
+Content-Type: text/html; charset=utf-8
+Date: Tue, 24 Nov 2026 17:27:29 GMT
+Server: Vercel
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+X-Seo-Middleware: SUCCESS
+X-Vercel-Id: cdg1::swnpr-1795541249032-d11081f26ce2
+Transfer-Encoding: chunked
+
