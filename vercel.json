@@ -1,9 +1,9 @@
 {
   "routes": [
     {
-      "src": "/item/",
+      "src": "/api/item/",
       "has": [{ "type": "query", "key": "product" }],
-      "dest": "/api/item"
+      "dest": "/item/"
     },
     {
       "src": "/brand/",
