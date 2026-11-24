@@ -1,10 +1,9 @@
 export const config = {
-  matcher: '/item/:path*',
+  matcher: '/item/', // Matches exactly /item/ with query params
 };
 
 const SUPABASE_URL = 'https://bulprhgwuwatzobiojwz.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHByaGd3dXdhdHpvYmlvand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDczNDksImV4cCI6MjA5MjA4MzM0OX0.2fcHrGX7iXw5G9nGRNkBy70W1Ex_om1C0v3qbryPmvw';
-
 
 export async function middleware(request: Request) {
   const url = new URL(request.url);
@@ -20,13 +19,13 @@ export async function middleware(request: Request) {
         headers: {
           'apikey': SUPABASE_ANON_KEY,
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ p_product_id: productId }),
+        body: JSON.stringify({ p_product_id: productId })
       });
 
       const data = await res.json();
-      const product = data?.[0];
+      const product = data && data.length > 0 ? data[0] : null;
 
       if (product) {
         const name = product.name || 'Product';
@@ -40,8 +39,8 @@ export async function middleware(request: Request) {
         const jsonLd = {
           '@context': 'https://schema.org',
           '@type': 'Product',
-          name,
-          description,
+          name: name,
+          description: description,
           image: [image],
           sku: productId,
           brand: { '@type': 'Brand', name: brand },
@@ -51,33 +50,35 @@ export async function middleware(request: Request) {
             priceCurrency: 'XOF',
             price: price.toFixed(2),
             availability: stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-            itemCondition: 'https://schema.org/NewCondition',
-          },
+            itemCondition: 'https://schema.org/NewCondition'
+          }
         };
 
         const html = `<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>${name} | Success Technology</title>
-  <meta name="description" content="${description.replace(/"/g, '&quot;')}" />
-  <link rel="canonical" href="${canonicalUrl}" />
-  <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
+    <meta charset="UTF-8" />
+    <title>${name} | Success Technology</title>
+    <meta name="description" content="${description.replace(/"/g, '&quot;')}" />
+    <link rel="canonical" href="${canonicalUrl}" />
+    <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
 </head>
-<body>
-  <h1>${name}</h1>
-  <img src="${image}" alt="${name}" />
-  <p>${price.toLocaleString('fr-FR')} CFA</p>
-  <p>${brand}</p>
-  <p>${stock > 0 ? 'En Stock' : 'Rupture de stock'}</p>
-  <div>${description}</div>
-  <a href="${canonicalUrl}">Voir la page complète</a>
+<body style="font-family: sans-serif; padding: 20px;">
+    <h1>${name}</h1>
+    <img src="${image}" alt="${name}" style="max-width: 100%;" />
+    <h2>${price.toLocaleString('fr-FR')} CFA</h2>
+    <p>Marque: ${brand}</p>
+    <p>Stock: ${stock > 0 ? 'En Stock' : 'Rupture'}</p>
+    <p>${description}</p>
 </body>
 </html>`;
 
         return new Response(html, {
           status: 200,
-          headers: { 'Content-Type': 'text/html; charset=utf-8' },
+          headers: { 
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'no-store, max-age=0' // Prevents Vercel from caching the bot page
+          },
         });
       }
     } catch (err) {
@@ -85,6 +86,6 @@ export async function middleware(request: Request) {
     }
   }
 
-  // Humans get the normal page (bypass Middleware)
+  // Humans get normal page
   return new Response(null, { headers: { 'x-middleware-next': '1' } });
 }
