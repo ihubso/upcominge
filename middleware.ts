@@ -1,5 +1,5 @@
 export const config = {
-  matcher: '/item/', // Matches exactly /item/ with query params
+  matcher: '/item/', // Matches /item/ with any query parameters
 };
 
 const SUPABASE_URL = 'https://bulprhgwuwatzobiojwz.supabase.co';
@@ -10,10 +10,12 @@ export async function middleware(request: Request) {
   const productId = url.searchParams.get('product');
   const userAgent = request.headers.get('user-agent') || '';
 
+  // Check for Googlebot
   const isBot = /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit/i.test(userAgent);
 
   if (productId && isBot) {
     try {
+      // Fetch from Supabase
       const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_product_details_and_increment_views`, {
         method: 'POST',
         headers: {
@@ -77,7 +79,7 @@ export async function middleware(request: Request) {
           status: 200,
           headers: { 
             'Content-Type': 'text/html; charset=utf-8',
-            'Cache-Control': 'no-store, max-age=0' // Prevents Vercel from caching the bot page
+            'Cache-Control': 'no-store, max-age=0' // CRITICAL: Stop Vercel from caching the bot page
           },
         });
       }
@@ -86,6 +88,6 @@ export async function middleware(request: Request) {
     }
   }
 
-  // Humans get normal page
+  // Humans: Tell Vercel to continue to the static file
   return new Response(null, { headers: { 'x-middleware-next': '1' } });
 }
