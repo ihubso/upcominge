@@ -1,12 +1,21 @@
 {
-  "trailingSlash": true,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/item/",
+      "src": "/item/",
       "has": [{ "type": "query", "key": "product" }],
-      "destination": "/api/item"
+      "dest": "/api/item"
     },
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
-    { "source": "/llms.txt",    "destination": "/api/llms" }
+    {
+      "src": "/brand/",
+      "has": [{ "type": "query", "key": "brand" }],
+      "dest": "/api/brand"
+    },
+    {
+      "src": "/product/",
+      "has": [{ "type": "query", "key": "filter" }],
+      "dest": "/api/filter"
+    },
+    { "src": "/sitemap.xml", "dest": "/api/sitemap" },
+    { "src": "/llms.txt",    "dest": "/api/llms" }
   ]
 }
