@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Middleware will overwrite these -->
+    <title>Product | Success Technology</title>
+    <meta name="description" content="Loading..." />
+    <link rel="canonical" href="https://www.suctech.store/item/" />
+    
+    <!-- Structured Data Placeholder -->
+    <script type="application/ld+json" id="productStructuredData">{}</script>
+</head>
+<body>
+    <!-- Middleware will overwrite these -->
+    <main style="max-width:1280px;margin:0 auto;padding:2rem;">
+        <h1 id="botName">Loading...</h1>
+        <p id="botPrice">Loading...</p>
+        <p id="botBrand">Loading...</p>
+        <div id="botDescription">Loading...</div>
+    </main>
+    
+    <script>
+        // If a real human accidentally hits this page, redirect them to the full interactive UI
+        if (!/googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit/i.test(navigator.userAgent)) {
+            window.location.replace('/item/' + window.location.search);
+        }
+    </script>
+</body>
+</html>
