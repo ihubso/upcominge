@@ -1,8 +1,13 @@
 {
   "rewrites": [
-    { "source": "/item/:productId", "destination": "/api/item?product=:productId" },
-    { "source": "/sitemap.xml",     "destination": "/api/sitemap" },
-    { "source": "/llms.txt",        "destination": "/api/llms" },
-    { "source": "/(.*)",            "destination": "/index.html" }
-  ]
+    {
+      "source": "/item/",
+      "has": [{ "type": "query", "key": "product" }],
+      "destination": "/api/item"
+    },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/llms.txt",    "destination": "/api/llms" }
+  ],
+  "cleanUrls": false,
+  "trailingSlash": false
 }
