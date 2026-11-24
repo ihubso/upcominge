@@ -1,21 +1,8 @@
 {
   "rewrites": [
-    {
-      "source": "/item/",
-      "has": [{ "type": "query", "key": "product" }],
-      "destination": "/api/item"
-    },
-    {
-      "source": "/brand/",
-      "has": [{ "type": "query", "key": "brand" }],
-      "destination": "/api/brand"
-    },
-    {
-      "source": "/product/",
-      "has": [{ "type": "query", "key": "filter" }],
-      "destination": "/api/filter"
-    },
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
-    { "source": "/llms.txt", "destination": "/api/llms" }
+    { "source": "/item/:productId", "destination": "/api/item?product=:productId" },
+    { "source": "/sitemap.xml",     "destination": "/api/sitemap" },
+    { "source": "/llms.txt",        "destination": "/api/llms" },
+    { "source": "/(.*)",            "destination": "/index.html" }
   ]
 }
