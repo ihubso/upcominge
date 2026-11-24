@@ -1,21 +1,8 @@
 {
-  "routes": [
-    {
-      "src": "/api/item/",
-      "has": [{ "type": "query", "key": "product" }],
-      "dest": "/item/"
-    },
-    {
-      "src": "/brand/",
-      "has": [{ "type": "query", "key": "brand" }],
-      "dest": "/api/brand"
-    },
-    {
-      "src": "/product/",
-      "has": [{ "type": "query", "key": "filter" }],
-      "dest": "/api/filter"
-    },
-    { "src": "/sitemap.xml", "dest": "/api/sitemap" },
-    { "src": "/llms.txt",    "dest": "/api/llms" }
+  "rewrites": [
+    { "source": "/item/:productId", "destination": "/api/item?product=:productId" },
+    { "source": "/sitemap.xml",     "destination": "/api/sitemap" },
+    { "source": "/llms.txt",        "destination": "/api/llms" },
+    { "source": "/(.*)",            "destination": "/index.html" }
   ]
 }
